@@ -11,8 +11,9 @@ class MainApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return const MaterialApp(
       home: Scaffold(
+        appBar:AppBar(title:Text("APPBAR"),color:Colors.blue),
         body: Center(
-          child: Text('Hello World!'),
+          child: Text('BYE WORLD!'),
         ),
       ),
     );
