@@ -9,13 +9,6 @@ class MainApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return const MaterialApp(
-      home: Scaffold(
-        appBar:AppBar(title:Text("APPBAR"),color:Colors.blue),
-        body: Center(
-          child: Text('BYE WORLD!'),
-        ),
-      ),
-    );
+    return const Placeholder();
   }
 }
