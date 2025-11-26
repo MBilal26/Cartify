@@ -4,18 +4,20 @@ import 'colors.dart';
 
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
+
   @override
-  _SplashScreenState createState() => _SplashScreenState();
+  SplashScreenState createState() => SplashScreenState();
 }
 
-class _SplashScreenState extends State<SplashScreen> {
+class SplashScreenState extends State<SplashScreen> {
   @override
   void initState() {
     super.initState();
 
-    Timer(Duration(seconds: 1), () {
-      Navigator.pushReplacementNamed(context, '/home');
-    });
+    Timer(Duration(seconds: 4), () {
+  Navigator.pushReplacementNamed(context, '/home');
+});
+
   }
 
   @override
@@ -24,19 +26,14 @@ class _SplashScreenState extends State<SplashScreen> {
       body: Container(
         width: double.infinity,
         height: double.infinity,
-
         decoration: const BoxDecoration(
           gradient: AppGradients.splashBackground,
         ),
-
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            // Logo
             Image.asset('assets/images/teal-logo.png', height: 150),
-
             SizedBox(height: 20),
-
             Text(
               "CARTIFY",
               style: TextStyle(
