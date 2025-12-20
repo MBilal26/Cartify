@@ -17,10 +17,7 @@ class SplashScreenState extends State<SplashScreen> {
   void initState() {
     super.initState();
     Timer(Duration(seconds: 3), () {
-      Navigator.pushReplacementNamed(
-        context,
-        '/home',
-      ); // .__Transfers to Home Screen After 3 Seconds in main.dart
+      Navigator.pushReplacementNamed(context, '/home');
     });
   }
 
@@ -30,9 +27,7 @@ class SplashScreenState extends State<SplashScreen> {
       body: Container(
         width: double.infinity,
         height: double.infinity,
-        decoration: const BoxDecoration(
-          gradient: AppGradients.splashBackground,
-        ),
+        decoration: BoxDecoration(gradient: AppGradients.splashBackground),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
@@ -65,10 +60,9 @@ class _LoginScreenState extends State<LoginScreen> {
   bool _isPasswordVisible = false;
   bool _isLoading = false;
 
-  // Controllers for text fields
   final TextEditingController emailController = TextEditingController();
   final TextEditingController passwordController = TextEditingController();
-
+ 
   @override
   void dispose() {
     emailController.dispose();
@@ -76,7 +70,6 @@ class _LoginScreenState extends State<LoginScreen> {
     super.dispose();
   }
 
-  // Login function
   Future<void> _login() async {
     if (emailController.text.trim().isEmpty ||
         passwordController.text.trim().isEmpty) {
@@ -102,7 +95,7 @@ class _LoginScreenState extends State<LoginScreen> {
       setState(() {
         _isLoading = false;
       });
-
+      
       Navigator.pushReplacementNamed(context, '/home');
     } on FirebaseAuthException catch (e) {
       setState(() {
@@ -130,6 +123,7 @@ class _LoginScreenState extends State<LoginScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: AppColors.background,
       extendBodyBehindAppBar: true,
       appBar: AppBar(
         backgroundColor: Colors.transparent,
@@ -147,9 +141,7 @@ class _LoginScreenState extends State<LoginScreen> {
             Container(
               height: 280,
               width: double.infinity,
-              decoration: const BoxDecoration(
-                gradient: AppGradients.splashBackground,
-              ),
+              decoration: BoxDecoration(gradient: AppGradients.splashBackground),
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
@@ -178,7 +170,7 @@ class _LoginScreenState extends State<LoginScreen> {
                   Text(
                     " Enter your Email",
                     style: TextStyle(
-                      color: AppColors.secondary,
+                      color: AppColors.textPrimary,
                       fontFamily: 'ADLaMDisplay',
                     ),
                   ),
@@ -186,11 +178,17 @@ class _LoginScreenState extends State<LoginScreen> {
                   TextField(
                     controller: emailController,
                     keyboardType: TextInputType.emailAddress,
+                    style: TextStyle(color: AppColors.textPrimary),
                     decoration: InputDecoration(
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.all(Radius.circular(12)),
                       ),
+                      enabledBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.all(Radius.circular(12)),
+                        borderSide: BorderSide(color: AppColors.border),
+                      ),
                       labelText: 'Email',
+                      labelStyle: TextStyle(color: AppColors.textSecondary),
                     ),
                   ),
                 ],
@@ -199,7 +197,6 @@ class _LoginScreenState extends State<LoginScreen> {
 
             const SizedBox(height: 20),
 
-            // Password Field
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 24),
               child: Column(
@@ -208,7 +205,7 @@ class _LoginScreenState extends State<LoginScreen> {
                   Text(
                     " Enter your password",
                     style: TextStyle(
-                      color: AppColors.secondary,
+                      color: AppColors.textPrimary,
                       fontFamily: 'ADLaMDisplay',
                     ),
                   ),
@@ -216,16 +213,23 @@ class _LoginScreenState extends State<LoginScreen> {
                   TextField(
                     controller: passwordController,
                     obscureText: !_isPasswordVisible,
+                    style: TextStyle(color: AppColors.textPrimary),
                     decoration: InputDecoration(
                       labelText: 'Password',
+                      labelStyle: TextStyle(color: AppColors.textSecondary),
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.all(Radius.circular(12)),
+                      ),
+                      enabledBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.all(Radius.circular(12)),
+                        borderSide: BorderSide(color: AppColors.border),
                       ),
                       suffixIcon: IconButton(
                         icon: Icon(
                           _isPasswordVisible
                               ? Icons.visibility
                               : Icons.visibility_off,
+                          color: AppColors.textSecondary,
                         ),
                         onPressed: () {
                           setState(() {
@@ -241,7 +245,6 @@ class _LoginScreenState extends State<LoginScreen> {
 
             const SizedBox(height: 5),
 
-            // Forgot Password
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 24),
               child: Align(
@@ -268,7 +271,6 @@ class _LoginScreenState extends State<LoginScreen> {
 
             const SizedBox(height: 10),
 
-            // Login Button
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 24),
               child: SizedBox(
@@ -287,7 +289,7 @@ class _LoginScreenState extends State<LoginScreen> {
                       : const Text(
                           "Login",
                           style: TextStyle(
-                            color: AppColors.textSecondary,
+                            color: Colors.white,
                             fontFamily: 'ADLaMDisplay',
                             fontSize: 20,
                           ),
@@ -300,25 +302,22 @@ class _LoginScreenState extends State<LoginScreen> {
             Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                const Text(
+                Text(
                   "Don't have an account?",
                   style: TextStyle(
-                    color: AppColors.secondary,
+                    color: AppColors.textPrimary,
                     fontFamily: 'ADLaMDisplay',
                   ),
                 ),
                 TextButton(
                   onPressed: () {
-                    Navigator.pushNamed(
-                      context,
-                      '/signup',
-                    ); // .__Moves to SignUp Screen given below
+                    Navigator.pushNamed(context, '/signup');
                   },
                   child: Text(
                     "Sign Up",
                     style: TextStyle(
                       fontWeight: FontWeight.bold,
-                      color: AppColors.secondary,
+                      color: AppColors.textPrimary,
                       fontFamily: 'ADLaMDisplay',
                     ),
                   ),
@@ -345,12 +344,10 @@ class _SignUpScreenState extends State<SignUpScreen> {
   bool _isConfirmPasswordVisible = false;
   bool _isLoading = false;
 
-  // Controllers for text fields
   final TextEditingController nameController = TextEditingController();
   final TextEditingController emailController = TextEditingController();
   final TextEditingController passwordController = TextEditingController();
-  final TextEditingController confirmPasswordController =
-      TextEditingController();
+  final TextEditingController confirmPasswordController = TextEditingController();
 
   @override
   void dispose() {
@@ -361,7 +358,6 @@ class _SignUpScreenState extends State<SignUpScreen> {
     super.dispose();
   }
 
-  // Sign Up function
   Future<void> _signUp() async {
     if (nameController.text.trim().isEmpty ||
         emailController.text.trim().isEmpty ||
@@ -401,14 +397,12 @@ class _SignUpScreenState extends State<SignUpScreen> {
     });
 
     try {
-      // Create Firebase Auth user
       UserCredential userCredential =
           await FirebaseAuth.instance.createUserWithEmailAndPassword(
         email: emailController.text.trim(),
         password: passwordController.text.trim(),
       );
 
-      // Save user data to Firestore
       await DatabaseService.instance.createUser(
         uid: userCredential.user!.uid,
         name: nameController.text.trim(),
@@ -416,7 +410,6 @@ class _SignUpScreenState extends State<SignUpScreen> {
         password: passwordController.text.trim(),
       );
 
-      // Initialize rewards with 0 points
       await DatabaseService.instance.setRewardPoints(
         userCredential.user!.uid,
         0,
@@ -426,7 +419,6 @@ class _SignUpScreenState extends State<SignUpScreen> {
         _isLoading = false;
       });
 
-      // Show success message
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text('Account created successfully!'),
@@ -434,7 +426,6 @@ class _SignUpScreenState extends State<SignUpScreen> {
         ),
       );
 
-      // Navigate to home
       Navigator.pushReplacementNamed(context, '/home');
     } on FirebaseAuthException catch (e) {
       setState(() {
@@ -473,6 +464,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: AppColors.background,
       extendBodyBehindAppBar: true,
       appBar: AppBar(
         backgroundColor: Colors.transparent,
@@ -491,9 +483,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
             Container(
               height: 280,
               width: double.infinity,
-              decoration: const BoxDecoration(
-                gradient: AppGradients.splashBackground,
-              ),
+              decoration: BoxDecoration(gradient: AppGradients.splashBackground),
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
@@ -514,7 +504,6 @@ class _SignUpScreenState extends State<SignUpScreen> {
 
             const SizedBox(height: 20),
 
-            // Name
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 24),
               child: Column(
@@ -523,17 +512,23 @@ class _SignUpScreenState extends State<SignUpScreen> {
                   Text(
                     " Enter Name",
                     style: TextStyle(
-                      color: AppColors.secondary,
+                      color: AppColors.textPrimary,
                       fontFamily: 'ADLaMDisplay',
                     ),
                   ),
                   SizedBox(height: 10),
                   TextField(
                     controller: nameController,
+                    style: TextStyle(color: AppColors.textPrimary),
                     decoration: InputDecoration(
                       labelText: "Name",
+                      labelStyle: TextStyle(color: AppColors.textSecondary),
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.all(Radius.circular(12)),
+                      ),
+                      enabledBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.all(Radius.circular(12)),
+                        borderSide: BorderSide(color: AppColors.border),
                       ),
                     ),
                   ),
@@ -543,7 +538,6 @@ class _SignUpScreenState extends State<SignUpScreen> {
 
             const SizedBox(height: 16),
 
-            // Email
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 24),
               child: Column(
@@ -552,7 +546,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
                   Text(
                     " Enter Email",
                     style: TextStyle(
-                      color: AppColors.secondary,
+                      color: AppColors.textPrimary,
                       fontFamily: 'ADLaMDisplay',
                     ),
                   ),
@@ -560,10 +554,16 @@ class _SignUpScreenState extends State<SignUpScreen> {
                   TextField(
                     controller: emailController,
                     keyboardType: TextInputType.emailAddress,
+                    style: TextStyle(color: AppColors.textPrimary),
                     decoration: InputDecoration(
                       labelText: "Email",
+                      labelStyle: TextStyle(color: AppColors.textSecondary),
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.all(Radius.circular(12)),
+                      ),
+                      enabledBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.all(Radius.circular(12)),
+                        borderSide: BorderSide(color: AppColors.border),
                       ),
                     ),
                   ),
@@ -573,16 +573,15 @@ class _SignUpScreenState extends State<SignUpScreen> {
 
             const SizedBox(height: 16),
 
-            // Password
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 24),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Text(
+                  Text(
                     " Enter Password",
                     style: TextStyle(
-                      color: AppColors.secondary,
+                      color: AppColors.textPrimary,
                       fontFamily: 'ADLaMDisplay',
                     ),
                   ),
@@ -590,16 +589,23 @@ class _SignUpScreenState extends State<SignUpScreen> {
                   TextField(
                     controller: passwordController,
                     obscureText: !_isPasswordVisible,
+                    style: TextStyle(color: AppColors.textPrimary),
                     decoration: InputDecoration(
                       labelText: "Password",
+                      labelStyle: TextStyle(color: AppColors.textSecondary),
                       border: const OutlineInputBorder(
                         borderRadius: BorderRadius.all(Radius.circular(12)),
+                      ),
+                      enabledBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.all(Radius.circular(12)),
+                        borderSide: BorderSide(color: AppColors.border),
                       ),
                       suffixIcon: IconButton(
                         icon: Icon(
                           _isPasswordVisible
                               ? Icons.visibility
                               : Icons.visibility_off,
+                          color: AppColors.textSecondary,
                         ),
                         onPressed: () {
                           setState(() {
@@ -615,16 +621,15 @@ class _SignUpScreenState extends State<SignUpScreen> {
 
             const SizedBox(height: 16),
 
-            // Confirm Password
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 24),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Text(
+                  Text(
                     " Confirm Password",
                     style: TextStyle(
-                      color: AppColors.secondary,
+                      color: AppColors.textPrimary,
                       fontFamily: 'ADLaMDisplay',
                     ),
                   ),
@@ -632,21 +637,27 @@ class _SignUpScreenState extends State<SignUpScreen> {
                   TextField(
                     controller: confirmPasswordController,
                     obscureText: !_isConfirmPasswordVisible,
+                    style: TextStyle(color: AppColors.textPrimary),
                     decoration: InputDecoration(
                       hintText: "Re-enter your password",
+                      hintStyle: TextStyle(color: AppColors.textSecondary),
                       border: const OutlineInputBorder(
                         borderRadius: BorderRadius.all(Radius.circular(12)),
+                      ),
+                      enabledBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.all(Radius.circular(12)),
+                        borderSide: BorderSide(color: AppColors.border),
                       ),
                       suffixIcon: IconButton(
                         icon: Icon(
                           _isConfirmPasswordVisible
                               ? Icons.visibility
                               : Icons.visibility_off,
+                          color: AppColors.textSecondary,
                         ),
                         onPressed: () {
                           setState(() {
-                            _isConfirmPasswordVisible =
-                                !_isConfirmPasswordVisible;
+                            _isConfirmPasswordVisible = !_isConfirmPasswordVisible;
                           });
                         },
                       ),
@@ -658,7 +669,6 @@ class _SignUpScreenState extends State<SignUpScreen> {
 
             const SizedBox(height: 30),
 
-            // Sign Up Button
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 24),
               child: SizedBox(
@@ -677,7 +687,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
                       : const Text(
                           "Sign Up",
                           style: TextStyle(
-                            color: AppColors.primary,
+                            color: Colors.white,
                             fontFamily: 'ADLaMDisplay',
                             fontSize: 20,
                           ),
@@ -688,14 +698,13 @@ class _SignUpScreenState extends State<SignUpScreen> {
 
             const SizedBox(height: 10),
 
-            // Login Navigation
             Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                const Text(
+                Text(
                   "Already have an account?",
                   style: TextStyle(
-                    color: AppColors.secondary,
+                    color: AppColors.textPrimary,
                     fontFamily: 'ADLaMDisplay',
                   ),
                 ),
@@ -703,11 +712,11 @@ class _SignUpScreenState extends State<SignUpScreen> {
                   onPressed: () {
                     Navigator.pop(context);
                   },
-                  child: const Text(
+                  child: Text(
                     "Log In",
                     style: TextStyle(
                       fontWeight: FontWeight.bold,
-                      color: AppColors.secondary,
+                      color: AppColors.textPrimary,
                       fontFamily: 'ADLaMDisplay',
                     ),
                   ),

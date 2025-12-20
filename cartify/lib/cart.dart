@@ -25,15 +25,18 @@ class _CartPageState extends State<CartPage> {
       backgroundColor: AppColors.background,
 
       appBar: AppBar(
-        title: const Text(
+        backgroundColor: AppColors.background,
+        title: Text(
           'My Cart',
           style: TextStyle(
             fontWeight: FontWeight.bold,
             fontSize: 22,
             fontFamily: 'IrishGrover',
+            color: AppColors.textPrimary,
           ),
         ),
         centerTitle: true,
+        iconTheme: IconThemeData(color: AppColors.textPrimary),
       ),
 
       body: userId == null
@@ -49,7 +52,7 @@ class _CartPageState extends State<CartPage> {
                   SizedBox(height: 16),
                   Text(
                     'Please login to view your cart',
-                    style: TextStyle(fontSize: 16),
+                    style: TextStyle(fontSize: 16, color: AppColors.textPrimary),
                   ),
                   SizedBox(height: 16),
                   ElevatedButton(
@@ -61,7 +64,7 @@ class _CartPageState extends State<CartPage> {
                     ),
                     child: Text(
                       'Login',
-                      style: TextStyle(color: AppColors.textSecondary),
+                      style: TextStyle(color: AppColors.primary),
                     ),
                   ),
                 ],
@@ -71,12 +74,15 @@ class _CartPageState extends State<CartPage> {
               stream: DatabaseService.instance.getCartItemsStream(userId!),
               builder: (context, snapshot) {
                 if (snapshot.connectionState == ConnectionState.waiting) {
-                  return Center(child: CircularProgressIndicator());
+                  return Center(child: CircularProgressIndicator(color: AppColors.accent));
                 }
 
                 if (snapshot.hasError) {
                   return Center(
-                    child: Text('Error loading cart: ${snapshot.error}'),
+                    child: Text(
+                      'Error loading cart: ${snapshot.error}',
+                      style: TextStyle(color: AppColors.textPrimary),
+                    ),
                   );
                 }
 
@@ -93,7 +99,7 @@ class _CartPageState extends State<CartPage> {
                         SizedBox(height: 16),
                         Text(
                           'Your cart is empty',
-                          style: TextStyle(fontSize: 16),
+                          style: TextStyle(fontSize: 16, color: AppColors.textPrimary),
                         ),
                       ],
                     ),
@@ -102,18 +108,20 @@ class _CartPageState extends State<CartPage> {
 
                 final cartItems = snapshot.data!;
 
-                // We need to fetch product details for each cart item
                 return FutureBuilder<List<Map<String, dynamic>>>(
                   future: _getCartItemsWithProducts(cartItems),
                   builder: (context, productSnapshot) {
-                    if (productSnapshot.connectionState ==
-                        ConnectionState.waiting) {
-                      return Center(child: CircularProgressIndicator());
+                    if (productSnapshot.connectionState == ConnectionState.waiting) {
+                      return Center(child: CircularProgressIndicator(color: AppColors.accent));
                     }
 
-                    if (!productSnapshot.hasData ||
-                        productSnapshot.data!.isEmpty) {
-                      return Center(child: Text('Your cart is empty'));
+                    if (!productSnapshot.hasData || productSnapshot.data!.isEmpty) {
+                      return Center(
+                        child: Text(
+                          'Your cart is empty',
+                          style: TextStyle(color: AppColors.textPrimary),
+                        ),
+                      );
                     }
 
                     final itemsWithProducts = productSnapshot.data!;
@@ -128,6 +136,7 @@ class _CartPageState extends State<CartPage> {
                               final item = itemsWithProducts[index];
 
                               return Card(
+                                color: AppColors.card,
                                 margin: const EdgeInsets.symmetric(
                                   horizontal: 12,
                                   vertical: 6,
@@ -135,41 +144,33 @@ class _CartPageState extends State<CartPage> {
                                 child: ListTile(
                                   leading: ClipRRect(
                                     borderRadius: BorderRadius.circular(8),
-                                    child:
-                                        item['imageUrl'] != null &&
-                                            item['imageUrl'].isNotEmpty
+                                    child: item['imageUrl'] != null && item['imageUrl'].isNotEmpty
                                         ? Image.network(
                                             item['imageUrl'],
                                             width: 55,
                                             height: 55,
                                             fit: BoxFit.cover,
-                                            errorBuilder:
-                                                (context, error, stackTrace) {
-                                                  return Container(
-                                                    width: 55,
-                                                    height: 55,
-                                                    color: AppColors.border,
-                                                    child: Icon(
-                                                      Icons.image,
-                                                      color: Colors.grey,
-                                                    ),
-                                                  );
-                                                },
+                                            errorBuilder: (context, error, stackTrace) {
+                                              return Container(
+                                                width: 55,
+                                                height: 55,
+                                                color: AppColors.border,
+                                                child: Icon(Icons.image, color: Colors.grey),
+                                              );
+                                            },
                                           )
                                         : Container(
                                             width: 55,
                                             height: 55,
                                             color: AppColors.border,
-                                            child: Icon(
-                                              Icons.image,
-                                              color: Colors.grey,
-                                            ),
+                                            child: Icon(Icons.image, color: Colors.grey),
                                           ),
                                   ),
                                   title: Text(
                                     item['name'] ?? 'Product',
-                                    style: const TextStyle(
+                                    style: TextStyle(
                                       fontWeight: FontWeight.bold,
+                                      color: AppColors.textPrimary,
                                     ),
                                   ),
                                   subtitle: Text(
@@ -180,55 +181,45 @@ class _CartPageState extends State<CartPage> {
                                     mainAxisSize: MainAxisSize.min,
                                     children: [
                                       IconButton(
-                                        icon: const Icon(Icons.remove),
+                                        icon: Icon(Icons.remove, color: AppColors.textPrimary),
                                         onPressed: () async {
                                           if (item['quantity'] > 1) {
-                                            await DatabaseService.instance
-                                                .updateCartQuantity(
-                                                  userId: userId!,
-                                                  productId: item['productId'],
-                                                  quantity:
-                                                      item['quantity'] - 1,
-                                                );
+                                            await DatabaseService.instance.updateCartQuantity(
+                                              userId: userId!,
+                                              productId: item['productId'],
+                                              quantity: item['quantity'] - 1,
+                                            );
                                           }
                                         },
                                       ),
                                       Text(
                                         item['quantity'].toString(),
-                                        style: const TextStyle(
+                                        style: TextStyle(
                                           fontWeight: FontWeight.bold,
+                                          color: AppColors.textPrimary,
                                         ),
                                       ),
                                       IconButton(
-                                        icon: const Icon(Icons.add),
+                                        icon: Icon(Icons.add, color: AppColors.textPrimary),
                                         onPressed: () async {
-                                          await DatabaseService.instance
-                                              .updateCartQuantity(
-                                                userId: userId!,
-                                                productId: item['productId'],
-                                                quantity: item['quantity'] + 1,
-                                              );
+                                          await DatabaseService.instance.updateCartQuantity(
+                                            userId: userId!,
+                                            productId: item['productId'],
+                                            quantity: item['quantity'] + 1,
+                                          );
                                         },
                                       ),
                                       IconButton(
-                                        icon: const Icon(
-                                          Icons.delete,
-                                          color: AppColors.error,
-                                        ),
+                                        icon: const Icon(Icons.delete, color: AppColors.error),
                                         onPressed: () async {
-                                          await DatabaseService.instance
-                                              .removeFromCart(
-                                                userId: userId!,
-                                                productId: item['productId'],
-                                              );
+                                          await DatabaseService.instance.removeFromCart(
+                                            userId: userId!,
+                                            productId: item['productId'],
+                                          );
 
-                                          ScaffoldMessenger.of(
-                                            context,
-                                          ).showSnackBar(
+                                          ScaffoldMessenger.of(context).showSnackBar(
                                             SnackBar(
-                                              content: Text(
-                                                'Item removed from cart',
-                                              ),
+                                              content: Text('Item removed from cart'),
                                               duration: Duration(seconds: 2),
                                             ),
                                           );
@@ -258,14 +249,14 @@ class _CartPageState extends State<CartPage> {
                           child: Column(
                             children: [
                               Row(
-                                mainAxisAlignment:
-                                    MainAxisAlignment.spaceBetween,
+                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
                                 children: [
-                                  const Text(
+                                  Text(
                                     'Total:',
                                     style: TextStyle(
                                       fontSize: 18,
                                       fontWeight: FontWeight.bold,
+                                      color: AppColors.textPrimary,
                                     ),
                                   ),
                                   Text(
@@ -287,16 +278,14 @@ class _CartPageState extends State<CartPage> {
                                   },
                                   style: ElevatedButton.styleFrom(
                                     backgroundColor: AppColors.accent,
-                                    padding: const EdgeInsets.symmetric(
-                                      vertical: 14,
-                                    ),
+                                    padding: const EdgeInsets.symmetric(vertical: 14),
                                   ),
-                                  child: const Text(
+                                  child: Text(
                                     'CHECKOUT',
                                     style: TextStyle(
                                       fontSize: 16,
                                       fontWeight: FontWeight.bold,
-                                      color: AppColors.textSecondary,
+                                      color: AppColors.primary,
                                       fontFamily: 'ADLaMDisplay',
                                     ),
                                   ),
@@ -314,7 +303,6 @@ class _CartPageState extends State<CartPage> {
     );
   }
 
-  // Helper function to get cart items with product details
   Future<List<Map<String, dynamic>>> _getCartItemsWithProducts(
     List<Map<String, dynamic>> cartItems,
   ) async {
@@ -338,7 +326,6 @@ class _CartPageState extends State<CartPage> {
     return itemsWithProducts;
   }
 
-  // Calculate total price
   int _calculateTotal(List<Map<String, dynamic>> items) {
     int total = 0;
     for (var item in items) {

@@ -21,7 +21,6 @@ class _ProductsPageState extends State<ProductsPage> {
 
   @override
   Widget build(BuildContext context) {
-    // Receive category key from CategoriesPage
     final String categoryKey =
         ModalRoute.of(context)?.settings.arguments as String? ?? '';
 
@@ -29,20 +28,28 @@ class _ProductsPageState extends State<ProductsPage> {
       backgroundColor: AppColors.background,
 
       appBar: AppBar(
-        title: Text(categoryKey.isEmpty ? 'All Products' : _formatCategoryName(categoryKey)),
+        backgroundColor: AppColors.background,
+        title: Text(
+          categoryKey.isEmpty ? 'All Products' : _formatCategoryName(categoryKey),
+          style: TextStyle(color: AppColors.textPrimary),
+        ),
         centerTitle: true,
+        iconTheme: IconThemeData(color: AppColors.textPrimary),
       ),
 
       body: FutureBuilder<List<Map<String, dynamic>>>(
         future: _getProducts(categoryKey),
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
-            return Center(child: CircularProgressIndicator());
+            return Center(child: CircularProgressIndicator(color: AppColors.accent));
           }
 
           if (snapshot.hasError) {
             return Center(
-              child: Text('Error loading products: ${snapshot.error}'),
+              child: Text(
+                'Error loading products: ${snapshot.error}',
+                style: TextStyle(color: AppColors.textPrimary),
+              ),
             );
           }
 
@@ -55,7 +62,10 @@ class _ProductsPageState extends State<ProductsPage> {
                 children: [
                   Icon(Icons.shopping_bag_outlined, size: 80, color: Colors.grey),
                   SizedBox(height: 16),
-                  Text('No products found'),
+                  Text(
+                    'No products found',
+                    style: TextStyle(color: AppColors.textPrimary),
+                  ),
                   SizedBox(height: 8),
                   Text(
                     'Products will be added soon',
@@ -93,7 +103,6 @@ class _ProductsPageState extends State<ProductsPage> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    // PRODUCT IMAGE
                     Expanded(
                       child: Container(
                         width: double.infinity,
@@ -113,26 +122,17 @@ class _ProductsPageState extends State<ProductsPage> {
                                   fit: BoxFit.cover,
                                   errorBuilder: (context, error, stackTrace) {
                                     return Center(
-                                      child: Icon(
-                                        Icons.image,
-                                        size: 60,
-                                        color: Colors.grey,
-                                      ),
+                                      child: Icon(Icons.image, size: 60, color: Colors.grey),
                                     );
                                   },
                                 ),
                               )
                             : Center(
-                                child: Icon(
-                                  Icons.image,
-                                  size: 60,
-                                  color: Colors.grey,
-                                ),
+                                child: Icon(Icons.image, size: 60, color: Colors.grey),
                               ),
                       ),
                     ),
 
-                    // PRODUCT INFO
                     Padding(
                       padding: const EdgeInsets.all(8),
                       child: Column(
@@ -142,9 +142,10 @@ class _ProductsPageState extends State<ProductsPage> {
                             product['name'] ?? 'Product',
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
-                            style: const TextStyle(
+                            style: TextStyle(
                               fontWeight: FontWeight.bold,
                               fontSize: 14,
+                              color: AppColors.textPrimary,
                             ),
                           ),
                           const SizedBox(height: 4),
@@ -158,7 +159,6 @@ class _ProductsPageState extends State<ProductsPage> {
                           ),
                           const SizedBox(height: 6),
 
-                          // ADD TO CART BUTTON
                           SizedBox(
                             width: double.infinity,
                             height: 36,
@@ -174,7 +174,7 @@ class _ProductsPageState extends State<ProductsPage> {
                                 'Add to Cart',
                                 style: TextStyle(
                                   fontSize: 12,
-                                  color: AppColors.textSecondary,
+                                  color: Colors.white,
                                 ),
                               ),
                             ),
@@ -190,26 +190,19 @@ class _ProductsPageState extends State<ProductsPage> {
         },
       ),
 
-      // Floating action button to add sample products (for testing)
       floatingActionButton: FloatingActionButton.extended(
         onPressed: () => _showAddProductDialog(),
         backgroundColor: AppColors.accent,
         icon: Icon(Icons.add, color: Colors.white),
-        label: Text(
-          'Add Sample Product',
-          style: TextStyle(color: Colors.white),
-        ),
+        label: Text('Add Sample Product', style: TextStyle(color: Colors.white)),
       ),
     );
   }
 
-  // Get products from Firestore
   Future<List<Map<String, dynamic>>> _getProducts(String categoryKey) async {
     if (categoryKey.isEmpty) {
-      // Get all products
       return await DatabaseService.instance.getAllProducts();
     } else {
-      // Get products by category - first find the category
       final categories = await DatabaseService.instance.getCategories();
       final category = categories.firstWhere(
         (cat) => cat['title'].toLowerCase() == _formatCategoryName(categoryKey).toLowerCase(),
@@ -223,7 +216,6 @@ class _ProductsPageState extends State<ProductsPage> {
     }
   }
 
-  // Add product to cart
   Future<void> _addToCart(Map<String, dynamic> product) async {
     if (userId == null) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -282,40 +274,33 @@ class _ProductsPageState extends State<ProductsPage> {
     }
   }
 
-  // Format category name from key
   String _formatCategoryName(String key) {
     if (key.isEmpty) return 'All Products';
-    
-    // Convert "men_shirts" to "Men Shirts"
-    return key
-        .split('_')
-        .map((word) => word[0].toUpperCase() + word.substring(1))
-        .join(' ');
+    return key.split('_').map((word) => word[0].toUpperCase() + word.substring(1)).join(' ');
   }
 
-  // Add sample product dialog (for testing)
   void _showAddProductDialog() async {
     final nameController = TextEditingController();
     final priceController = TextEditingController();
     final imageUrlController = TextEditingController();
-
-    // Get categories for dropdown
     final categories = await DatabaseService.instance.getCategories();
-
     String? selectedCategoryId;
 
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: Text('Add Sample Product'),
+        backgroundColor: AppColors.card,
+        title: Text('Add Sample Product', style: TextStyle(color: AppColors.textPrimary)),
         content: SingleChildScrollView(
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
               TextField(
                 controller: nameController,
+                style: TextStyle(color: AppColors.textPrimary),
                 decoration: InputDecoration(
                   labelText: 'Product Name',
+                  labelStyle: TextStyle(color: AppColors.textSecondary),
                   border: OutlineInputBorder(),
                 ),
               ),
@@ -323,36 +308,48 @@ class _ProductsPageState extends State<ProductsPage> {
               TextField(
                 controller: priceController,
                 keyboardType: TextInputType.number,
+                style: TextStyle(color: AppColors.textPrimary),
                 decoration: InputDecoration(
                   labelText: 'Price (Rs.)',
+                  labelStyle: TextStyle(color: AppColors.textSecondary),
                   border: OutlineInputBorder(),
                 ),
               ),
               SizedBox(height: 12),
               TextField(
                 controller: imageUrlController,
+                style: TextStyle(color: AppColors.textPrimary),
                 decoration: InputDecoration(
                   labelText: 'Image URL (optional)',
+                  labelStyle: TextStyle(color: AppColors.textSecondary),
                   border: OutlineInputBorder(),
                 ),
               ),
               SizedBox(height: 12),
               DropdownButtonFormField<String>(
+                dropdownColor: AppColors.card,
                 decoration: InputDecoration(
                   labelText: 'Category',
+                  labelStyle: TextStyle(color: AppColors.textSecondary),
                   border: OutlineInputBorder(),
                 ),
                 items: categories.isEmpty
                     ? [
                         DropdownMenuItem<String>(
                           value: 'none',
-                          child: Text('No categories - create one first'),
+                          child: Text(
+                            'No categories - create one first',
+                            style: TextStyle(color: AppColors.textPrimary),
+                          ),
                         )
                       ]
                     : categories.map((cat) {
                         return DropdownMenuItem<String>(
                           value: cat['id'],
-                          child: Text(cat['title']),
+                          child: Text(
+                            cat['title'],
+                            style: TextStyle(color: AppColors.textPrimary),
+                          ),
                         );
                       }).toList(),
                 onChanged: (value) {
@@ -365,12 +362,10 @@ class _ProductsPageState extends State<ProductsPage> {
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: Text('Cancel'),
+            child: Text('Cancel', style: TextStyle(color: AppColors.textPrimary)),
           ),
           ElevatedButton(
-            style: ElevatedButton.styleFrom(
-              backgroundColor: AppColors.accent,
-            ),
+            style: ElevatedButton.styleFrom(backgroundColor: AppColors.accent),
             onPressed: () async {
               if (nameController.text.isNotEmpty &&
                   priceController.text.isNotEmpty &&
@@ -394,7 +389,7 @@ class _ProductsPageState extends State<ProductsPage> {
                       backgroundColor: AppColors.success,
                     ),
                   );
-                  setState(() {}); // Refresh the page
+                  setState(() {});
                 } else {
                   ScaffoldMessenger.of(context).showSnackBar(
                     SnackBar(
@@ -412,10 +407,7 @@ class _ProductsPageState extends State<ProductsPage> {
                 );
               }
             },
-            child: Text(
-              'Add Product',
-              style: TextStyle(color: Colors.white),
-            ),
+            child: Text('Add Product', style: TextStyle(color: Colors.white)),
           ),
         ],
       ),

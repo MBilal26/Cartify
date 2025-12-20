@@ -24,10 +24,9 @@ class _ProfilePageState extends State<ProfilePage> {
     _loadUserData();
   }
 
-  // Load user data from Firebase
   Future<void> _loadUserData() async {
     userId = FirebaseAuth.instance.currentUser?.uid;
-    
+
     if (userId != null) {
       final userData = await DatabaseService.instance.getUser(userId!);
       if (userData != null) {
@@ -51,7 +50,6 @@ class _ProfilePageState extends State<ProfilePage> {
     }
   }
 
-  // ADD ADDRESS
   void _addNewAddress() async {
     if (userId == null) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -69,28 +67,27 @@ class _ProfilePageState extends State<ProfilePage> {
       context: context,
       builder: (context) => AlertDialog(
         backgroundColor: AppColors.card,
-        title: const Text(
+        title: Text(
           "Add Address",
           style: TextStyle(
             fontFamily: 'ADLaMDisplay',
-            color: AppColors.secondary,
+            color: AppColors.textPrimary,
           ),
         ),
         content: TextField(
           controller: controller,
           maxLines: 3,
-          decoration: const InputDecoration(
+          style: TextStyle(color: AppColors.textPrimary),
+          decoration: InputDecoration(
             hintText: "Enter your address",
+            hintStyle: TextStyle(color: AppColors.textSecondary),
             border: OutlineInputBorder(),
           ),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: const Text(
-              "Cancel",
-              style: TextStyle(color: AppColors.secondary),
-            ),
+            child: Text("Cancel", style: TextStyle(color: AppColors.textPrimary)),
           ),
           ElevatedButton(
             style: ElevatedButton.styleFrom(backgroundColor: AppColors.accent),
@@ -123,17 +120,13 @@ class _ProfilePageState extends State<ProfilePage> {
                 }
               }
             },
-            child: const Text(
-              "Save",
-              style: TextStyle(color: AppColors.primary),
-            ),
+            child: const Text("Save", style: TextStyle(color: Colors.white)),
           ),
         ],
       ),
     );
   }
 
-  // EDIT PROFILE
   void _editProfileDetails() async {
     if (userId == null) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -152,11 +145,11 @@ class _ProfilePageState extends State<ProfilePage> {
       context: context,
       builder: (context) => AlertDialog(
         backgroundColor: AppColors.card,
-        title: const Text(
+        title: Text(
           "Edit Profile",
           style: TextStyle(
             fontFamily: 'IrishGrover',
-            color: AppColors.secondary,
+            color: AppColors.textPrimary,
           ),
         ),
         content: Column(
@@ -164,19 +157,24 @@ class _ProfilePageState extends State<ProfilePage> {
           children: [
             TextField(
               controller: nameController,
-              decoration: const InputDecoration(
+              style: TextStyle(color: AppColors.textPrimary),
+              decoration: InputDecoration(
                 labelText: "Name",
+                labelStyle: TextStyle(color: AppColors.textSecondary),
                 border: OutlineInputBorder(),
               ),
             ),
             const SizedBox(height: 12),
             TextField(
               controller: emailController,
-              enabled: false, // Email cannot be changed in Firebase Auth easily
-              decoration: const InputDecoration(
+              enabled: false,
+              style: TextStyle(color: AppColors.textSecondary),
+              decoration: InputDecoration(
                 labelText: "Email",
+                labelStyle: TextStyle(color: AppColors.textSecondary),
                 border: OutlineInputBorder(),
                 helperText: 'Email cannot be changed',
+                helperStyle: TextStyle(color: AppColors.textSecondary),
               ),
             ),
           ],
@@ -184,10 +182,7 @@ class _ProfilePageState extends State<ProfilePage> {
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: const Text(
-              "Cancel",
-              style: TextStyle(color: AppColors.secondary),
-            ),
+            child: Text("Cancel", style: TextStyle(color: AppColors.textPrimary)),
           ),
           ElevatedButton(
             style: ElevatedButton.styleFrom(backgroundColor: AppColors.accent),
@@ -220,17 +215,13 @@ class _ProfilePageState extends State<ProfilePage> {
                 }
               }
             },
-            child: const Text(
-              "Save",
-              style: TextStyle(color: AppColors.primary),
-            ),
+            child: const Text("Save", style: TextStyle(color: Colors.white)),
           ),
         ],
       ),
     );
   }
 
-  // CHANGE PASSWORD
   void _changePassword() async {
     if (userId == null) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -250,11 +241,11 @@ class _ProfilePageState extends State<ProfilePage> {
       context: context,
       builder: (context) => AlertDialog(
         backgroundColor: AppColors.card,
-        title: const Text(
+        title: Text(
           "Change Password",
           style: TextStyle(
             fontFamily: 'IrishGrover',
-            color: AppColors.secondary,
+            color: AppColors.textPrimary,
           ),
           textAlign: TextAlign.center,
         ),
@@ -264,8 +255,10 @@ class _ProfilePageState extends State<ProfilePage> {
             TextField(
               controller: currentController,
               obscureText: true,
-              decoration: const InputDecoration(
+              style: TextStyle(color: AppColors.textPrimary),
+              decoration: InputDecoration(
                 labelText: "Current Password",
+                labelStyle: TextStyle(color: AppColors.textSecondary),
                 border: OutlineInputBorder(),
               ),
             ),
@@ -273,8 +266,10 @@ class _ProfilePageState extends State<ProfilePage> {
             TextField(
               controller: newController,
               obscureText: true,
-              decoration: const InputDecoration(
+              style: TextStyle(color: AppColors.textPrimary),
+              decoration: InputDecoration(
                 labelText: "New Password",
+                labelStyle: TextStyle(color: AppColors.textSecondary),
                 border: OutlineInputBorder(),
               ),
             ),
@@ -282,8 +277,10 @@ class _ProfilePageState extends State<ProfilePage> {
             TextField(
               controller: confirmController,
               obscureText: true,
-              decoration: const InputDecoration(
+              style: TextStyle(color: AppColors.textPrimary),
+              decoration: InputDecoration(
                 labelText: "Confirm New Password",
+                labelStyle: TextStyle(color: AppColors.textSecondary),
                 border: OutlineInputBorder(),
               ),
             ),
@@ -293,9 +290,7 @@ class _ProfilePageState extends State<ProfilePage> {
                 Navigator.pop(context);
                 Navigator.push(
                   context,
-                  MaterialPageRoute(
-                    builder: (_) => const ForgotPasswordScreen(),
-                  ),
+                  MaterialPageRoute(builder: (_) => const ForgotPasswordScreen()),
                 );
               },
               child: const Text(
@@ -311,10 +306,7 @@ class _ProfilePageState extends State<ProfilePage> {
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: const Text(
-              "Cancel",
-              style: TextStyle(color: AppColors.secondary),
-            ),
+            child: Text("Cancel", style: TextStyle(color: AppColors.textPrimary)),
           ),
           ElevatedButton(
             style: ElevatedButton.styleFrom(backgroundColor: AppColors.accent),
@@ -340,7 +332,6 @@ class _ProfilePageState extends State<ProfilePage> {
               }
 
               try {
-                // Re-authenticate user
                 final user = FirebaseAuth.instance.currentUser;
                 final credential = EmailAuthProvider.credential(
                   email: userEmail,
@@ -348,11 +339,7 @@ class _ProfilePageState extends State<ProfilePage> {
                 );
 
                 await user!.reauthenticateWithCredential(credential);
-
-                // Update password
                 await user.updatePassword(newController.text);
-
-                // Update in Firestore
                 await DatabaseService.instance.updateUser(
                   uid: userId!,
                   password: newController.text,
@@ -382,7 +369,7 @@ class _ProfilePageState extends State<ProfilePage> {
               "Update",
               style: TextStyle(
                 fontFamily: 'ADLaMDisplay',
-                color: AppColors.primary,
+                color: Colors.white,
               ),
             ),
           ),
@@ -391,25 +378,26 @@ class _ProfilePageState extends State<ProfilePage> {
     );
   }
 
-  // LOGOUT
   Future<void> _logout() async {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: Text('Logout'),
-        content: Text('Are you sure you want to logout?'),
+        backgroundColor: AppColors.card,
+        title: Text('Logout', style: TextStyle(color: AppColors.textPrimary)),
+        content: Text(
+          'Are you sure you want to logout?',
+          style: TextStyle(color: AppColors.textPrimary),
+        ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: Text('Cancel'),
+            child: Text('Cancel', style: TextStyle(color: AppColors.textPrimary)),
           ),
           ElevatedButton(
-            style: ElevatedButton.styleFrom(
-              backgroundColor: AppColors.error,
-            ),
+            style: ElevatedButton.styleFrom(backgroundColor: AppColors.error),
             onPressed: () async {
               await FirebaseAuth.instance.signOut();
-              Navigator.pop(context); // Close dialog
+              Navigator.pop(context);
               Navigator.pushReplacementNamed(context, '/login');
             },
             child: Text('Logout', style: TextStyle(color: Colors.white)),
@@ -419,7 +407,6 @@ class _ProfilePageState extends State<ProfilePage> {
     );
   }
 
-  // UI
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -429,38 +416,31 @@ class _ProfilePageState extends State<ProfilePage> {
         backgroundColor: Colors.transparent,
         elevation: 0,
         leading: IconButton(
-          icon: const Icon(Icons.chevron_left, size: 42),
-          color: AppColors.secondary,
+          icon: Icon(Icons.chevron_left, size: 42, color: AppColors.secondary),
           onPressed: () => Navigator.pop(context),
         ),
       ),
       body: _isLoading
-          ? Center(child: CircularProgressIndicator())
+          ? Center(child: CircularProgressIndicator(color: AppColors.accent))
           : SingleChildScrollView(
               child: Column(
                 children: [
                   Container(
                     height: 260,
                     width: double.infinity,
-                    decoration: const BoxDecoration(
-                      gradient: AppGradients.splashBackground,
-                    ),
+                    decoration: BoxDecoration(gradient: AppGradients.splashBackground),
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        const CircleAvatar(
+                        CircleAvatar(
                           radius: 45,
                           backgroundColor: Colors.white,
-                          child: Icon(
-                            Icons.person,
-                            size: 50,
-                            color: AppColors.secondary,
-                          ),
+                          child: Icon(Icons.person, size: 50, color: AppColors.secondary),
                         ),
                         const SizedBox(height: 10),
                         Text(
                           userName,
-                          style: const TextStyle(
+                          style: TextStyle(
                             fontFamily: 'IrishGrover',
                             fontSize: 24,
                             color: AppColors.secondary,
@@ -469,7 +449,7 @@ class _ProfilePageState extends State<ProfilePage> {
                         const SizedBox(height: 4),
                         Text(
                           userEmail,
-                          style: const TextStyle(
+                          style: TextStyle(
                             fontFamily: 'ADLaMDisplay',
                             color: AppColors.secondary,
                           ),
@@ -485,6 +465,7 @@ class _ProfilePageState extends State<ProfilePage> {
                     child: Container(
                       padding: const EdgeInsets.all(20),
                       decoration: BoxDecoration(
+                        color: AppColors.card,
                         borderRadius: BorderRadius.circular(16),
                         border: Border.all(color: AppColors.border),
                       ),
@@ -495,9 +476,9 @@ class _ProfilePageState extends State<ProfilePage> {
                           Expanded(
                             child: Text(
                               userAddress ?? "No address added yet",
-                              style: const TextStyle(
+                              style: TextStyle(
                                 fontFamily: 'ADLaMDisplay',
-                                color: AppColors.secondary,
+                                color: AppColors.textPrimary,
                               ),
                             ),
                           ),
@@ -515,54 +496,22 @@ class _ProfilePageState extends State<ProfilePage> {
 
                     const SizedBox(height: 40),
 
-                    SizedBox(
-                      width: 120,
-                      height: 40,
-                      child: ElevatedButton(
-                        onPressed: _logout,
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: AppColors.secondary,
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(24),
-                          ),
-                        ),
-                        child: const Text(
-                          "Logout",
-                          style: TextStyle(
-                            fontFamily: 'ADLaMDisplay',
-                            fontSize: 18,
-                            color: AppColors.error,
-                          ),
-                        ),
-                      ),
+                    _authPillButton(
+                      text: "Logout",
+                      icon: Icons.logout,
+                      backgroundColor: AppColors.error,
+                      textColor: Colors.white,
+                      onTap: _logout,
                     ),
                   ] else ...[
-                    const SizedBox(height: 20),
-                    Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 24),
-                      child: SizedBox(
-                        width: double.infinity,
-                        height: 50,
-                        child: ElevatedButton(
-                          onPressed: () {
-                            Navigator.pushNamed(context, '/login');
-                          },
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: AppColors.accent,
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(16),
-                            ),
-                          ),
-                          child: const Text(
-                            "Login",
-                            style: TextStyle(
-                              fontFamily: 'ADLaMDisplay',
-                              fontSize: 20,
-                              color: AppColors.textSecondary,
-                            ),
-                          ),
-                        ),
-                      ),
+                    _authPillButton(
+                      text: "Login",
+                      icon: Icons.login,
+                      backgroundColor: AppColors.success,
+                      textColor: Colors.white,
+                      onTap: () {
+                        Navigator.pushNamed(context, '/login');
+                      },
                     ),
                   ],
 
@@ -592,11 +541,43 @@ class _ProfilePageState extends State<ProfilePage> {
             style: const TextStyle(
               fontFamily: 'ADLaMDisplay',
               fontSize: 18,
-              color: AppColors.primary,
+              color: Colors.white,
             ),
           ),
         ),
       ),
     );
   }
+}
+
+Widget _authPillButton({
+  required String text,
+  required IconData icon,
+  required Color backgroundColor,
+  required Color textColor,
+  required VoidCallback onTap,
+}) {
+  return SizedBox(
+    width: 150,
+    height: 44,
+    child: ElevatedButton.icon(
+      onPressed: onTap,
+      icon: Icon(icon, color: textColor),
+      label: Text(
+        text,
+        style: TextStyle(
+          fontFamily: 'ADLaMDisplay',
+          fontSize: 16,
+          color: textColor,
+        ),
+      ),
+      style: ElevatedButton.styleFrom(
+        backgroundColor: backgroundColor,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(30),
+        ),
+        elevation: 3,
+      ),
+    ),
+  );
 }

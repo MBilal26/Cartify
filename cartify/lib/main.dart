@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'firebase_options.dart';
 import 'login_and_signup.dart';
 import 'colors.dart';
@@ -8,13 +9,11 @@ import 'cart.dart';
 import 'categories.dart';
 import 'rewards.dart';
 import 'checkout.dart';
-import 'products.dart';
+import 'product.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  await Firebase.initializeApp(
-    options: DefaultFirebaseOptions.currentPlatform,
-  );
+  await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
   runApp(const MainApp());
 }
 
@@ -81,6 +80,7 @@ class _HomeScreenState extends State<HomeScreen> {
       backgroundColor: AppColors.background,
 
       drawer: Drawer(
+        backgroundColor: AppColors.background,
         child: ListView(
           padding: EdgeInsets.zero,
           children: [
@@ -106,7 +106,10 @@ class _HomeScreenState extends State<HomeScreen> {
 
             ListTile(
               leading: Icon(Icons.shopping_bag, color: AppColors.accent),
-              title: Text('Products'),
+              title: Text(
+                'Products',
+                style: TextStyle(fontSize: 16, color: AppColors.textPrimary),
+              ),
               onTap: () {
                 Navigator.pop(context);
               },
@@ -120,7 +123,8 @@ class _HomeScreenState extends State<HomeScreen> {
               ),
               children: [
                 ExpansionTile(
-                  title: Text('Men'),
+                  title: Text('Men',
+                style: TextStyle(fontSize: 16, color: AppColors.textPrimary)),
                   children: const [
                     ListTile(title: Text('Shirts')),
                     ListTile(title: Text('Jeans')),
@@ -142,19 +146,35 @@ class _HomeScreenState extends State<HomeScreen> {
               ],
             ),
 
+            // Dark Mode Toggle
             ListTile(
-              leading: Icon(Icons.settings, color: AppColors.accent),
-              title: Text('Settings'),
-              onTap: () {
-                Navigator.pop(context);
-              },
+              leading: Icon(
+                AppColors.isDarkMode ? Icons.dark_mode : Icons.light_mode,
+                color: AppColors.accent,
+              ),
+              title: Text(
+                'Dark Mode',
+                style: TextStyle(fontSize: 16, color: AppColors.textPrimary),
+              ),
+              trailing: Switch(
+                value: AppColors.isDarkMode,
+                onChanged: (value) {
+                  setState(() {
+                    AppColors.toggleTheme();
+                  });
+                },
+                activeColor: AppColors.accent,
+              ),
             ),
 
             Divider(),
 
             ListTile(
               leading: Icon(Icons.info_outline, color: AppColors.accent),
-              title: Text('About Us'),
+              title: Text(
+                'About Us',
+                style: TextStyle(fontSize: 16, color: AppColors.textPrimary),
+              ),
               onTap: () {
                 Navigator.pop(context);
               },
@@ -165,7 +185,10 @@ class _HomeScreenState extends State<HomeScreen> {
                 Icons.privacy_tip_outlined,
                 color: AppColors.accent,
               ),
-              title: Text('Privacy Policy'),
+              title: Text(
+                'Privacy Policy',
+                style: TextStyle(fontSize: 16, color: AppColors.textPrimary),
+              ),
               onTap: () {
                 Navigator.pop(context);
               },
@@ -213,7 +236,15 @@ class _HomeScreenState extends State<HomeScreen> {
             child: IconButton(
               icon: Icon(Icons.person_2_outlined, color: AppColors.secondary),
               onPressed: () {
-                Navigator.pushNamed(context, '/login');
+                final user = FirebaseAuth.instance.currentUser;
+
+                if (user == null) {
+                  // User NOT logged in → go to login
+                  Navigator.pushNamed(context, '/login');
+                } else {
+                  // User logged in → go to profile
+                  Navigator.pushNamed(context, '/profile');
+                }
               },
             ),
           ),
@@ -385,7 +416,7 @@ class _HomeScreenState extends State<HomeScreen> {
         ),
       ),
 
-      // __Botom Navigation Bar
+      // __Bottom Navigation Bar
       bottomNavigationBar: Container(
         decoration: BoxDecoration(
           color: AppColors.card,
@@ -436,7 +467,7 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 }
 
-//helper_funcitons
+//helper_functions
 class BannerImage extends StatelessWidget {
   final String image;
   const BannerImage({super.key, required this.image});
