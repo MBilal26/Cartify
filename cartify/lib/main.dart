@@ -1,11 +1,24 @@
 import 'package:flutter/material.dart';
-import 'loginandsignup.dart';
+import 'package:firebase_core/firebase_core.dart';
+import 'firebase_options.dart';
+import 'login_and_signup.dart';
 import 'colors.dart';
+import 'profile.dart';
+import 'cart.dart';
+import 'categories.dart';
+import 'rewards.dart';
+import 'checkout.dart';
+import 'products.dart';
 
-void main() {
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  await Firebase.initializeApp(
+    options: DefaultFirebaseOptions.currentPlatform,
+  );
   runApp(const MainApp());
 }
 
+// __Main App with routes to every pages
 class MainApp extends StatelessWidget {
   const MainApp({super.key});
 
@@ -28,6 +41,22 @@ class MainApp extends StatelessWidget {
                 return FadeTransition(opacity: animation, child: child);
               },
             );
+          case '/login':
+            return MaterialPageRoute(builder: (_) => LoginScreen());
+          case '/signup':
+            return MaterialPageRoute(builder: (_) => SignUpScreen());
+          case '/profile':
+            return MaterialPageRoute(builder: (_) => ProfilePage());
+          case '/category':
+            return MaterialPageRoute(builder: (_) => CategoriesPage());
+          case '/products':
+            return MaterialPageRoute(builder: (_) => ProductsPage());
+          case '/cart':
+            return MaterialPageRoute(builder: (_) => CartPage());
+          case '/rewards':
+            return MaterialPageRoute(builder: (_) => RewardsPage());
+          case '/checkout':
+            return MaterialPageRoute(builder: (_) => CheckoutPage());
         }
         return null;
       },
@@ -35,6 +64,7 @@ class MainApp extends StatelessWidget {
   }
 }
 
+// 2.__Home Screen with AppBar, Search Bar, Banners, Categories, Products Grid, and Bottom Navigation Bar & Login Navigation
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
 
@@ -50,35 +80,142 @@ class _HomeScreenState extends State<HomeScreen> {
     return Scaffold(
       backgroundColor: AppColors.background,
 
+      drawer: Drawer(
+        child: ListView(
+          padding: EdgeInsets.zero,
+          children: [
+            DrawerHeader(
+              decoration: BoxDecoration(color: AppColors.accent),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.center,
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Image.asset('assets/images/white-logo.png', height: 45),
+                  const SizedBox(height: 10),
+                  Text(
+                    'CARTIFY',
+                    style: TextStyle(
+                      fontFamily: 'IrishGrover',
+                      fontSize: 22,
+                      color: AppColors.primary,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+
+            ListTile(
+              leading: Icon(Icons.shopping_bag, color: AppColors.accent),
+              title: Text('Products'),
+              onTap: () {
+                Navigator.pop(context);
+              },
+            ),
+
+            ExpansionTile(
+              leading: Icon(Icons.checkroom, color: AppColors.accent),
+              title: Text(
+                'Categories',
+                style: TextStyle(fontSize: 16, color: AppColors.textPrimary),
+              ),
+              children: [
+                ExpansionTile(
+                  title: Text('Men'),
+                  children: const [
+                    ListTile(title: Text('Shirts')),
+                    ListTile(title: Text('Jeans')),
+                    ListTile(title: Text('Eyewear')),
+                    ListTile(title: Text('Accessories')),
+                    ListTile(title: Text('Footwear')),
+                  ],
+                ),
+                ExpansionTile(
+                  title: Text('Women'),
+                  children: const [
+                    ListTile(title: Text('Dresses')),
+                    ListTile(title: Text('Jeans')),
+                    ListTile(title: Text('Eyewear')),
+                    ListTile(title: Text('Accessories')),
+                    ListTile(title: Text('Footwear')),
+                  ],
+                ),
+              ],
+            ),
+
+            ListTile(
+              leading: Icon(Icons.settings, color: AppColors.accent),
+              title: Text('Settings'),
+              onTap: () {
+                Navigator.pop(context);
+              },
+            ),
+
+            Divider(),
+
+            ListTile(
+              leading: Icon(Icons.info_outline, color: AppColors.accent),
+              title: Text('About Us'),
+              onTap: () {
+                Navigator.pop(context);
+              },
+            ),
+
+            ListTile(
+              leading: Icon(
+                Icons.privacy_tip_outlined,
+                color: AppColors.accent,
+              ),
+              title: Text('Privacy Policy'),
+              onTap: () {
+                Navigator.pop(context);
+              },
+            ),
+          ],
+        ),
+      ),
+
+      // APP BAR
       appBar: AppBar(
-        elevation: 0,
+        elevation: 2,
         flexibleSpace: Container(
-          decoration: BoxDecoration(
-            gradient:
-                AppGradients.splashBackground, 
+          decoration: BoxDecoration(gradient: AppGradients.splashBackground),
+        ),
+
+        leading: Builder(
+          builder: (context) => IconButton(
+            icon: Icon(Icons.menu, color: AppColors.secondary),
+            onPressed: () {
+              Scaffold.of(context).openDrawer();
+            },
           ),
         ),
+
         title: Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Image.asset('assets/images/black-logo.png', height: 30),
-            SizedBox(width: 8),
+            Image.asset('assets/images/black-logo.png', height: 40),
             Text(
-              'CARTIFY',
+              ' CARTIFY',
               style: TextStyle(
+                fontFamily: 'IrishGrover',
                 fontSize: 20,
                 fontWeight: FontWeight.bold,
-                color: AppColors.secondary,
+                color: AppColors.textPrimary,
               ),
             ),
           ],
         ),
         centerTitle: true,
-        leading: Icon(Icons.menu, color: AppColors.secondary),
+
         actions: [
           Padding(
             padding: const EdgeInsets.only(right: 10),
-            child: Icon(Icons.person_outline, color: AppColors.secondary),
+            child: IconButton(
+              icon: Icon(Icons.person_2_outlined, color: AppColors.secondary),
+              onPressed: () {
+                Navigator.pushNamed(context, '/login');
+              },
+            ),
           ),
         ],
       ),
@@ -87,6 +224,7 @@ class _HomeScreenState extends State<HomeScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
+            // Search
             Padding(
               padding: const EdgeInsets.all(16.0),
               child: Container(
@@ -114,17 +252,24 @@ class _HomeScreenState extends State<HomeScreen> {
               ),
             ),
 
-            Container(
+            // Banner Image Slider
+            SizedBox(
               height: 180,
-              color: AppColors.border,
-              alignment: Alignment.center,
-              child: Text(
-                "Banner Image Slider",
-                style: TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.bold,
-                  color: AppColors.textPrimary,
-                ),
+              child: PageView(
+                children: const [
+                  BannerImage(
+                    image:
+                        'https://images.unsplash.com/photo-1521334884684-d80222895322',
+                  ),
+                  BannerImage(
+                    image:
+                        'https://images.unsplash.com/photo-1445205170230-053b83016050',
+                  ),
+                  BannerImage(
+                    image:
+                        'https://images.unsplash.com/photo-1512436991641-6745cdb1723f',
+                  ),
+                ],
               ),
             ),
 
@@ -144,28 +289,50 @@ class _HomeScreenState extends State<HomeScreen> {
               ),
             ),
 
-            Container(
+            // Popular Categories Row
+            SizedBox(
               height: 120,
-              color: AppColors.border,
-              alignment: Alignment.center,
-              child: Text(
-                "Popular Categories Row",
-                style: TextStyle(fontSize: 16, color: AppColors.textSecondary),
+              child: ListView(
+                scrollDirection: Axis.horizontal,
+                padding: EdgeInsets.symmetric(horizontal: 16),
+                children: const [
+                  CategoryCard(
+                    title: 'Men',
+                    image:
+                        'https://images.unsplash.com/photo-1521341057461-6eb5f40b07ab',
+                  ),
+                  CategoryCard(
+                    title: 'Women',
+                    image:
+                        'https://images.unsplash.com/photo-1483985988355-763728e1935b',
+                  ),
+                  CategoryCard(
+                    title: 'Shoes',
+                    image:
+                        'https://images.unsplash.com/photo-1542291026-7eec264c27ff',
+                  ),
+                  CategoryCard(
+                    title: 'Accessories',
+                    image:
+                        'https://images.unsplash.com/photo-1519744792095-2f2205e87b6f',
+                  ),
+                ],
               ),
             ),
 
             SizedBox(height: 15),
 
+            // Deals Banner
             Container(
               height: 150,
-              color: AppColors.border,
-              alignment: Alignment.center,
-              child: Text(
-                "Deals Banner",
-                style: TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.bold,
-                  color: AppColors.textPrimary,
+              margin: EdgeInsets.symmetric(horizontal: 16),
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(12),
+                image: DecorationImage(
+                  image: NetworkImage(
+                    'https://images.unsplash.com/photo-1602810319428-019690571b5b',
+                  ),
+                  fit: BoxFit.cover,
                 ),
               ),
             ),
@@ -186,6 +353,7 @@ class _HomeScreenState extends State<HomeScreen> {
               ),
             ),
 
+            // Products Grid
             Padding(
               padding: const EdgeInsets.all(16.0),
               child: GridView.builder(
@@ -193,7 +361,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 physics: NeverScrollableScrollPhysics(),
                 itemCount: 6,
                 gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                  crossAxisCount: 2, // 2 columns
+                  crossAxisCount: 2,
                   crossAxisSpacing: 10,
                   mainAxisSpacing: 10,
                   childAspectRatio: 0.75,
@@ -201,14 +369,13 @@ class _HomeScreenState extends State<HomeScreen> {
                 itemBuilder: (context, index) {
                   return Container(
                     decoration: BoxDecoration(
-                      color: AppColors.card,
-                      border: Border.all(color: AppColors.border),
                       borderRadius: BorderRadius.circular(10),
-                    ),
-                    alignment: Alignment.center,
-                    child: Text(
-                      "Product ${index + 1}",
-                      style: TextStyle(color: AppColors.textPrimary),
+                      image: DecorationImage(
+                        image: NetworkImage(
+                          'https://images.unsplash.com/photo-1520975916090-3105956dac38',
+                        ),
+                        fit: BoxFit.cover,
+                      ),
                     ),
                   );
                 },
@@ -218,6 +385,7 @@ class _HomeScreenState extends State<HomeScreen> {
         ),
       ),
 
+      // __Botom Navigation Bar
       bottomNavigationBar: Container(
         decoration: BoxDecoration(
           color: AppColors.card,
@@ -227,16 +395,24 @@ class _HomeScreenState extends State<HomeScreen> {
           ],
         ),
         child: ClipRRect(
-          borderRadius: BorderRadius.vertical(top: Radius.circular(25)),
+          borderRadius: BorderRadius.vertical(top: Radius.circular(15)),
           child: BottomNavigationBar(
-            backgroundColor: AppColors.card,
             currentIndex: _currentIndex,
             selectedItemColor: AppColors.accent,
-            unselectedItemColor: AppColors.textSecondary,
+            unselectedItemColor: AppColors.textPrimary,
             onTap: (index) {
               setState(() {
                 _currentIndex = index;
               });
+              if (index == 0) {
+                Navigator.pushNamed(context, '/home');
+              } else if (index == 1) {
+                Navigator.pushNamed(context, '/category');
+              } else if (index == 2) {
+                Navigator.pushNamed(context, '/cart');
+              } else if (index == 3) {
+                Navigator.pushNamed(context, '/rewards');
+              }
             },
             items: [
               BottomNavigationBarItem(icon: Icon(Icons.home), label: "Home"),
@@ -249,11 +425,60 @@ class _HomeScreenState extends State<HomeScreen> {
                 label: "Cart",
               ),
               BottomNavigationBarItem(
-                icon: Icon(Icons.person),
-                label: "Profile",
+                icon: Icon(Icons.redeem),
+                label: "Rewards",
               ),
             ],
           ),
+        ),
+      ),
+    );
+  }
+}
+
+//helper_funcitons
+class BannerImage extends StatelessWidget {
+  final String image;
+  const BannerImage({super.key, required this.image});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      margin: const EdgeInsets.symmetric(horizontal: 8),
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(12),
+        image: DecorationImage(image: NetworkImage(image), fit: BoxFit.cover),
+      ),
+    );
+  }
+}
+
+class CategoryCard extends StatelessWidget {
+  final String title;
+  final String image;
+  const CategoryCard({super.key, required this.title, required this.image});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: 100,
+      margin: EdgeInsets.only(right: 12),
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(12),
+        image: DecorationImage(image: NetworkImage(image), fit: BoxFit.cover),
+      ),
+      alignment: Alignment.bottomCenter,
+      child: Container(
+        width: double.infinity,
+        padding: EdgeInsets.all(6),
+        decoration: BoxDecoration(
+          color: Colors.black54,
+          borderRadius: BorderRadius.vertical(bottom: Radius.circular(12)),
+        ),
+        child: Text(
+          title,
+          textAlign: TextAlign.center,
+          style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
         ),
       ),
     );

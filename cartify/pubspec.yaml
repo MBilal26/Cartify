@@ -1,5 +1,5 @@
-name: cartify
-description: "A new Flutter project."
+name: Cartify
+description: "A stylish, and user-friendly e-commerce mobile application."
 publish_to: 'none'
 version: 0.1.0
 
@@ -10,13 +10,41 @@ dependencies:
   flutter:
     sdk: flutter
 
+  firebase_core: ^3.6.0
+  firebase_auth: ^5.3.1
+  cloud_firestore: ^5.4.4
+
+dependency_overrides:
+  firebase_auth_web: ^5.13.2
+  web: ^1.1.0
+
 dev_dependencies:
   flutter_test:
     sdk: flutter
-  flutter_lints: ^5.0.0
+  flutter_launcher_icons: ^0.13.1
+
+flutter_launcher_icons:
+  android: true
+  ios: true
+  image_path: assets/icons/cartify_icon.png
+
 
 flutter:
   uses-material-design: true
+
+  fonts:
+    - family: BBHBogle
+      fonts:
+        - asset: assets/fonts/BBHBogle-Regular.ttf
+          weight: 400
+
+    - family: IrishGrover
+      fonts:
+        - asset: assets/fonts/IrishGrover-Regular.ttf
+
+    - family: ADLaMDisplay
+      fonts:
+        - asset: assets/fonts/ADLaMDisplay-Regular.ttf
 
   assets:
     - assets/images/
