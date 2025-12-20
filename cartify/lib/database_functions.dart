@@ -1,17 +1,22 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_storage/firebase_storage.dart'; // NEW IMPORT for Firebase Storage
+import 'dart:io'; // NEW IMPORT for File handling
 
 /// Singleton service class for all Firebase Firestore operations
 /// Usage: DatabaseService.instance.functionName()
 class DatabaseService {
   // Private constructor for singleton pattern
   DatabaseService._();
-  
+
   // Singleton instance
   static final DatabaseService instance = DatabaseService._();
-  
+
   // Firestore instance
   final FirebaseFirestore _db = FirebaseFirestore.instance;
-  
+
+  // NEW: Firebase Storage instance
+  final FirebaseStorage _storage = FirebaseStorage.instance;
+
   // Collection references
   final String _usersCollection = 'users';
   final String _categoriesCollection = 'categories';
@@ -19,11 +24,48 @@ class DatabaseService {
   final String _cartCollection = 'cart';
   final String _ordersCollection = 'orders';
   final String _rewardsCollection = 'rewards';
-  
+
+  // ============================================================================
+  // NEW: FIREBASE STORAGE FUNCTIONS (For uploading product images)
+  // ============================================================================
+
+  /// Upload image to Firebase Storage and return download URL
+  /// Example: String? imageUrl = await DatabaseService.instance.uploadProductImage(imageFile, 'product_123.jpg');
+  Future<String?> uploadProductImage(File imageFile, String fileName) async {
+    try {
+      // Create reference to Firebase Storage location
+      final storageRef = _storage.ref().child('products/$fileName');
+
+      // Upload file
+      final uploadTask = await storageRef.putFile(imageFile);
+
+      // Get download URL
+      final downloadUrl = await uploadTask.ref.getDownloadURL();
+
+      return downloadUrl;
+    } catch (e) {
+      print('Error uploading image: $e');
+      return null;
+    }
+  }
+
+  /// Delete image from Firebase Storage
+  /// Example: await DatabaseService.instance.deleteProductImage('product_123.jpg');
+  Future<bool> deleteProductImage(String imageUrl) async {
+    try {
+      final storageRef = _storage.refFromURL(imageUrl);
+      await storageRef.delete();
+      return true;
+    } catch (e) {
+      print('Error deleting image: $e');
+      return false;
+    }
+  }
+
   // ============================================================================
   // USERS COLLECTION
   // ============================================================================
-  
+
   /// Create a new user document
   /// Example: await DatabaseService.instance.createUser('uid123', 'John Doe', 'john@example.com', 'hashedPassword', '123 Main St');
   Future<bool> createUser({
@@ -48,7 +90,7 @@ class DatabaseService {
       return false;
     }
   }
-  
+
   /// Get user data by UID
   /// Example: Map<String, dynamic>? user = await DatabaseService.instance.getUser('uid123');
   Future<Map<String, dynamic>?> getUser(String uid) async {
@@ -63,7 +105,7 @@ class DatabaseService {
       return null;
     }
   }
-  
+
   /// Update user information
   /// Example: await DatabaseService.instance.updateUser('uid123', name: 'Jane Doe', address: '456 Oak Ave');
   Future<bool> updateUser({
@@ -79,7 +121,7 @@ class DatabaseService {
       if (email != null) updates['email'] = email;
       if (password != null) updates['password'] = password;
       if (address != null) updates['address'] = address;
-      
+
       if (updates.isNotEmpty) {
         updates['updatedAt'] = FieldValue.serverTimestamp();
         await _db.collection(_usersCollection).doc(uid).update(updates);
@@ -90,11 +132,11 @@ class DatabaseService {
       return false;
     }
   }
-  
+
   // ============================================================================
   // CATEGORIES COLLECTION
   // ============================================================================
-  
+
   /// Add a new category
   /// Example: await DatabaseService.instance.addCategory('Men', parentCategory: null);
   Future<String?> addCategory({
@@ -113,7 +155,7 @@ class DatabaseService {
       return null;
     }
   }
-  
+
   /// Get all categories
   /// Example: List<Map<String, dynamic>> categories = await DatabaseService.instance.getCategories();
   Future<List<Map<String, dynamic>>> getCategories() async {
@@ -129,7 +171,7 @@ class DatabaseService {
       return [];
     }
   }
-  
+
   /// Get categories by parent (for nested categories)
   /// Example: List<Map<String, dynamic>> menCategories = await DatabaseService.instance.getCategoriesByParent('Men');
   Future<List<Map<String, dynamic>>> getCategoriesByParent(String? parentCategory) async {
@@ -148,11 +190,11 @@ class DatabaseService {
       return [];
     }
   }
-  
+
   // ============================================================================
   // PRODUCTS COLLECTION
   // ============================================================================
-  
+
   /// Add a new product
   /// Example: await DatabaseService.instance.addProduct('Blue Jeans', 3999, 'cat_123', 'https://image.url');
   Future<String?> addProduct({
@@ -160,6 +202,7 @@ class DatabaseService {
     required int price,
     required String categoryId,
     String? imageUrl,
+    String? description, // NEW: Added description field
   }) async {
     try {
       final docRef = await _db.collection(_productsCollection).add({
@@ -167,6 +210,7 @@ class DatabaseService {
         'price': price,
         'categoryId': categoryId,
         'imageUrl': imageUrl,
+        'description': description, // NEW
         'createdAt': FieldValue.serverTimestamp(),
       });
       return docRef.id;
@@ -175,7 +219,48 @@ class DatabaseService {
       return null;
     }
   }
-  
+
+  /// NEW: Update existing product
+  /// Example: await DatabaseService.instance.updateProduct('prod_123', name: 'Updated Name', price: 4999);
+  Future<bool> updateProduct({
+    required String productId,
+    String? name,
+    int? price,
+    String? categoryId,
+    String? imageUrl,
+    String? description,
+  }) async {
+    try {
+      Map<String, dynamic> updates = {};
+      if (name != null) updates['name'] = name;
+      if (price != null) updates['price'] = price;
+      if (categoryId != null) updates['categoryId'] = categoryId;
+      if (imageUrl != null) updates['imageUrl'] = imageUrl;
+      if (description != null) updates['description'] = description;
+
+      if (updates.isNotEmpty) {
+        updates['updatedAt'] = FieldValue.serverTimestamp();
+        await _db.collection(_productsCollection).doc(productId).update(updates);
+      }
+      return true;
+    } catch (e) {
+      print('Error updating product: $e');
+      return false;
+    }
+  }
+
+  /// NEW: Delete product
+  /// Example: await DatabaseService.instance.deleteProduct('prod_123');
+  Future<bool> deleteProduct(String productId) async {
+    try {
+      await _db.collection(_productsCollection).doc(productId).delete();
+      return true;
+    } catch (e) {
+      print('Error deleting product: $e');
+      return false;
+    }
+  }
+
   /// Get products by category
   /// Example: List<Map<String, dynamic>> products = await DatabaseService.instance.getProductsByCategory('cat_123');
   Future<List<Map<String, dynamic>>> getProductsByCategory(String categoryId) async {
@@ -194,7 +279,7 @@ class DatabaseService {
       return [];
     }
   }
-  
+
   /// Get all products
   /// Example: List<Map<String, dynamic>> allProducts = await DatabaseService.instance.getAllProducts();
   Future<List<Map<String, dynamic>>> getAllProducts() async {
@@ -210,7 +295,7 @@ class DatabaseService {
       return [];
     }
   }
-  
+
   /// Get single product by ID
   /// Example: Map<String, dynamic>? product = await DatabaseService.instance.getProduct('prod_123');
   Future<Map<String, dynamic>?> getProduct(String productId) async {
@@ -227,11 +312,11 @@ class DatabaseService {
       return null;
     }
   }
-  
+
   // ============================================================================
   // CART COLLECTION
   // ============================================================================
-  
+
   /// Add item to cart (or update quantity if already exists)
   /// Example: await DatabaseService.instance.addToCart('user123', 'prod_456', 2);
   Future<bool> addToCart({
@@ -253,7 +338,7 @@ class DatabaseService {
       return false;
     }
   }
-  
+
   /// Get all cart items for a user
   /// Example: List<Map<String, dynamic>> cartItems = await DatabaseService.instance.getCartItems('user123');
   Future<List<Map<String, dynamic>>> getCartItems(String userId) async {
@@ -272,7 +357,7 @@ class DatabaseService {
       return [];
     }
   }
-  
+
   /// Get cart items with real-time updates (Stream)
   /// Example: StreamBuilder(stream: DatabaseService.instance.getCartItemsStream('user123'), ...)
   Stream<List<Map<String, dynamic>>> getCartItemsStream(String userId) {
@@ -281,12 +366,12 @@ class DatabaseService {
         .where('userId', isEqualTo: userId)
         .snapshots()
         .map((snapshot) => snapshot.docs.map((doc) {
-              final data = doc.data();
-              data['id'] = doc.id;
-              return data;
-            }).toList());
+      final data = doc.data();
+      data['id'] = doc.id;
+      return data;
+    }).toList());
   }
-  
+
   /// Update cart item quantity
   /// Example: await DatabaseService.instance.updateCartQuantity('user123', 'prod_456', 5);
   Future<bool> updateCartQuantity({
@@ -309,7 +394,7 @@ class DatabaseService {
       return false;
     }
   }
-  
+
   /// Remove item from cart
   /// Example: await DatabaseService.instance.removeFromCart(userId: 'user123', productId: 'prod_456');
   Future<bool> removeFromCart({
@@ -325,7 +410,7 @@ class DatabaseService {
       return false;
     }
   }
-  
+
   /// Clear entire cart for a user
   /// Example: await DatabaseService.instance.clearCart('user123');
   Future<bool> clearCart(String userId) async {
@@ -334,7 +419,7 @@ class DatabaseService {
           .collection(_cartCollection)
           .where('userId', isEqualTo: userId)
           .get();
-      
+
       final batch = _db.batch();
       for (var doc in snapshot.docs) {
         batch.delete(doc.reference);
@@ -346,11 +431,11 @@ class DatabaseService {
       return false;
     }
   }
-  
+
   // ============================================================================
   // ORDERS COLLECTION
   // ============================================================================
-  
+
   /// Place a new order
   /// Example: await DatabaseService.instance.placeOrder('user123', [{'productId': 'prod_1', 'quantity': 2}], 7998);
   Future<String?> placeOrder({
@@ -372,7 +457,7 @@ class DatabaseService {
       return null;
     }
   }
-  
+
   /// Get all orders for a user
   /// Example: List<Map<String, dynamic>> orders = await DatabaseService.instance.getUserOrders('user123');
   Future<List<Map<String, dynamic>>> getUserOrders(String userId) async {
@@ -392,7 +477,7 @@ class DatabaseService {
       return [];
     }
   }
-  
+
   /// Get single order by ID
   /// Example: Map<String, dynamic>? order = await DatabaseService.instance.getOrder('order_123');
   Future<Map<String, dynamic>?> getOrder(String orderId) async {
@@ -409,7 +494,7 @@ class DatabaseService {
       return null;
     }
   }
-  
+
   /// Update order status
   /// Example: await DatabaseService.instance.updateOrderStatus('order_123', 'delivered');
   Future<bool> updateOrderStatus(String orderId, String status) async {
@@ -424,11 +509,11 @@ class DatabaseService {
       return false;
     }
   }
-  
+
   // ============================================================================
   // REWARDS COLLECTION
   // ============================================================================
-  
+
   /// Get reward points for a user
   /// Example: int points = await DatabaseService.instance.getRewardPoints('user123');
   Future<int> getRewardPoints(String userId) async {
@@ -443,7 +528,7 @@ class DatabaseService {
       return 0;
     }
   }
-  
+
   /// Update reward points (add or subtract)
   /// Example: await DatabaseService.instance.updateRewardPoints('user123', 100); // Add 100 points
   /// Example: await DatabaseService.instance.updateRewardPoints('user123', -50); // Subtract 50 points
@@ -451,7 +536,7 @@ class DatabaseService {
     try {
       final docRef = _db.collection(_rewardsCollection).doc(userId);
       final doc = await docRef.get();
-      
+
       if (doc.exists) {
         final currentPoints = doc.data()?['points'] ?? 0;
         final newPoints = currentPoints + pointsChange;
@@ -472,7 +557,7 @@ class DatabaseService {
       return false;
     }
   }
-  
+
   /// Set reward points to specific value
   /// Example: await DatabaseService.instance.setRewardPoints('user123', 500);
   Future<bool> setRewardPoints(String userId, int points) async {
@@ -488,7 +573,7 @@ class DatabaseService {
       return false;
     }
   }
-  
+
   /// Get reward points with real-time updates (Stream)
   /// Example: StreamBuilder(stream: DatabaseService.instance.getRewardPointsStream('user123'), ...)
   Stream<int> getRewardPointsStream(String userId) {
@@ -498,20 +583,20 @@ class DatabaseService {
         .snapshots()
         .map((snapshot) => snapshot.data()?['points'] ?? 0);
   }
-  
+
   // ============================================================================
   // HELPER FUNCTIONS
   // ============================================================================
-  
+
   /// Delete user and all associated data (GDPR compliance)
   /// Example: await DatabaseService.instance.deleteUserData('user123');
   Future<bool> deleteUserData(String userId) async {
     try {
       final batch = _db.batch();
-      
+
       // Delete user document
       batch.delete(_db.collection(_usersCollection).doc(userId));
-      
+
       // Delete cart items
       final cartSnapshot = await _db
           .collection(_cartCollection)
@@ -520,10 +605,10 @@ class DatabaseService {
       for (var doc in cartSnapshot.docs) {
         batch.delete(doc.reference);
       }
-      
+
       // Delete rewards
       batch.delete(_db.collection(_rewardsCollection).doc(userId));
-      
+
       await batch.commit();
       return true;
     } catch (e) {
@@ -531,7 +616,7 @@ class DatabaseService {
       return false;
     }
   }
-  
+
   /// Check if document exists
   /// Example: bool exists = await DatabaseService.instance.documentExists('users', 'user123');
   Future<bool> documentExists(String collection, String docId) async {

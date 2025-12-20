@@ -9,7 +9,9 @@ import 'cart.dart';
 import 'categories.dart';
 import 'rewards.dart';
 import 'checkout.dart';
-import 'product.dart';
+import 'products_list.dart';
+import 'product_detail.dart';
+import 'admin_panel.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -17,7 +19,6 @@ void main() async {
   runApp(const MainApp());
 }
 
-// __Main App with routes to every pages
 class MainApp extends StatelessWidget {
   const MainApp({super.key});
 
@@ -26,12 +27,10 @@ class MainApp extends StatelessWidget {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       initialRoute: '/',
-
       onGenerateRoute: (settings) {
         switch (settings.name) {
           case '/':
             return MaterialPageRoute(builder: (_) => SplashScreen());
-
           case '/home':
             return PageRouteBuilder(
               pageBuilder: (_, __, ___) => HomeScreen(),
@@ -49,13 +48,20 @@ class MainApp extends StatelessWidget {
           case '/category':
             return MaterialPageRoute(builder: (_) => CategoriesPage());
           case '/products':
-            return MaterialPageRoute(builder: (_) => ProductsPage());
+            return MaterialPageRoute(builder: (_) => ProductsListPage());
+          case '/product_detail':
+            final product = settings.arguments as Map<String, dynamic>;
+            return MaterialPageRoute(
+              builder: (_) => ProductDetailPage(product: product),
+            );
           case '/cart':
             return MaterialPageRoute(builder: (_) => CartPage());
           case '/rewards':
             return MaterialPageRoute(builder: (_) => RewardsPage());
           case '/checkout':
             return MaterialPageRoute(builder: (_) => CheckoutPage());
+          case '/admin':
+            return MaterialPageRoute(builder: (_) => AdminPanelPage());
         }
         return null;
       },
@@ -63,7 +69,6 @@ class MainApp extends StatelessWidget {
   }
 }
 
-// 2.__Home Screen with AppBar, Search Bar, Banners, Categories, Products Grid, and Bottom Navigation Bar & Login Navigation
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
 
@@ -78,7 +83,6 @@ class _HomeScreenState extends State<HomeScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppColors.background,
-
       drawer: Drawer(
         backgroundColor: AppColors.background,
         child: ListView(
@@ -97,13 +101,12 @@ class _HomeScreenState extends State<HomeScreen> {
                     style: TextStyle(
                       fontFamily: 'IrishGrover',
                       fontSize: 22,
-                      color: AppColors.primary,
+                      color: Colors.white,
                     ),
                   ),
                 ],
               ),
             ),
-
             ListTile(
               leading: Icon(Icons.shopping_bag, color: AppColors.accent),
               title: Text(
@@ -112,9 +115,9 @@ class _HomeScreenState extends State<HomeScreen> {
               ),
               onTap: () {
                 Navigator.pop(context);
+                Navigator.pushNamed(context, '/products');
               },
             ),
-
             ExpansionTile(
               leading: Icon(Icons.checkroom, color: AppColors.accent),
               title: Text(
@@ -123,30 +126,27 @@ class _HomeScreenState extends State<HomeScreen> {
               ),
               children: [
                 ExpansionTile(
-                  title: Text('Men',
-                style: TextStyle(fontSize: 16, color: AppColors.textPrimary)),
-                  children: const [
-                    ListTile(title: Text('Shirts')),
-                    ListTile(title: Text('Jeans')),
-                    ListTile(title: Text('Eyewear')),
-                    ListTile(title: Text('Accessories')),
-                    ListTile(title: Text('Footwear')),
+                  title: Text('Men', style: TextStyle(fontSize: 16, color: AppColors.textPrimary)),
+                  children: [
+                    ListTile(title: Text('Shirts', style: TextStyle(color: AppColors.textPrimary))),
+                    ListTile(title: Text('Jeans', style: TextStyle(color: AppColors.textPrimary))),
+                    ListTile(title: Text('Eyewear', style: TextStyle(color: AppColors.textPrimary))),
+                    ListTile(title: Text('Accessories', style: TextStyle(color: AppColors.textPrimary))),
+                    ListTile(title: Text('Footwear', style: TextStyle(color: AppColors.textPrimary))),
                   ],
                 ),
                 ExpansionTile(
-                  title: Text('Women'),
-                  children: const [
-                    ListTile(title: Text('Dresses')),
-                    ListTile(title: Text('Jeans')),
-                    ListTile(title: Text('Eyewear')),
-                    ListTile(title: Text('Accessories')),
-                    ListTile(title: Text('Footwear')),
+                  title: Text('Women', style: TextStyle(fontSize: 16, color: AppColors.textPrimary)),
+                  children: [
+                    ListTile(title: Text('Dresses', style: TextStyle(color: AppColors.textPrimary))),
+                    ListTile(title: Text('Jeans', style: TextStyle(color: AppColors.textPrimary))),
+                    ListTile(title: Text('Eyewear', style: TextStyle(color: AppColors.textPrimary))),
+                    ListTile(title: Text('Accessories', style: TextStyle(color: AppColors.textPrimary))),
+                    ListTile(title: Text('Footwear', style: TextStyle(color: AppColors.textPrimary))),
                   ],
                 ),
               ],
             ),
-
-            // Dark Mode Toggle
             ListTile(
               leading: Icon(
                 AppColors.isDarkMode ? Icons.dark_mode : Icons.light_mode,
@@ -166,9 +166,18 @@ class _HomeScreenState extends State<HomeScreen> {
                 activeColor: AppColors.accent,
               ),
             ),
-
             Divider(),
-
+            ListTile(
+              leading: Icon(Icons.admin_panel_settings, color: AppColors.accent),
+              title: Text(
+                'Admin Panel',
+                style: TextStyle(fontSize: 16, color: AppColors.textPrimary),
+              ),
+              onTap: () {
+                Navigator.pop(context);
+                Navigator.pushNamed(context, '/admin');
+              },
+            ),
             ListTile(
               leading: Icon(Icons.info_outline, color: AppColors.accent),
               title: Text(
@@ -179,12 +188,8 @@ class _HomeScreenState extends State<HomeScreen> {
                 Navigator.pop(context);
               },
             ),
-
             ListTile(
-              leading: Icon(
-                Icons.privacy_tip_outlined,
-                color: AppColors.accent,
-              ),
+              leading: Icon(Icons.privacy_tip_outlined, color: AppColors.accent),
               title: Text(
                 'Privacy Policy',
                 style: TextStyle(fontSize: 16, color: AppColors.textPrimary),
@@ -196,14 +201,11 @@ class _HomeScreenState extends State<HomeScreen> {
           ],
         ),
       ),
-
-      // APP BAR
       appBar: AppBar(
         elevation: 2,
         flexibleSpace: Container(
           decoration: BoxDecoration(gradient: AppGradients.splashBackground),
         ),
-
         leading: Builder(
           builder: (context) => IconButton(
             icon: Icon(Icons.menu, color: AppColors.secondary),
@@ -212,11 +214,15 @@ class _HomeScreenState extends State<HomeScreen> {
             },
           ),
         ),
-
         title: Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Image.asset('assets/images/black-logo.png', height: 40),
+            Image.asset(
+              AppColors.isDarkMode
+                  ? 'assets/images/white-logo.png'
+                  : 'assets/images/black-logo.png',
+              height: 40,
+            ),
             Text(
               ' CARTIFY',
               style: TextStyle(
@@ -229,7 +235,6 @@ class _HomeScreenState extends State<HomeScreen> {
           ],
         ),
         centerTitle: true,
-
         actions: [
           Padding(
             padding: const EdgeInsets.only(right: 10),
@@ -237,12 +242,9 @@ class _HomeScreenState extends State<HomeScreen> {
               icon: Icon(Icons.person_2_outlined, color: AppColors.secondary),
               onPressed: () {
                 final user = FirebaseAuth.instance.currentUser;
-
                 if (user == null) {
-                  // User NOT logged in → go to login
                   Navigator.pushNamed(context, '/login');
                 } else {
-                  // User logged in → go to profile
                   Navigator.pushNamed(context, '/profile');
                 }
               },
@@ -250,12 +252,10 @@ class _HomeScreenState extends State<HomeScreen> {
           ),
         ],
       ),
-
       body: SingleChildScrollView(
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Search
             Padding(
               padding: const EdgeInsets.all(16.0),
               child: Container(
@@ -282,30 +282,17 @@ class _HomeScreenState extends State<HomeScreen> {
                 ),
               ),
             ),
-
-            // Banner Image Slider
             SizedBox(
               height: 180,
               child: PageView(
                 children: const [
-                  BannerImage(
-                    image:
-                        'https://images.unsplash.com/photo-1521334884684-d80222895322',
-                  ),
-                  BannerImage(
-                    image:
-                        'https://images.unsplash.com/photo-1445205170230-053b83016050',
-                  ),
-                  BannerImage(
-                    image:
-                        'https://images.unsplash.com/photo-1512436991641-6745cdb1723f',
-                  ),
+                  BannerImage(image: 'https://images.unsplash.com/photo-1521334884684-d80222895322'),
+                  BannerImage(image: 'https://images.unsplash.com/photo-1445205170230-053b83016050'),
+                  BannerImage(image: 'https://images.unsplash.com/photo-1512436991641-6745cdb1723f'),
                 ],
               ),
             ),
-
             SizedBox(height: 15),
-
             Container(
               width: double.infinity,
               padding: EdgeInsets.symmetric(horizontal: 16, vertical: 10),
@@ -319,57 +306,32 @@ class _HomeScreenState extends State<HomeScreen> {
                 ),
               ),
             ),
-
-            // Popular Categories Row
             SizedBox(
               height: 120,
               child: ListView(
                 scrollDirection: Axis.horizontal,
                 padding: EdgeInsets.symmetric(horizontal: 16),
                 children: const [
-                  CategoryCard(
-                    title: 'Men',
-                    image:
-                        'https://images.unsplash.com/photo-1521341057461-6eb5f40b07ab',
-                  ),
-                  CategoryCard(
-                    title: 'Women',
-                    image:
-                        'https://images.unsplash.com/photo-1483985988355-763728e1935b',
-                  ),
-                  CategoryCard(
-                    title: 'Shoes',
-                    image:
-                        'https://images.unsplash.com/photo-1542291026-7eec264c27ff',
-                  ),
-                  CategoryCard(
-                    title: 'Accessories',
-                    image:
-                        'https://images.unsplash.com/photo-1519744792095-2f2205e87b6f',
-                  ),
+                  CategoryCard(title: 'Men', image: 'https://images.unsplash.com/photo-1521341057461-6eb5f40b07ab'),
+                  CategoryCard(title: 'Women', image: 'https://images.unsplash.com/photo-1483985988355-763728e1935b'),
+                  CategoryCard(title: 'Shoes', image: 'https://images.unsplash.com/photo-1542291026-7eec264c27ff'),
+                  CategoryCard(title: 'Accessories', image: 'https://images.unsplash.com/photo-1519744792095-2f2205e87b6f'),
                 ],
               ),
             ),
-
             SizedBox(height: 15),
-
-            // Deals Banner
             Container(
               height: 150,
               margin: EdgeInsets.symmetric(horizontal: 16),
               decoration: BoxDecoration(
                 borderRadius: BorderRadius.circular(12),
                 image: DecorationImage(
-                  image: NetworkImage(
-                    'https://images.unsplash.com/photo-1602810319428-019690571b5b',
-                  ),
+                  image: NetworkImage('https://images.unsplash.com/photo-1602810319428-019690571b5b'),
                   fit: BoxFit.cover,
                 ),
               ),
             ),
-
             SizedBox(height: 20),
-
             Container(
               width: double.infinity,
               padding: EdgeInsets.symmetric(horizontal: 16, vertical: 10),
@@ -383,8 +345,6 @@ class _HomeScreenState extends State<HomeScreen> {
                 ),
               ),
             ),
-
-            // Products Grid
             Padding(
               padding: const EdgeInsets.all(16.0),
               child: GridView.builder(
@@ -402,9 +362,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     decoration: BoxDecoration(
                       borderRadius: BorderRadius.circular(10),
                       image: DecorationImage(
-                        image: NetworkImage(
-                          'https://images.unsplash.com/photo-1520975916090-3105956dac38',
-                        ),
+                        image: NetworkImage('https://images.unsplash.com/photo-1520975916090-3105956dac38'),
                         fit: BoxFit.cover,
                       ),
                     ),
@@ -415,11 +373,9 @@ class _HomeScreenState extends State<HomeScreen> {
           ],
         ),
       ),
-
-      // __Bottom Navigation Bar
       bottomNavigationBar: Container(
         decoration: BoxDecoration(
-          color: AppColors.card,
+          color: AppColors.accent,
           borderRadius: BorderRadius.vertical(top: Radius.circular(25)),
           boxShadow: [
             BoxShadow(color: Colors.black26, spreadRadius: 1, blurRadius: 10),
@@ -428,9 +384,11 @@ class _HomeScreenState extends State<HomeScreen> {
         child: ClipRRect(
           borderRadius: BorderRadius.vertical(top: Radius.circular(15)),
           child: BottomNavigationBar(
+            backgroundColor: AppColors.accent,
             currentIndex: _currentIndex,
-            selectedItemColor: AppColors.accent,
-            unselectedItemColor: AppColors.textPrimary,
+            selectedItemColor: Colors.white,
+            unselectedItemColor: Colors.white70,
+            type: BottomNavigationBarType.fixed,
             onTap: (index) {
               setState(() {
                 _currentIndex = index;
@@ -443,22 +401,16 @@ class _HomeScreenState extends State<HomeScreen> {
                 Navigator.pushNamed(context, '/cart');
               } else if (index == 3) {
                 Navigator.pushNamed(context, '/rewards');
+              } else if (index == 4) {
+                Navigator.pushNamed(context, '/admin');
               }
             },
             items: [
               BottomNavigationBarItem(icon: Icon(Icons.home), label: "Home"),
-              BottomNavigationBarItem(
-                icon: Icon(Icons.grid_view),
-                label: "Categories",
-              ),
-              BottomNavigationBarItem(
-                icon: Icon(Icons.shopping_cart),
-                label: "Cart",
-              ),
-              BottomNavigationBarItem(
-                icon: Icon(Icons.redeem),
-                label: "Rewards",
-              ),
+              BottomNavigationBarItem(icon: Icon(Icons.grid_view), label: "Categories"),
+              BottomNavigationBarItem(icon: Icon(Icons.shopping_cart), label: "Cart"),
+              BottomNavigationBarItem(icon: Icon(Icons.redeem), label: "Rewards"),
+              BottomNavigationBarItem(icon: Icon(Icons.admin_panel_settings), label: "Admin"),
             ],
           ),
         ),
@@ -467,7 +419,6 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 }
 
-//helper_functions
 class BannerImage extends StatelessWidget {
   final String image;
   const BannerImage({super.key, required this.image});
