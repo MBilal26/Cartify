@@ -1,6 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_storage/firebase_storage.dart'; // NEW IMPORT for Firebase Storage
-import 'dart:io'; // NEW IMPORT for File handling
+import 'package:firebase_storage/firebase_storage.dart';
+import 'dart:io';
 
 /// Singleton service class for all Firebase Firestore operations
 /// Usage: DatabaseService.instance.functionName()
@@ -14,7 +14,7 @@ class DatabaseService {
   // Firestore instance
   final FirebaseFirestore _db = FirebaseFirestore.instance;
 
-  // NEW: Firebase Storage instance
+  // Firebase Storage instance
   final FirebaseStorage _storage = FirebaseStorage.instance;
 
   // Collection references
@@ -26,7 +26,7 @@ class DatabaseService {
   final String _rewardsCollection = 'rewards';
 
   // ============================================================================
-  // NEW: FIREBASE STORAGE FUNCTIONS (For uploading product images)
+  // FIREBASE STORAGE FUNCTIONS (For uploading product images)
   // ============================================================================
 
   /// Upload image to Firebase Storage and return download URL
@@ -192,25 +192,27 @@ class DatabaseService {
   }
 
   // ============================================================================
-  // PRODUCTS COLLECTION
+  // PRODUCTS COLLECTION - FIXED WITH GENDER FIELD
   // ============================================================================
 
-  /// Add a new product
-  /// Example: await DatabaseService.instance.addProduct('Blue Jeans', 3999, 'cat_123', 'https://image.url');
+  /// Add a new product - FIXED: Now includes gender field
+  /// Example: await DatabaseService.instance.addProduct('Blue Jeans', 3999, 'cat_123', gender: 'Men', imageUrl: 'https://image.url');
   Future<String?> addProduct({
     required String name,
     required int price,
     required String categoryId,
+    String? gender, // ✅ ADDED GENDER FIELD
     String? imageUrl,
-    String? description, // NEW: Added description field
+    String? description,
   }) async {
     try {
       final docRef = await _db.collection(_productsCollection).add({
         'name': name,
         'price': price,
         'categoryId': categoryId,
+        'gender': gender, // ✅ ADDED GENDER FIELD
         'imageUrl': imageUrl,
-        'description': description, // NEW
+        'description': description,
         'createdAt': FieldValue.serverTimestamp(),
       });
       return docRef.id;
@@ -220,13 +222,14 @@ class DatabaseService {
     }
   }
 
-  /// NEW: Update existing product
-  /// Example: await DatabaseService.instance.updateProduct('prod_123', name: 'Updated Name', price: 4999);
+  /// Update existing product - FIXED: Now includes gender field
+  /// Example: await DatabaseService.instance.updateProduct('prod_123', name: 'Updated Name', price: 4999, gender: 'Women');
   Future<bool> updateProduct({
     required String productId,
     String? name,
     int? price,
     String? categoryId,
+    String? gender, // ✅ ADDED GENDER FIELD
     String? imageUrl,
     String? description,
   }) async {
@@ -235,6 +238,7 @@ class DatabaseService {
       if (name != null) updates['name'] = name;
       if (price != null) updates['price'] = price;
       if (categoryId != null) updates['categoryId'] = categoryId;
+      if (gender != null) updates['gender'] = gender; // ✅ ADDED GENDER FIELD
       if (imageUrl != null) updates['imageUrl'] = imageUrl;
       if (description != null) updates['description'] = description;
 
@@ -249,7 +253,7 @@ class DatabaseService {
     }
   }
 
-  /// NEW: Delete product
+  /// Delete product
   /// Example: await DatabaseService.instance.deleteProduct('prod_123');
   Future<bool> deleteProduct(String productId) async {
     try {
