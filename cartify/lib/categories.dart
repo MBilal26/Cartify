@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'colors.dart';
 import 'database_functions.dart';
 
@@ -16,20 +17,34 @@ class _CategoriesPageState extends State<CategoriesPage> {
       backgroundColor: AppColors.background,
 
       appBar: AppBar(
-        title: const Text('Categories'),
+        backgroundColor: AppColors.background,
+        title: Text(
+          'Categories',
+          style: TextStyle(
+            color: AppColors.textPrimary,
+            fontFamily: 'IrishGrover',
+            fontSize: 22,
+          ),
+        ),
         centerTitle: true,
+        iconTheme: IconThemeData(color: AppColors.textPrimary),
       ),
 
       body: FutureBuilder<List<Map<String, dynamic>>>(
         future: DatabaseService.instance.getCategories(),
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
-            return Center(child: CircularProgressIndicator());
+            return Center(
+              child: CircularProgressIndicator(color: AppColors.accent),
+            );
           }
 
           if (snapshot.hasError) {
             return Center(
-              child: Text('Error loading categories: ${snapshot.error}'),
+              child: Text(
+                'Error loading categories: ${snapshot.error}',
+                style: TextStyle(color: AppColors.textPrimary),
+              ),
             );
           }
 
@@ -47,7 +62,10 @@ class _CategoriesPageState extends State<CategoriesPage> {
                 children: [
                   Icon(Icons.category_outlined, size: 80, color: Colors.grey),
                   SizedBox(height: 16),
-                  Text('No categories found'),
+                  Text(
+                    'No categories found',
+                    style: TextStyle(color: AppColors.textPrimary),
+                  ),
                   SizedBox(height: 8),
                   Text(
                     'Add categories using the + button',
@@ -66,8 +84,9 @@ class _CategoriesPageState extends State<CategoriesPage> {
 
               // Get subcategories for this parent
               final subcategories = allCategories
-                  .where((cat) =>
-                      cat['parentCategory'] == parentCategory['title'])
+                  .where(
+                    (cat) => cat['parentCategory'] == parentCategory['title'],
+                  )
                   .toList();
 
               return _categorySection(
@@ -81,15 +100,11 @@ class _CategoriesPageState extends State<CategoriesPage> {
         },
       ),
 
-      // Floating action button to add categories (for testing)
       floatingActionButton: FloatingActionButton.extended(
         onPressed: () => _showAddCategoryDialog(),
         backgroundColor: AppColors.accent,
         icon: Icon(Icons.add, color: Colors.white),
-        label: Text(
-          'Add Category',
-          style: TextStyle(color: Colors.white),
-        ),
+        label: Text('Add Category', style: TextStyle(color: Colors.white)),
       ),
     );
   }
@@ -136,8 +151,12 @@ class _CategoriesPageState extends State<CategoriesPage> {
                         ),
                       ),
                       IconButton(
-                        icon: Icon(Icons.add_circle_outline, color: AppColors.accent),
-                        onPressed: () => _showAddCategoryDialog(parentCategory: title),
+                        icon: Icon(
+                          Icons.add_circle_outline,
+                          color: AppColors.accent,
+                        ),
+                        onPressed: () =>
+                            _showAddCategoryDialog(parentCategory: title),
                       ),
                     ],
                   ),
@@ -159,11 +178,16 @@ class _CategoriesPageState extends State<CategoriesPage> {
                   return InkWell(
                     borderRadius: BorderRadius.circular(12),
                     onTap: () {
-                      // Navigate to products page with category
-                      Navigator.pushNamed(
+                      // Navigate to products page filtered by this category
+                      Navigator.push(
                         context,
-                        '/products',
-                        arguments: '${title.toLowerCase()}_${subcategory['title'].toLowerCase()}',
+                        MaterialPageRoute(
+                          builder: (_) => CategoryProductsPage(
+                            categoryId: subcategory['id'],
+                            categoryName: subcategory['title'],
+                            parentCategory: title,
+                          ),
+                        ),
                       );
                     },
                     child: Container(
@@ -191,9 +215,10 @@ class _CategoriesPageState extends State<CategoriesPage> {
                           Text(
                             subcategory['title'],
                             textAlign: TextAlign.center,
-                            style: const TextStyle(
+                            style: TextStyle(
                               fontWeight: FontWeight.bold,
                               fontSize: 14,
+                              color: AppColors.textPrimary,
                             ),
                           ),
                         ],
@@ -212,11 +237,14 @@ class _CategoriesPageState extends State<CategoriesPage> {
   IconData _getCategoryIcon(String categoryName) {
     final name = categoryName.toLowerCase();
     if (name.contains('shirt')) return Icons.checkroom;
-    if (name.contains('jean') || name.contains('pant')) return Icons.shopping_bag;
+    if (name.contains('jean') || name.contains('pant'))
+      return Icons.shopping_bag;
     if (name.contains('dress')) return Icons.woman;
-    if (name.contains('eyewear') || name.contains('glass')) return Icons.visibility;
+    if (name.contains('eyewear') || name.contains('glass'))
+      return Icons.visibility;
     if (name.contains('accessories')) return Icons.watch;
-    if (name.contains('footwear') || name.contains('shoe')) return Icons.directions_walk;
+    if (name.contains('footwear') || name.contains('shoe'))
+      return Icons.directions_walk;
     return Icons.category;
   }
 
@@ -229,16 +257,23 @@ class _CategoriesPageState extends State<CategoriesPage> {
       context: context,
       builder: (context) => StatefulBuilder(
         builder: (context, setDialogState) => AlertDialog(
-          title: Text('Add Category'),
+          backgroundColor: AppColors.card,
+          title: Text(
+            'Add Category',
+            style: TextStyle(color: AppColors.textPrimary),
+          ),
           content: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
               TextField(
                 controller: titleController,
+                style: TextStyle(color: AppColors.textPrimary),
                 decoration: InputDecoration(
                   labelText: 'Category Name',
+                  labelStyle: TextStyle(color: AppColors.textSecondary),
                   border: OutlineInputBorder(),
                   hintText: 'e.g., Men, Shirts, etc.',
+                  hintStyle: TextStyle(color: AppColors.textSecondary),
                 ),
               ),
               SizedBox(height: 16),
@@ -252,9 +287,13 @@ class _CategoriesPageState extends State<CategoriesPage> {
                           isParent = value ?? true;
                         });
                       },
+                      activeColor: AppColors.accent,
                     ),
                     Expanded(
-                      child: Text('This is a parent category (e.g., Men, Women)'),
+                      child: Text(
+                        'This is a parent category (e.g., Men, Women)',
+                        style: TextStyle(color: AppColors.textPrimary),
+                      ),
                     ),
                   ],
                 ),
@@ -271,8 +310,11 @@ class _CategoriesPageState extends State<CategoriesPage> {
                       return DropdownButtonFormField<String>(
                         decoration: InputDecoration(
                           labelText: 'Parent Category',
+                          labelStyle: TextStyle(color: AppColors.textSecondary),
                           border: OutlineInputBorder(),
                         ),
+                        dropdownColor: AppColors.card,
+                        style: TextStyle(color: AppColors.textPrimary),
                         items: parents.map((cat) {
                           return DropdownMenuItem<String>(
                             value: cat['title'],
@@ -292,7 +334,10 @@ class _CategoriesPageState extends State<CategoriesPage> {
           actions: [
             TextButton(
               onPressed: () => Navigator.pop(context),
-              child: Text('Cancel'),
+              child: Text(
+                'Cancel',
+                style: TextStyle(color: AppColors.textPrimary),
+              ),
             ),
             ElevatedButton(
               style: ElevatedButton.styleFrom(
@@ -332,14 +377,294 @@ class _CategoriesPageState extends State<CategoriesPage> {
                   );
                 }
               },
-              child: Text(
-                'Add',
-                style: TextStyle(color: Colors.white),
+              child: Text('Add', style: TextStyle(color: Colors.white)),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+// NEW PAGE: Category Products Page
+// Shows all products in a specific category
+class CategoryProductsPage extends StatefulWidget {
+  final String categoryId;
+  final String categoryName;
+  final String parentCategory;
+
+  const CategoryProductsPage({
+    super.key,
+    required this.categoryId,
+    required this.categoryName,
+    required this.parentCategory,
+  });
+
+  @override
+  State<CategoryProductsPage> createState() => _CategoryProductsPageState();
+}
+
+class _CategoryProductsPageState extends State<CategoryProductsPage> {
+  List<Map<String, dynamic>> products = [];
+  bool isLoading = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadProducts();
+  }
+
+  Future<void> _loadProducts() async {
+    setState(() {
+      isLoading = true;
+    });
+
+    final allProducts = await DatabaseService.instance.getAllProducts();
+
+    // Filter products by category ID
+    products = allProducts
+        .where((product) => product['categoryId'] == widget.categoryId)
+        .toList();
+
+    setState(() {
+      isLoading = false;
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: AppColors.background,
+      appBar: AppBar(
+        backgroundColor: AppColors.background,
+        title: Column(
+          children: [
+            Text(
+              widget.categoryName,
+              style: TextStyle(
+                color: AppColors.textPrimary,
+                fontFamily: 'IrishGrover',
+                fontSize: 20,
+              ),
+            ),
+            Text(
+              widget.parentCategory,
+              style: TextStyle(color: AppColors.textSecondary, fontSize: 12),
+            ),
+          ],
+        ),
+        centerTitle: true,
+        iconTheme: IconThemeData(color: AppColors.textPrimary),
+      ),
+      body: isLoading
+          ? Center(child: CircularProgressIndicator(color: AppColors.accent))
+          : products.isEmpty
+          ? Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(
+                    Icons.shopping_bag_outlined,
+                    size: 80,
+                    color: Colors.grey,
+                  ),
+                  SizedBox(height: 16),
+                  Text(
+                    'No products in this category',
+                    style: TextStyle(
+                      fontSize: 16,
+                      color: AppColors.textPrimary,
+                    ),
+                  ),
+                  SizedBox(height: 8),
+                  Text(
+                    'Products will appear here once added',
+                    style: TextStyle(color: Colors.grey),
+                  ),
+                ],
+              ),
+            )
+          : GridView.builder(
+              padding: const EdgeInsets.all(16),
+              itemCount: products.length,
+              gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                crossAxisCount: 2,
+                crossAxisSpacing: 12,
+                mainAxisSpacing: 12,
+                childAspectRatio: 0.65,
+              ),
+              itemBuilder: (context, index) {
+                final product = products[index];
+                return _buildProductCard(product);
+              },
+            ),
+    );
+  }
+
+  Widget _buildProductCard(Map<String, dynamic> product) {
+    return GestureDetector(
+      onTap: () {
+        Navigator.pushNamed(context, '/product_detail', arguments: product);
+      },
+      child: Container(
+        decoration: BoxDecoration(
+          color: AppColors.card,
+          borderRadius: BorderRadius.circular(12),
+          boxShadow: const [
+            BoxShadow(
+              color: Colors.black12,
+              blurRadius: 5,
+              offset: Offset(0, 3),
+            ),
+          ],
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // Product Image
+            Expanded(
+              child: Container(
+                width: double.infinity,
+                decoration: BoxDecoration(
+                  color: AppColors.border,
+                  borderRadius: const BorderRadius.vertical(
+                    top: Radius.circular(12),
+                  ),
+                ),
+                child:
+                    product['imageUrl'] != null &&
+                        product['imageUrl'].isNotEmpty
+                    ? ClipRRect(
+                        borderRadius: const BorderRadius.vertical(
+                          top: Radius.circular(12),
+                        ),
+                        child: Image.network(
+                          product['imageUrl'],
+                          fit: BoxFit.cover,
+                          errorBuilder: (context, error, stackTrace) {
+                            return Center(
+                              child: Icon(
+                                Icons.image,
+                                size: 60,
+                                color: Colors.grey,
+                              ),
+                            );
+                          },
+                        ),
+                      )
+                    : Center(
+                        child: Icon(Icons.image, size: 60, color: Colors.grey),
+                      ),
+              ),
+            ),
+
+            // Product Details
+            Padding(
+              padding: const EdgeInsets.all(8),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    product['name'] ?? 'Product',
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                    style: TextStyle(
+                      fontWeight: FontWeight.bold,
+                      fontSize: 14,
+                      color: AppColors.textPrimary,
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    'Rs. ${product['price'] ?? 0}',
+                    style: const TextStyle(
+                      color: Colors.green,
+                      fontWeight: FontWeight.bold,
+                      fontSize: 16,
+                    ),
+                  ),
+                  const SizedBox(height: 6),
+                  SizedBox(
+                    width: double.infinity,
+                    height: 36,
+                    child: ElevatedButton(
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: AppColors.accent,
+                        padding: EdgeInsets.zero,
+                      ),
+                      onPressed: () async {
+                        await _addToCart(product);
+                      },
+                      child: const Text(
+                        'Add to Cart',
+                        style: TextStyle(fontSize: 12, color: Colors.white),
+                      ),
+                    ),
+                  ),
+                ],
               ),
             ),
           ],
         ),
       ),
     );
+  }
+
+  Future<void> _addToCart(Map<String, dynamic> product) async {
+    // Import firebase_auth at the top of this file to use this
+    final user = FirebaseAuth.instance.currentUser;
+
+    if (user == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Please login to add items to cart'),
+          backgroundColor: AppColors.error,
+          action: SnackBarAction(
+            label: 'Login',
+            textColor: Colors.white,
+            onPressed: () {
+              Navigator.pushNamed(context, '/login');
+            },
+          ),
+        ),
+      );
+      return;
+    }
+
+    try {
+      final success = await DatabaseService.instance.addToCart(
+        userId: user.uid,
+        productId: product['id'],
+        quantity: 1,
+      );
+
+      if (success) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('${product['name']} added to cart'),
+            backgroundColor: AppColors.success,
+            duration: Duration(seconds: 2),
+            action: SnackBarAction(
+              label: 'View Cart',
+              textColor: Colors.white,
+              onPressed: () {
+                Navigator.pushNamed(context, '/cart');
+              },
+            ),
+          ),
+        );
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Failed to add to cart'),
+            backgroundColor: AppColors.error,
+          ),
+        );
+      }
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Error: $e'), backgroundColor: AppColors.error),
+      );
+    }
   }
 }

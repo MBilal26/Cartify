@@ -16,6 +16,11 @@ class _CheckoutPageState extends State<CheckoutPage> {
   final TextEditingController phoneController = TextEditingController();
   final TextEditingController addressController = TextEditingController();
 
+  // New Controllers for Card Details
+  final TextEditingController cardNumberController = TextEditingController();
+  final TextEditingController expiryController = TextEditingController();
+  final TextEditingController cvvController = TextEditingController();
+
   String paymentMethod = 'Cash on Delivery';
   bool _isLoading = false;
   String? userId;
@@ -32,6 +37,9 @@ class _CheckoutPageState extends State<CheckoutPage> {
     nameController.dispose();
     phoneController.dispose();
     addressController.dispose();
+    cardNumberController.dispose();
+    expiryController.dispose();
+    cvvController.dispose();
     super.dispose();
   }
 
@@ -52,7 +60,10 @@ class _CheckoutPageState extends State<CheckoutPage> {
     if (userId == null) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text('Please login to place an order'),
+          content: Text(
+            'Please login to place an order',
+            style: TextStyle(fontFamily: 'ADLaMDisplay'),
+          ),
           backgroundColor: AppColors.error,
         ),
       );
@@ -72,7 +83,10 @@ class _CheckoutPageState extends State<CheckoutPage> {
         });
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Your cart is empty'),
+            content: Text(
+              'Your cart is empty',
+              style: TextStyle(fontFamily: 'ADLaMDisplay'),
+            ),
             backgroundColor: AppColors.error,
           ),
         );
@@ -83,7 +97,9 @@ class _CheckoutPageState extends State<CheckoutPage> {
       List<Map<String, dynamic>> orderItems = [];
 
       for (var cartItem in cartItems) {
-        final product = await DatabaseService.instance.getProduct(cartItem['productId']);
+        final product = await DatabaseService.instance.getProduct(
+          cartItem['productId'],
+        );
 
         if (product != null) {
           int itemTotal = (product['price'] * cartItem['quantity']) as int;
@@ -125,7 +141,10 @@ class _CheckoutPageState extends State<CheckoutPage> {
         });
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Failed to place order. Please try again.'),
+            content: Text(
+              'Failed to place order. Please try again.',
+              style: TextStyle(fontFamily: 'ADLaMDisplay'),
+            ),
             backgroundColor: AppColors.error,
           ),
         );
@@ -136,7 +155,10 @@ class _CheckoutPageState extends State<CheckoutPage> {
       });
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text('Error: $e'),
+          content: Text(
+            'Error: $e',
+            style: TextStyle(fontFamily: 'ADLaMDisplay'),
+          ),
           backgroundColor: AppColors.error,
         ),
       );
@@ -147,17 +169,19 @@ class _CheckoutPageState extends State<CheckoutPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppColors.background,
-
       appBar: AppBar(
         backgroundColor: AppColors.background,
         title: Text(
           'Checkout',
-          style: TextStyle(color: AppColors.textPrimary),
+          style: TextStyle(
+            color: AppColors.textPrimary,
+            fontFamily: 'IrishGrover',
+            fontWeight: FontWeight.bold,
+          ),
         ),
         centerTitle: true,
         iconTheme: IconThemeData(color: AppColors.textPrimary),
       ),
-
       body: _isLoading
           ? Center(
               child: Column(
@@ -167,7 +191,10 @@ class _CheckoutPageState extends State<CheckoutPage> {
                   SizedBox(height: 16),
                   Text(
                     'Placing your order...',
-                    style: TextStyle(color: AppColors.textPrimary),
+                    style: TextStyle(
+                      color: AppColors.textPrimary,
+                      fontFamily: 'ADLaMDisplay',
+                    ),
                   ),
                 ],
               ),
@@ -185,179 +212,120 @@ class _CheckoutPageState extends State<CheckoutPage> {
                         fontSize: 18,
                         fontWeight: FontWeight.bold,
                         color: AppColors.textPrimary,
+                        fontFamily: 'ADLaMDisplay',
                       ),
                     ),
                     const SizedBox(height: 12),
-
-                    TextFormField(
-                      controller: nameController,
-                      style: TextStyle(color: AppColors.textPrimary),
-                      decoration: InputDecoration(
-                        labelText: 'Full Name',
-                        labelStyle: TextStyle(color: AppColors.textSecondary),
-                        border: OutlineInputBorder(),
-                        enabledBorder: OutlineInputBorder(
-                          borderSide: BorderSide(color: AppColors.border),
-                        ),
-                      ),
-                      validator: (value) => value!.isEmpty ? 'Enter your name' : null,
+                    _buildTextField(
+                      nameController,
+                      'Full Name',
+                      Icons.person_outline,
                     ),
                     const SizedBox(height: 12),
-
-                    TextFormField(
-                      controller: phoneController,
+                    _buildTextField(
+                      phoneController,
+                      'Phone Number',
+                      Icons.phone_outlined,
                       keyboardType: TextInputType.phone,
-                      style: TextStyle(color: AppColors.textPrimary),
-                      decoration: InputDecoration(
-                        labelText: 'Phone Number',
-                        labelStyle: TextStyle(color: AppColors.textSecondary),
-                        border: OutlineInputBorder(),
-                        enabledBorder: OutlineInputBorder(
-                          borderSide: BorderSide(color: AppColors.border),
-                        ),
-                      ),
-                      validator: (value) => value!.isEmpty ? 'Enter phone number' : null,
                     ),
                     const SizedBox(height: 12),
-
-                    TextFormField(
-                      controller: addressController,
+                    _buildTextField(
+                      addressController,
+                      'Delivery Address',
+                      Icons.home_outlined,
                       maxLines: 3,
-                      style: TextStyle(color: AppColors.textPrimary),
-                      decoration: InputDecoration(
-                        labelText: 'Delivery Address',
-                        labelStyle: TextStyle(color: AppColors.textSecondary),
-                        border: OutlineInputBorder(),
-                        enabledBorder: OutlineInputBorder(
-                          borderSide: BorderSide(color: AppColors.border),
-                        ),
-                      ),
-                      validator: (value) => value!.isEmpty ? 'Enter delivery address' : null,
                     ),
-
                     const SizedBox(height: 24),
-
                     Text(
                       'Payment Method',
                       style: TextStyle(
                         fontSize: 18,
                         fontWeight: FontWeight.bold,
                         color: AppColors.textPrimary,
+                        fontFamily: 'ADLaMDisplay',
                       ),
                     ),
                     const SizedBox(height: 8),
-
                     RadioListTile(
                       value: 'Cash on Delivery',
                       groupValue: paymentMethod,
                       title: Text(
                         'Cash on Delivery',
-                        style: TextStyle(color: AppColors.textPrimary),
+                        style: TextStyle(
+                          color: AppColors.textPrimary,
+                          fontFamily: 'ADLaMDisplay',
+                        ),
                       ),
-                      onChanged: (value) {
-                        setState(() {
-                          paymentMethod = value!;
-                        });
-                      },
+                      onChanged: (value) =>
+                          setState(() => paymentMethod = value!),
                       activeColor: AppColors.accent,
                     ),
-
                     RadioListTile(
                       value: 'Card Payment',
                       groupValue: paymentMethod,
                       title: Text(
                         'Card Payment',
-                        style: TextStyle(color: AppColors.textPrimary),
+                        style: TextStyle(
+                          color: AppColors.textPrimary,
+                          fontFamily: 'ADLaMDisplay',
+                        ),
                       ),
-                      onChanged: (value) {
-                        setState(() {
-                          paymentMethod = value!;
-                        });
-                      },
+                      onChanged: (value) =>
+                          setState(() => paymentMethod = value!),
                       activeColor: AppColors.accent,
                     ),
 
-                    const SizedBox(height: 24),
-
-                    FutureBuilder<List<Map<String, dynamic>>>(
-                      future: _getCartSummary(),
-                      builder: (context, snapshot) {
-                        if (snapshot.connectionState == ConnectionState.waiting) {
-                          return Center(child: CircularProgressIndicator(color: AppColors.accent));
-                        }
-
-                        if (snapshot.hasData && snapshot.data!.isNotEmpty) {
-                          final items = snapshot.data!;
-                          int total = _calculateTotal(items);
-
-                          return Container(
-                            padding: EdgeInsets.all(16),
-                            decoration: BoxDecoration(
-                              color: AppColors.card,
-                              borderRadius: BorderRadius.circular(12),
-                              border: Border.all(color: AppColors.border),
+                    // Card Details Section
+                    if (paymentMethod == 'Card Payment') ...[
+                      const SizedBox(height: 16),
+                      Container(
+                        padding: EdgeInsets.all(16),
+                        decoration: BoxDecoration(
+                          color: AppColors.card,
+                          borderRadius: BorderRadius.circular(12),
+                          border: Border.all(
+                            color: AppColors.accent.withOpacity(0.5),
+                          ),
+                        ),
+                        child: Column(
+                          children: [
+                            _buildTextField(
+                              cardNumberController,
+                              'Card Number',
+                              Icons.credit_card,
+                              keyboardType: TextInputType.number,
                             ),
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
+                            const SizedBox(height: 12),
+                            Row(
                               children: [
-                                Text(
-                                  'Order Summary',
-                                  style: TextStyle(
-                                    fontSize: 16,
-                                    fontWeight: FontWeight.bold,
-                                    color: AppColors.textPrimary,
+                                Expanded(
+                                  child: _buildTextField(
+                                    expiryController,
+                                    'MM/YY',
+                                    Icons.calendar_today,
+                                    keyboardType: TextInputType.datetime,
                                   ),
                                 ),
-                                SizedBox(height: 12),
-                                ...items.map((item) => Padding(
-                                      padding: EdgeInsets.symmetric(vertical: 4),
-                                      child: Row(
-                                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                        children: [
-                                          Text(
-                                            '${item['name']} x${item['quantity']}',
-                                            style: TextStyle(color: AppColors.textPrimary),
-                                          ),
-                                          Text(
-                                            'Rs. ${item['price'] * item['quantity']}',
-                                            style: TextStyle(color: AppColors.textPrimary),
-                                          ),
-                                        ],
-                                      ),
-                                    )),
-                                Divider(height: 20, color: AppColors.border),
-                                Row(
-                                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                  children: [
-                                    Text(
-                                      'Total:',
-                                      style: TextStyle(
-                                        fontSize: 18,
-                                        fontWeight: FontWeight.bold,
-                                        color: AppColors.textPrimary,
-                                      ),
-                                    ),
-                                    Text(
-                                      'Rs. $total',
-                                      style: TextStyle(
-                                        fontSize: 18,
-                                        fontWeight: FontWeight.bold,
-                                        color: AppColors.accent,
-                                      ),
-                                    ),
-                                  ],
+                                const SizedBox(width: 12),
+                                Expanded(
+                                  child: _buildTextField(
+                                    cvvController,
+                                    'CVV',
+                                    Icons.lock_outline,
+                                    keyboardType: TextInputType.number,
+                                    obscureText: true,
+                                  ),
                                 ),
                               ],
                             ),
-                          );
-                        }
-
-                        return SizedBox.shrink();
-                      },
-                    ),
+                          ],
+                        ),
+                      ),
+                    ],
 
                     const SizedBox(height: 24),
-
+                    _buildOrderSummary(),
+                    const SizedBox(height: 24),
                     SizedBox(
                       width: double.infinity,
                       child: ElevatedButton(
@@ -366,7 +334,7 @@ class _CheckoutPageState extends State<CheckoutPage> {
                           backgroundColor: AppColors.accent,
                           padding: const EdgeInsets.symmetric(vertical: 14),
                         ),
-                        child: const Text(
+                        child: Text(
                           'PLACE ORDER',
                           style: TextStyle(
                             fontSize: 16,
@@ -384,14 +352,137 @@ class _CheckoutPageState extends State<CheckoutPage> {
     );
   }
 
+  // Helper Widget for TextFields
+  Widget _buildTextField(
+    TextEditingController controller,
+    String label,
+    IconData icon, {
+    TextInputType keyboardType = TextInputType.text,
+    int maxLines = 1,
+    bool obscureText = false,
+  }) {
+    return TextFormField(
+      controller: controller,
+      keyboardType: keyboardType,
+      maxLines: maxLines,
+      obscureText: obscureText,
+      style: TextStyle(
+        color: AppColors.textPrimary,
+        fontFamily: 'ADLaMDisplay',
+      ),
+      decoration: InputDecoration(
+        labelText: label,
+        prefixIcon: Icon(icon, color: AppColors.accent),
+        labelStyle: TextStyle(
+          color: AppColors.textSecondary,
+          fontFamily: 'ADLaMDisplay',
+        ),
+        border: OutlineInputBorder(),
+        enabledBorder: OutlineInputBorder(
+          borderSide: BorderSide(color: AppColors.border),
+        ),
+      ),
+      validator: (value) => value!.isEmpty ? 'This field is required' : null,
+    );
+  }
+
+  Widget _buildOrderSummary() {
+    return FutureBuilder<List<Map<String, dynamic>>>(
+      future: _getCartSummary(),
+      builder: (context, snapshot) {
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return Center(
+            child: CircularProgressIndicator(color: AppColors.accent),
+          );
+        }
+        if (snapshot.hasData && snapshot.data!.isNotEmpty) {
+          final items = snapshot.data!;
+          int total = _calculateTotal(items);
+          return Container(
+            padding: EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              color: AppColors.card,
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(color: AppColors.border),
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'Order Summary',
+                  style: TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                    color: AppColors.textPrimary,
+                    fontFamily: 'ADLaMDisplay',
+                  ),
+                ),
+                SizedBox(height: 12),
+                ...items.map(
+                  (item) => Padding(
+                    padding: EdgeInsets.symmetric(vertical: 4),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text(
+                          '${item['name']} x${item['quantity']}',
+                          style: TextStyle(
+                            color: AppColors.textPrimary,
+                            fontFamily: 'ADLaMDisplay',
+                          ),
+                        ),
+                        Text(
+                          'Rs. ${item['price'] * item['quantity']}',
+                          style: TextStyle(
+                            color: AppColors.textPrimary,
+                            fontFamily: 'ADLaMDisplay',
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+                Divider(height: 20, color: AppColors.border),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text(
+                      'Total:',
+                      style: TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                        color: AppColors.textPrimary,
+                        fontFamily: 'ADLaMDisplay',
+                      ),
+                    ),
+                    Text(
+                      'Rs. $total',
+                      style: TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                        color: AppColors.accent,
+                        fontFamily: 'ADLaMDisplay',
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          );
+        }
+        return SizedBox.shrink();
+      },
+    );
+  }
+
   Future<List<Map<String, dynamic>>> _getCartSummary() async {
     if (userId == null) return [];
-
     final cartItems = await DatabaseService.instance.getCartItems(userId!);
     List<Map<String, dynamic>> items = [];
-
     for (var cartItem in cartItems) {
-      final product = await DatabaseService.instance.getProduct(cartItem['productId']);
+      final product = await DatabaseService.instance.getProduct(
+        cartItem['productId'],
+      );
       if (product != null) {
         items.add({
           'name': product['name'],
@@ -400,7 +491,6 @@ class _CheckoutPageState extends State<CheckoutPage> {
         });
       }
     }
-
     return items;
   }
 
@@ -422,7 +512,13 @@ class _CheckoutPageState extends State<CheckoutPage> {
           children: [
             Icon(Icons.check_circle, color: AppColors.success, size: 28),
             SizedBox(width: 8),
-            Text('Order Placed', style: TextStyle(color: AppColors.textPrimary)),
+            Text(
+              'Order Placed',
+              style: TextStyle(
+                color: AppColors.textPrimary,
+                fontFamily: 'ADLaMDisplay',
+              ),
+            ),
           ],
         ),
         content: Column(
@@ -431,7 +527,10 @@ class _CheckoutPageState extends State<CheckoutPage> {
           children: [
             Text(
               'Your order has been placed successfully!',
-              style: TextStyle(color: AppColors.textPrimary),
+              style: TextStyle(
+                color: AppColors.textPrimary,
+                fontFamily: 'ADLaMDisplay',
+              ),
             ),
             SizedBox(height: 12),
             Text(
@@ -439,11 +538,15 @@ class _CheckoutPageState extends State<CheckoutPage> {
               style: TextStyle(
                 fontWeight: FontWeight.bold,
                 color: AppColors.textPrimary,
+                fontFamily: 'ADLaMDisplay',
               ),
             ),
             Text(
               'Total Amount: Rs. $total',
-              style: TextStyle(color: AppColors.textPrimary),
+              style: TextStyle(
+                color: AppColors.textPrimary,
+                fontFamily: 'ADLaMDisplay',
+              ),
             ),
             SizedBox(height: 8),
             Container(
@@ -461,6 +564,7 @@ class _CheckoutPageState extends State<CheckoutPage> {
                     style: TextStyle(
                       color: AppColors.success,
                       fontWeight: FontWeight.bold,
+                      fontFamily: 'ADLaMDisplay',
                     ),
                   ),
                 ],
@@ -474,7 +578,13 @@ class _CheckoutPageState extends State<CheckoutPage> {
               Navigator.pop(context);
               Navigator.pop(context);
             },
-            child: Text('OK', style: TextStyle(color: AppColors.accent)),
+            child: Text(
+              'OK',
+              style: TextStyle(
+                color: AppColors.accent,
+                fontFamily: 'ADLaMDisplay',
+              ),
+            ),
           ),
         ],
       ),

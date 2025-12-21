@@ -16,7 +16,7 @@ class SplashScreenState extends State<SplashScreen> {
   @override
   void initState() {
     super.initState();
-    Timer(Duration(seconds: 3), () {
+    Timer(Duration(seconds: 4), () {
       Navigator.pushReplacementNamed(context, '/home');
     });
   }
@@ -62,7 +62,7 @@ class _LoginScreenState extends State<LoginScreen> {
 
   final TextEditingController emailController = TextEditingController();
   final TextEditingController passwordController = TextEditingController();
- 
+
   @override
   void dispose() {
     emailController.dispose();
@@ -95,7 +95,7 @@ class _LoginScreenState extends State<LoginScreen> {
       setState(() {
         _isLoading = false;
       });
-      
+
       Navigator.pushReplacementNamed(context, '/home');
     } on FirebaseAuthException catch (e) {
       setState(() {
@@ -112,10 +112,7 @@ class _LoginScreenState extends State<LoginScreen> {
       }
 
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(message),
-          backgroundColor: AppColors.error,
-        ),
+        SnackBar(content: Text(message), backgroundColor: AppColors.error),
       );
     }
   }
@@ -141,7 +138,9 @@ class _LoginScreenState extends State<LoginScreen> {
             Container(
               height: 280,
               width: double.infinity,
-              decoration: BoxDecoration(gradient: AppGradients.splashBackground),
+              decoration: BoxDecoration(
+                gradient: AppGradients.splashBackground,
+              ),
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
@@ -347,7 +346,8 @@ class _SignUpScreenState extends State<SignUpScreen> {
   final TextEditingController nameController = TextEditingController();
   final TextEditingController emailController = TextEditingController();
   final TextEditingController passwordController = TextEditingController();
-  final TextEditingController confirmPasswordController = TextEditingController();
+  final TextEditingController confirmPasswordController =
+      TextEditingController();
 
   @override
   void dispose() {
@@ -397,11 +397,11 @@ class _SignUpScreenState extends State<SignUpScreen> {
     });
 
     try {
-      UserCredential userCredential =
-          await FirebaseAuth.instance.createUserWithEmailAndPassword(
-        email: emailController.text.trim(),
-        password: passwordController.text.trim(),
-      );
+      UserCredential userCredential = await FirebaseAuth.instance
+          .createUserWithEmailAndPassword(
+            email: emailController.text.trim(),
+            password: passwordController.text.trim(),
+          );
 
       await DatabaseService.instance.createUser(
         uid: userCredential.user!.uid,
@@ -442,10 +442,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
       }
 
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(message),
-          backgroundColor: AppColors.error,
-        ),
+        SnackBar(content: Text(message), backgroundColor: AppColors.error),
       );
     } catch (e) {
       setState(() {
@@ -483,7 +480,9 @@ class _SignUpScreenState extends State<SignUpScreen> {
             Container(
               height: 280,
               width: double.infinity,
-              decoration: BoxDecoration(gradient: AppGradients.splashBackground),
+              decoration: BoxDecoration(
+                gradient: AppGradients.splashBackground,
+              ),
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
@@ -657,7 +656,8 @@ class _SignUpScreenState extends State<SignUpScreen> {
                         ),
                         onPressed: () {
                           setState(() {
-                            _isConfirmPasswordVisible = !_isConfirmPasswordVisible;
+                            _isConfirmPasswordVisible =
+                                !_isConfirmPasswordVisible;
                           });
                         },
                       ),

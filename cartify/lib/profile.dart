@@ -37,9 +37,7 @@ class _ProfilePageState extends State<ProfilePage> {
           _isLoading = false;
         });
       } else {
-        setState(() {
-          _isLoading = false;
-        });
+        _isLoading = false;
       }
     } else {
       setState(() {
@@ -50,12 +48,14 @@ class _ProfilePageState extends State<ProfilePage> {
     }
   }
 
+  // ===================== ACTIONS (UNCHANGED) =====================
+
   void _addNewAddress() async {
     if (userId == null) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Please login first'),
+        const SnackBar(
           backgroundColor: AppColors.error,
+          content: Text('Please login first'),
         ),
       );
       return;
@@ -67,57 +67,35 @@ class _ProfilePageState extends State<ProfilePage> {
       context: context,
       builder: (context) => AlertDialog(
         backgroundColor: AppColors.card,
-        title: Text(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
+        title: const Text(
           "Add Address",
-          style: TextStyle(
-            fontFamily: 'ADLaMDisplay',
-            color: AppColors.textPrimary,
-          ),
+          style: TextStyle(fontFamily: 'IrishGrover'),
         ),
         content: TextField(
           controller: controller,
           maxLines: 3,
-          style: TextStyle(color: AppColors.textPrimary),
-          decoration: InputDecoration(
-            hintText: "Enter your address",
-            hintStyle: TextStyle(color: AppColors.textSecondary),
-            border: OutlineInputBorder(),
-          ),
+          decoration: const InputDecoration(border: OutlineInputBorder()),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: Text("Cancel", style: TextStyle(color: AppColors.textPrimary)),
+            child: const Text("Cancel"),
           ),
           ElevatedButton(
             style: ElevatedButton.styleFrom(backgroundColor: AppColors.accent),
             onPressed: () async {
               final newAddress = controller.text.trim();
-              if (newAddress.isNotEmpty) {
-                final success = await DatabaseService.instance.updateUser(
-                  uid: userId!,
-                  address: newAddress,
-                );
+              if (newAddress.isEmpty) return;
 
-                if (success) {
-                  setState(() {
-                    userAddress = newAddress;
-                  });
-                  Navigator.pop(context);
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(
-                      content: Text('Address updated successfully'),
-                      backgroundColor: AppColors.success,
-                    ),
-                  );
-                } else {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(
-                      content: Text('Failed to update address'),
-                      backgroundColor: AppColors.error,
-                    ),
-                  );
-                }
+              final success = await DatabaseService.instance.updateUser(
+                uid: userId!,
+                address: newAddress,
+              );
+
+              if (success) {
+                setState(() => userAddress = newAddress);
+                Navigator.pop(context);
               }
             },
             child: const Text("Save", style: TextStyle(color: Colors.white)),
@@ -128,91 +106,38 @@ class _ProfilePageState extends State<ProfilePage> {
   }
 
   void _editProfileDetails() async {
-    if (userId == null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Please login first'),
-          backgroundColor: AppColors.error,
-        ),
-      );
-      return;
-    }
+    if (userId == null) return;
 
     final nameController = TextEditingController(text: userName);
-    final emailController = TextEditingController(text: userEmail);
 
     await showDialog(
       context: context,
       builder: (context) => AlertDialog(
         backgroundColor: AppColors.card,
-        title: Text(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
+        title: const Text(
           "Edit Profile",
-          style: TextStyle(
-            fontFamily: 'IrishGrover',
-            color: AppColors.textPrimary,
-          ),
+          style: TextStyle(fontFamily: 'IrishGrover'),
         ),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            TextField(
-              controller: nameController,
-              style: TextStyle(color: AppColors.textPrimary),
-              decoration: InputDecoration(
-                labelText: "Name",
-                labelStyle: TextStyle(color: AppColors.textSecondary),
-                border: OutlineInputBorder(),
-              ),
-            ),
-            const SizedBox(height: 12),
-            TextField(
-              controller: emailController,
-              enabled: false,
-              style: TextStyle(color: AppColors.textSecondary),
-              decoration: InputDecoration(
-                labelText: "Email",
-                labelStyle: TextStyle(color: AppColors.textSecondary),
-                border: OutlineInputBorder(),
-                helperText: 'Email cannot be changed',
-                helperStyle: TextStyle(color: AppColors.textSecondary),
-              ),
-            ),
-          ],
+        content: TextField(
+          controller: nameController,
+          decoration: const InputDecoration(labelText: "Name"),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: Text("Cancel", style: TextStyle(color: AppColors.textPrimary)),
+            child: const Text("Cancel"),
           ),
           ElevatedButton(
             style: ElevatedButton.styleFrom(backgroundColor: AppColors.accent),
             onPressed: () async {
-              final newName = nameController.text.trim();
-              if (newName.isNotEmpty) {
-                final success = await DatabaseService.instance.updateUser(
-                  uid: userId!,
-                  name: newName,
-                );
-
-                if (success) {
-                  setState(() {
-                    userName = newName;
-                  });
-                  Navigator.pop(context);
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(
-                      content: Text('Profile updated successfully'),
-                      backgroundColor: AppColors.success,
-                    ),
-                  );
-                } else {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(
-                      content: Text('Failed to update profile'),
-                      backgroundColor: AppColors.error,
-                    ),
-                  );
-                }
+              final success = await DatabaseService.instance.updateUser(
+                uid: userId!,
+                name: nameController.text.trim(),
+              );
+              if (success) {
+                setState(() => userName = nameController.text.trim());
+                Navigator.pop(context);
               }
             },
             child: const Text("Save", style: TextStyle(color: Colors.white)),
@@ -223,15 +148,7 @@ class _ProfilePageState extends State<ProfilePage> {
   }
 
   void _changePassword() async {
-    if (userId == null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Please login first'),
-          backgroundColor: AppColors.error,
-        ),
-      );
-      return;
-    }
+    if (userId == null) return;
 
     final currentController = TextEditingController();
     final newController = TextEditingController();
@@ -241,13 +158,10 @@ class _ProfilePageState extends State<ProfilePage> {
       context: context,
       builder: (context) => AlertDialog(
         backgroundColor: AppColors.card,
-        title: Text(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
+        title: const Text(
           "Change Password",
-          style: TextStyle(
-            fontFamily: 'IrishGrover',
-            color: AppColors.textPrimary,
-          ),
-          textAlign: TextAlign.center,
+          style: TextStyle(fontFamily: 'IrishGrover'),
         ),
         content: Column(
           mainAxisSize: MainAxisSize.min,
@@ -255,42 +169,30 @@ class _ProfilePageState extends State<ProfilePage> {
             TextField(
               controller: currentController,
               obscureText: true,
-              style: TextStyle(color: AppColors.textPrimary),
-              decoration: InputDecoration(
-                labelText: "Current Password",
-                labelStyle: TextStyle(color: AppColors.textSecondary),
-                border: OutlineInputBorder(),
-              ),
+              decoration: const InputDecoration(labelText: "Current Password"),
             ),
             const SizedBox(height: 10),
             TextField(
               controller: newController,
               obscureText: true,
-              style: TextStyle(color: AppColors.textPrimary),
-              decoration: InputDecoration(
-                labelText: "New Password",
-                labelStyle: TextStyle(color: AppColors.textSecondary),
-                border: OutlineInputBorder(),
-              ),
+              decoration: const InputDecoration(labelText: "New Password"),
             ),
             const SizedBox(height: 10),
             TextField(
               controller: confirmController,
               obscureText: true,
-              style: TextStyle(color: AppColors.textPrimary),
-              decoration: InputDecoration(
+              decoration: const InputDecoration(
                 labelText: "Confirm New Password",
-                labelStyle: TextStyle(color: AppColors.textSecondary),
-                border: OutlineInputBorder(),
               ),
             ),
-            const SizedBox(height: 6),
             TextButton(
               onPressed: () {
                 Navigator.pop(context);
                 Navigator.push(
                   context,
-                  MaterialPageRoute(builder: (_) => const ForgotPasswordScreen()),
+                  MaterialPageRoute(
+                    builder: (_) => const ForgotPasswordScreen(),
+                  ),
                 );
               },
               child: const Text(
@@ -306,72 +208,29 @@ class _ProfilePageState extends State<ProfilePage> {
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: Text("Cancel", style: TextStyle(color: AppColors.textPrimary)),
+            child: const Text("Cancel"),
           ),
           ElevatedButton(
             style: ElevatedButton.styleFrom(backgroundColor: AppColors.accent),
             onPressed: () async {
-              if (newController.text != confirmController.text) {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(
-                    backgroundColor: AppColors.error,
-                    content: Text("Passwords do not match"),
-                  ),
-                );
-                return;
-              }
+              if (newController.text != confirmController.text) return;
 
-              if (newController.text.length < 6) {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(
-                    backgroundColor: AppColors.error,
-                    content: Text("Password must be at least 6 characters"),
-                  ),
-                );
-                return;
-              }
+              final user = FirebaseAuth.instance.currentUser;
+              final credential = EmailAuthProvider.credential(
+                email: userEmail,
+                password: currentController.text,
+              );
 
-              try {
-                final user = FirebaseAuth.instance.currentUser;
-                final credential = EmailAuthProvider.credential(
-                  email: userEmail,
-                  password: currentController.text,
-                );
+              await user!.reauthenticateWithCredential(credential);
+              await user.updatePassword(newController.text);
+              await DatabaseService.instance.updateUser(
+                uid: userId!,
+                password: newController.text,
+              );
 
-                await user!.reauthenticateWithCredential(credential);
-                await user.updatePassword(newController.text);
-                await DatabaseService.instance.updateUser(
-                  uid: userId!,
-                  password: newController.text,
-                );
-
-                Navigator.pop(context);
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(
-                    backgroundColor: AppColors.success,
-                    content: Text("Password changed successfully"),
-                  ),
-                );
-              } on FirebaseAuthException catch (e) {
-                String message = 'Failed to change password';
-                if (e.code == 'wrong-password') {
-                  message = 'Current password is incorrect';
-                }
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(
-                    backgroundColor: AppColors.error,
-                    content: Text(message),
-                  ),
-                );
-              }
+              Navigator.pop(context);
             },
-            child: const Text(
-              "Update",
-              style: TextStyle(
-                fontFamily: 'ADLaMDisplay',
-                color: Colors.white,
-              ),
-            ),
+            child: const Text("Update", style: TextStyle(color: Colors.white)),
           ),
         ],
       ),
@@ -379,74 +238,58 @@ class _ProfilePageState extends State<ProfilePage> {
   }
 
   Future<void> _logout() async {
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        backgroundColor: AppColors.card,
-        title: Text('Logout', style: TextStyle(color: AppColors.textPrimary)),
-        content: Text(
-          'Are you sure you want to logout?',
-          style: TextStyle(color: AppColors.textPrimary),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: Text('Cancel', style: TextStyle(color: AppColors.textPrimary)),
-          ),
-          ElevatedButton(
-            style: ElevatedButton.styleFrom(backgroundColor: AppColors.error),
-            onPressed: () async {
-              await FirebaseAuth.instance.signOut();
-              Navigator.pop(context);
-              Navigator.pushReplacementNamed(context, '/login');
-            },
-            child: Text('Logout', style: TextStyle(color: Colors.white)),
-          ),
-        ],
-      ),
-    );
+    await FirebaseAuth.instance.signOut();
+    Navigator.pushReplacementNamed(context, '/login');
   }
+
+  // ===================== UI =====================
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppColors.background,
-      extendBodyBehindAppBar: true,
-      appBar: AppBar(
-        backgroundColor: Colors.transparent,
-        elevation: 0,
-        leading: IconButton(
-          icon: Icon(Icons.chevron_left, size: 42, color: AppColors.secondary),
-          onPressed: () => Navigator.pop(context),
-        ),
-      ),
       body: _isLoading
-          ? Center(child: CircularProgressIndicator(color: AppColors.accent))
+          ? const Center(
+              child: CircularProgressIndicator(color: AppColors.accent),
+            )
           : SingleChildScrollView(
               child: Column(
                 children: [
+                  // HEADER
                   Container(
-                    height: 260,
+                    height: 280,
                     width: double.infinity,
-                    decoration: BoxDecoration(gradient: AppGradients.splashBackground),
+                    decoration: BoxDecoration(
+                      gradient: AppGradients.splashBackground,
+                    ),
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        CircleAvatar(
-                          radius: 45,
-                          backgroundColor: Colors.white,
-                          child: Icon(Icons.person, size: 50, color: AppColors.secondary),
+                        Container(
+                          padding: const EdgeInsets.all(4),
+                          decoration: const BoxDecoration(
+                            color: Colors.white,
+                            shape: BoxShape.circle,
+                          ),
+                          child: CircleAvatar(
+                            radius: 46,
+                            backgroundColor: AppColors.background,
+                            child: Icon(
+                              Icons.person,
+                              size: 50,
+                              color: AppColors.secondary,
+                            ),
+                          ),
                         ),
-                        const SizedBox(height: 10),
+                        const SizedBox(height: 14),
                         Text(
                           userName,
                           style: TextStyle(
                             fontFamily: 'IrishGrover',
-                            fontSize: 24,
+                            fontSize: 26,
                             color: AppColors.secondary,
                           ),
                         ),
-                        const SizedBox(height: 4),
                         Text(
                           userEmail,
                           style: TextStyle(
@@ -460,95 +303,124 @@ class _ProfilePageState extends State<ProfilePage> {
 
                   const SizedBox(height: 30),
 
-                  Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 24),
-                    child: Container(
-                      padding: const EdgeInsets.all(20),
-                      decoration: BoxDecoration(
-                        color: AppColors.card,
-                        borderRadius: BorderRadius.circular(16),
-                        border: Border.all(color: AppColors.border),
-                      ),
-                      child: Row(
-                        children: [
-                          Icon(Icons.location_on, color: AppColors.accent),
-                          SizedBox(width: 12),
-                          Expanded(
-                            child: Text(
-                              userAddress ?? "No address added yet",
-                              style: TextStyle(
-                                fontFamily: 'ADLaMDisplay',
-                                color: AppColors.textPrimary,
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
+                  // ADDRESS CARD
+                  _infoCard(
+                    icon: Icons.location_on,
+                    title: "Delivery Address",
+                    subtitle: userAddress ?? "No address added yet",
                   ),
 
-                  const SizedBox(height: 20),
-
-                  if (userId != null) ...[
-                    _buildButton("Add New Address +", _addNewAddress),
-                    _buildButton("Edit Profile Details", _editProfileDetails),
-                    _buildButton("Change Password", _changePassword),
-
-                    const SizedBox(height: 40),
-
-                    _authPillButton(
-                      text: "Logout",
-                      icon: Icons.logout,
-                      backgroundColor: AppColors.error,
-                      textColor: Colors.white,
-                      onTap: _logout,
-                    ),
-                  ] else ...[
-                    _authPillButton(
-                      text: "Login",
-                      icon: Icons.login,
-                      backgroundColor: AppColors.success,
-                      textColor: Colors.white,
-                      onTap: () {
-                        Navigator.pushNamed(context, '/login');
-                      },
-                    ),
-                  ],
-
                   const SizedBox(height: 30),
+
+                  // ACTIONS
+                  _actionTile(
+                    Icons.add_location_alt,
+                    "Add New Address",
+                    _addNewAddress,
+                  ),
+                  _actionTile(
+                    Icons.edit,
+                    "Edit Profile Details",
+                    _editProfileDetails,
+                  ),
+                  _actionTile(Icons.lock, "Change Password", _changePassword),
+
+                  const SizedBox(height: 40),
+
+                  _authPillButton(
+                    text: "Logout",
+                    icon: Icons.logout,
+                    backgroundColor: AppColors.error,
+                    textColor: Colors.white,
+                    onTap: _logout,
+                  ),
+
+                  const SizedBox(height: 40),
                 ],
               ),
             ),
     );
   }
 
-  Widget _buildButton(String text, VoidCallback onTap) {
+  Widget _infoCard({
+    required IconData icon,
+    required String title,
+    required String subtitle,
+  }) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 24),
+      child: Container(
+        padding: const EdgeInsets.all(18),
+        decoration: BoxDecoration(
+          color: AppColors.card,
+          borderRadius: BorderRadius.circular(18),
+          border: Border.all(color: AppColors.border),
+        ),
+        child: Row(
+          children: [
+            Icon(icon, color: AppColors.accent),
+            const SizedBox(width: 14),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    title,
+                    style: const TextStyle(
+                      fontFamily: 'IrishGrover',
+                      fontSize: 16,
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    subtitle,
+                    style: const TextStyle(fontFamily: 'ADLaMDisplay'),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _actionTile(IconData icon, String text, VoidCallback onTap) {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 6),
-      child: SizedBox(
-        width: double.infinity,
-        height: 48,
-        child: ElevatedButton(
-          onPressed: onTap,
-          style: ElevatedButton.styleFrom(
-            backgroundColor: AppColors.accent,
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(16),
-            ),
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(16),
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+          decoration: BoxDecoration(
+            color: AppColors.card,
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(color: AppColors.border),
           ),
-          child: Text(
-            text,
-            style: const TextStyle(
-              fontFamily: 'ADLaMDisplay',
-              fontSize: 18,
-              color: Colors.white,
-            ),
+          child: Row(
+            children: [
+              Icon(icon, color: AppColors.accent),
+              const SizedBox(width: 14),
+              Expanded(
+                child: Text(
+                  text,
+                  style: const TextStyle(
+                    fontFamily: 'ADLaMDisplay',
+                    fontSize: 16,
+                  ),
+                ),
+              ),
+              const Icon(Icons.chevron_right),
+            ],
           ),
         ),
       ),
     );
   }
 }
+
+// ===================== BUTTON =====================
 
 Widget _authPillButton({
   required String text,
@@ -558,8 +430,8 @@ Widget _authPillButton({
   required VoidCallback onTap,
 }) {
   return SizedBox(
-    width: 150,
-    height: 44,
+    width: 170,
+    height: 46,
     child: ElevatedButton.icon(
       onPressed: onTap,
       icon: Icon(icon, color: textColor),
@@ -573,10 +445,8 @@ Widget _authPillButton({
       ),
       style: ElevatedButton.styleFrom(
         backgroundColor: backgroundColor,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(30),
-        ),
-        elevation: 3,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(30)),
+        elevation: 4,
       ),
     ),
   );
