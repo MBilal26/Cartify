@@ -17,7 +17,7 @@ class _CheckoutPageState extends State<CheckoutPage> {
   final TextEditingController phoneController = TextEditingController();
   final TextEditingController addressController = TextEditingController();
 
-  // New Controllers for Card Details
+  // Card Details Controllers
   final TextEditingController cardNumberController = TextEditingController();
   final TextEditingController expiryController = TextEditingController();
   final TextEditingController cvvController = TextEditingController();
@@ -27,12 +27,15 @@ class _CheckoutPageState extends State<CheckoutPage> {
   String paymentMethod = 'Cash on Delivery';
   bool _isLoading = false;
   String? userId;
+  double walletBalance = 0.0;
+  bool isLoadingWallet = true;
 
   @override
   void initState() {
     super.initState();
     userId = FirebaseAuth.instance.currentUser?.uid;
     _loadUserData();
+    _loadWalletBalance();
   }
 
   @override
@@ -43,6 +46,7 @@ class _CheckoutPageState extends State<CheckoutPage> {
     cardNumberController.dispose();
     expiryController.dispose();
     cvvController.dispose();
+    couponController.dispose();
     super.dispose();
   }
 
@@ -55,6 +59,30 @@ class _CheckoutPageState extends State<CheckoutPage> {
           addressController.text = userData['address'] ?? '';
         });
       }
+    }
+  }
+
+  Future<void> _loadWalletBalance() async {
+    if (userId != null) {
+      try {
+        final balance = await DatabaseService.instance.getWalletBalance(
+          userId!,
+        );
+        setState(() {
+          walletBalance = balance;
+          isLoadingWallet = false;
+        });
+      } catch (e) {
+        print('Error loading wallet balance: $e');
+        setState(() {
+          walletBalance = 0.0;
+          isLoadingWallet = false;
+        });
+      }
+    } else {
+      setState(() {
+        isLoadingWallet = false;
+      });
     }
   }
 
@@ -114,7 +142,6 @@ class _CheckoutPageState extends State<CheckoutPage> {
       }
 
       int subtotal = 0;
-
       List<Map<String, dynamic>> orderItems = [];
 
       for (var cartItem in cartItems) {
@@ -135,8 +162,35 @@ class _CheckoutPageState extends State<CheckoutPage> {
           });
         }
       }
+
       int discount = _calculateDiscount(subtotal);
       int total = subtotal - discount;
+
+      // Check if paying with wallet
+      if (paymentMethod == 'Pay by Wallet') {
+        if (walletBalance < total) {
+          setState(() {
+            _isLoading = false;
+          });
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(
+                'Insufficient wallet balance. You need Rs. ${total - walletBalance.toInt()} more.',
+                style: TextStyle(fontFamily: 'ADLaMDisplay'),
+              ),
+              backgroundColor: AppColors.error,
+              duration: Duration(seconds: 4),
+            ),
+          );
+          return;
+        }
+
+        // Deduct from wallet
+        await DatabaseService.instance.updateWalletBalance(
+          uid: userId!,
+          newBalance: walletBalance - total,
+        );
+      }
 
       final orderId = await DatabaseService.instance.placeOrder(
         userId: userId!,
@@ -238,22 +292,22 @@ class _CheckoutPageState extends State<CheckoutPage> {
                         fontFamily: 'ADLaMDisplay',
                       ),
                     ),
-                    const SizedBox(height: 12),
+                    const SizedBox(height: 18),
                     _buildTextField(
                       nameController,
                       'Full Name',
                       Icons.person_outline,
                     ),
-                    const SizedBox(height: 12),
+                    const SizedBox(height: 16),
                     _buildTextField(
                       phoneController,
                       'Phone Number',
                       Icons.phone_outlined,
                       keyboardType: TextInputType.phone,
                     ),
-                    const SizedBox(height: 12),
+                    const SizedBox(height: 16),
 
-                    // UPDATED: Address field with map button
+                    // Address field with map button
                     Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
@@ -282,8 +336,6 @@ class _CheckoutPageState extends State<CheckoutPage> {
                           validator: (value) =>
                               value!.isEmpty ? 'This field is required' : null,
                         ),
-
-                        // NEW: Map button below address field
                         SizedBox(height: 8),
                         SizedBox(
                           width: double.infinity,
@@ -323,6 +375,8 @@ class _CheckoutPageState extends State<CheckoutPage> {
                       ),
                     ),
                     const SizedBox(height: 8),
+
+                    // Cash on Delivery
                     RadioListTile(
                       value: 'Cash on Delivery',
                       groupValue: paymentMethod,
@@ -337,6 +391,8 @@ class _CheckoutPageState extends State<CheckoutPage> {
                           setState(() => paymentMethod = value!),
                       activeColor: AppColors.accent,
                     ),
+
+                    // Card Payment
                     RadioListTile(
                       value: 'Card Payment',
                       groupValue: paymentMethod,
@@ -346,6 +402,60 @@ class _CheckoutPageState extends State<CheckoutPage> {
                           color: AppColors.textPrimary,
                           fontFamily: 'ADLaMDisplay',
                         ),
+                      ),
+                      onChanged: (value) =>
+                          setState(() => paymentMethod = value!),
+                      activeColor: AppColors.accent,
+                    ),
+
+                    // Pay by Wallet - NEW
+                    RadioListTile(
+                      value: 'Pay by Wallet',
+                      groupValue: paymentMethod,
+                      title: Row(
+                        children: [
+                          Text(
+                            'Pay by Wallet',
+                            style: TextStyle(
+                              color: AppColors.textPrimary,
+                              fontFamily: 'ADLaMDisplay',
+                            ),
+                          ),
+                          Spacer(),
+                          if (isLoadingWallet)
+                            SizedBox(
+                              width: 16,
+                              height: 16,
+                              child: CircularProgressIndicator(
+                                strokeWidth: 2,
+                                color: AppColors.accent,
+                              ),
+                            )
+                          else
+                            Container(
+                              padding: EdgeInsets.symmetric(
+                                horizontal: 10,
+                                vertical: 4,
+                              ),
+                              decoration: BoxDecoration(
+                                color: walletBalance > 0
+                                    ? AppColors.accent.withOpacity(0.1)
+                                    : Colors.red.withOpacity(0.1),
+                                borderRadius: BorderRadius.circular(8),
+                              ),
+                              child: Text(
+                                'Rs. ${walletBalance.toStringAsFixed(2)}',
+                                style: TextStyle(
+                                  color: walletBalance > 0
+                                      ? AppColors.accent
+                                      : Colors.red,
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 12,
+                                  fontFamily: 'ADLaMDisplay',
+                                ),
+                              ),
+                            ),
+                        ],
                       ),
                       onChanged: (value) =>
                           setState(() => paymentMethod = value!),
@@ -398,6 +508,78 @@ class _CheckoutPageState extends State<CheckoutPage> {
                           ],
                         ),
                       ),
+                    ],
+
+                    // Wallet Info Banner - NEW
+                    if (paymentMethod == 'Pay by Wallet') ...[
+                      const SizedBox(height: 16),
+                      Container(
+                        padding: EdgeInsets.all(12),
+                        decoration: BoxDecoration(
+                          color: walletBalance > 0
+                              ? AppColors.accent.withOpacity(0.1)
+                              : Colors.red.withOpacity(0.1),
+                          borderRadius: BorderRadius.circular(12),
+                          border: Border.all(
+                            color: walletBalance > 0
+                                ? AppColors.accent.withOpacity(0.3)
+                                : Colors.red.withOpacity(0.3),
+                          ),
+                        ),
+                        child: Row(
+                          children: [
+                            Icon(
+                              walletBalance > 0
+                                  ? Icons.account_balance_wallet
+                                  : Icons.warning_amber_rounded,
+                              color: walletBalance > 0
+                                  ? AppColors.accent
+                                  : Colors.red,
+                            ),
+                            SizedBox(width: 12),
+                            Expanded(
+                              child: Text(
+                                walletBalance > 0
+                                    ? 'Payment will be deducted from your wallet balance'
+                                    : 'Insufficient wallet balance. Please add money to your wallet or choose another payment method.',
+                                style: TextStyle(
+                                  color: walletBalance > 0
+                                      ? AppColors.textPrimary
+                                      : Colors.red,
+                                  fontSize: 13,
+                                  fontFamily: 'ADLaMDisplay',
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      if (walletBalance <= 0) ...[
+                        SizedBox(height: 12),
+                        SizedBox(
+                          width: double.infinity,
+                          child: OutlinedButton.icon(
+                            onPressed: () {
+                              Navigator.pushNamed(context, '/profile');
+                            },
+                            icon: Icon(Icons.add, color: AppColors.accent),
+                            label: Text(
+                              'Add Money to Wallet',
+                              style: TextStyle(
+                                color: AppColors.accent,
+                                fontFamily: 'ADLaMDisplay',
+                              ),
+                            ),
+                            style: OutlinedButton.styleFrom(
+                              padding: EdgeInsets.symmetric(vertical: 12),
+                              side: BorderSide(color: AppColors.accent),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(8),
+                              ),
+                            ),
+                          ),
+                        ),
+                      ],
                     ],
 
                     const SizedBox(height: 24),
@@ -533,11 +715,17 @@ class _CheckoutPageState extends State<CheckoutPage> {
                   children: [
                     Text(
                       'Subtotal',
-                      style: TextStyle(fontFamily: 'ADLaMDisplay'),
+                      style: TextStyle(
+                        fontFamily: 'ADLaMDisplay',
+                        color: AppColors.textPrimary,
+                      ),
                     ),
                     Text(
                       'Rs. $subtotal',
-                      style: TextStyle(fontFamily: 'ADLaMDisplay'),
+                      style: TextStyle(
+                        fontFamily: 'ADLaMDisplay',
+                        color: AppColors.textPrimary,
+                      ),
                     ),
                   ],
                 ),
@@ -576,6 +764,7 @@ class _CheckoutPageState extends State<CheckoutPage> {
                         fontSize: 18,
                         fontWeight: FontWeight.bold,
                         fontFamily: 'ADLaMDisplay',
+                        color: AppColors.textPrimary,
                       ),
                     ),
                     Text(
@@ -666,6 +855,12 @@ class _CheckoutPageState extends State<CheckoutPage> {
           const SizedBox(width: 8),
           Expanded(
             child: TextField(
+              style: TextStyle(
+                color:
+                    AppColors.textPrimary, // This changes the typing text color
+                fontFamily: 'ADLaMDisplay',
+                fontSize: 16,
+              ),
               controller: couponController,
               decoration: InputDecoration(
                 hintText: 'Coupon code',
@@ -735,6 +930,37 @@ class _CheckoutPageState extends State<CheckoutPage> {
                 fontFamily: 'ADLaMDisplay',
               ),
             ),
+            if (paymentMethod == 'Pay by Wallet') ...[
+              SizedBox(height: 8),
+              Container(
+                padding: EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  color: AppColors.accent.withOpacity(0.1),
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: Row(
+                  children: [
+                    Icon(
+                      Icons.account_balance_wallet,
+                      color: AppColors.accent,
+                      size: 20,
+                    ),
+                    SizedBox(width: 8),
+                    Expanded(
+                      child: Text(
+                        'Paid via Wallet',
+                        style: TextStyle(
+                          color: AppColors.accent,
+                          fontWeight: FontWeight.bold,
+                          fontFamily: 'ADLaMDisplay',
+                          fontSize: 12,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
             SizedBox(height: 8),
             Container(
               padding: EdgeInsets.all(8),

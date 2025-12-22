@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'colors.dart';
 import 'reset_password.dart';
 import 'database_functions.dart';
@@ -81,10 +82,7 @@ class _SplashScreenState extends State<SplashScreen>
                   ),
                 ),
                 const SizedBox(height: 30),
-                const CircularProgressIndicator(
-                  color: Colors.white,
-                  strokeWidth: 2.5,
-                ),
+                SpinKitThreeBounce(color: AppColors.accent, size: 25.0),
               ],
             ),
           ),
@@ -205,7 +203,7 @@ class _LoginScreenState extends State<LoginScreen> {
               ),
             ),
 
-            const SizedBox(height: 30),
+            const SizedBox(height: 15),
 
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 24),
@@ -288,10 +286,8 @@ class _LoginScreenState extends State<LoginScreen> {
               ),
             ),
 
-            const SizedBox(height: 5),
-
             Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 24),
+              padding: const EdgeInsets.only(top: 0, bottom: 5, right: 15),
               child: Align(
                 alignment: Alignment.centerRight,
                 child: TextButton(
@@ -524,7 +520,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
         child: Column(
           children: [
             Container(
-              height: 280,
+              height: 250,
               width: double.infinity,
               decoration: BoxDecoration(
                 gradient: AppGradients.splashBackground,
@@ -547,7 +543,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
               ),
             ),
 
-            const SizedBox(height: 20),
+            const SizedBox(height: 10),
 
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 24),

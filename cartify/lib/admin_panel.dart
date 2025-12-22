@@ -16,6 +16,7 @@ class _AdminPanelPageState extends State<AdminPanelPage>
   List<Map<String, dynamic>> categories = [];
   List<Map<String, dynamic>> orders = [];
   List<Map<String, dynamic>> coupons = [];
+  List<Map<String, dynamic>> users = [];
   bool isLoading = true;
 
   late TabController _tabController;
@@ -31,7 +32,7 @@ class _AdminPanelPageState extends State<AdminPanelPage>
   @override
   void initState() {
     super.initState();
-    // 1. Updated length to 4
+    // Updated to 4 tabs (Analytics, Products, Orders, Coupons)
     _tabController = TabController(length: 4, vsync: this);
     _tabController.addListener(() => setState(() {}));
     _loadData();
@@ -48,7 +49,8 @@ class _AdminPanelPageState extends State<AdminPanelPage>
     products = await DatabaseService.instance.getAllProducts();
     categories = await DatabaseService.instance.getCategories();
     orders = await _getAllOrders();
-    coupons = await DatabaseService.instance.getAllCoupons(); // Fetch from DB
+    coupons = await DatabaseService.instance.getAllCoupons();
+    users = await _getAllUsers();
     _calculateAnalytics();
     setState(() => isLoading = false);
   }
@@ -56,6 +58,7 @@ class _AdminPanelPageState extends State<AdminPanelPage>
   void _calculateAnalytics() {
     totalProducts = products.length;
     totalOrders = orders.length;
+    totalUsers = users.length;
 
     totalRevenue = 0;
     pendingOrders = 0;
@@ -70,21 +73,6 @@ class _AdminPanelPageState extends State<AdminPanelPage>
       } else if (status == 'delivered') {
         deliveredOrders++;
       }
-    }
-
-    _getTotalUsers();
-  }
-
-  Future<void> _getTotalUsers() async {
-    try {
-      final snapshot = await FirebaseFirestore.instance
-          .collection('users')
-          .get();
-      setState(() {
-        totalUsers = snapshot.docs.length;
-      });
-    } catch (e) {
-      print('Error getting users count: $e');
     }
   }
 
@@ -106,11 +94,35 @@ class _AdminPanelPageState extends State<AdminPanelPage>
     }
   }
 
+  Future<List<Map<String, dynamic>>> _getAllUsers() async {
+    try {
+      final snapshot = await FirebaseFirestore.instance
+          .collection('users')
+          .orderBy('createdAt', descending: true)
+          .get();
+
+      return snapshot.docs.map((doc) {
+        final data = doc.data();
+        data['userId'] = doc.id;
+        return data;
+      }).toList();
+    } catch (e) {
+      print('Error loading users: $e');
+      return [];
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppColors.background,
       appBar: AppBar(
+        leading: IconButton(
+          icon: Icon(Icons.chevron_left),
+          onPressed: () {
+            Navigator.pop(context);
+          },
+        ),
         backgroundColor: AppColors.accent,
         title: Text(
           'Admin Panel',
@@ -127,19 +139,23 @@ class _AdminPanelPageState extends State<AdminPanelPage>
           indicatorColor: Colors.white,
           labelColor: Colors.white,
           unselectedLabelColor: Colors.white70,
-          labelStyle: TextStyle(fontFamily: 'ADLaMDisplay'),
-          unselectedLabelStyle: TextStyle(fontFamily: 'ADLaMDisplay'),
+          isScrollable: true,
+          labelStyle: TextStyle(fontFamily: 'ADLaMDisplay', fontSize: 12),
+          unselectedLabelStyle: TextStyle(
+            fontFamily: 'ADLaMDisplay',
+            fontSize: 12,
+          ),
           tabs: [
-            Tab(icon: Icon(Icons.analytics), text: 'Analytics'),
+            Tab(icon: Icon(Icons.analytics, size: 20), text: 'Analytics'),
             Tab(
-              icon: Icon(Icons.inventory_2),
+              icon: Icon(Icons.inventory_2, size: 20),
               text: 'Products (${products.length})',
             ),
             Tab(
-              icon: Icon(Icons.shopping_bag),
+              icon: Icon(Icons.shopping_bag, size: 20),
               text: 'Orders (${orders.length})',
             ),
-            Tab(icon: Icon(Icons.discount), text: 'Coupons'),
+            Tab(icon: Icon(Icons.discount, size: 20), text: 'Coupons'),
           ],
         ),
       ),
@@ -164,13 +180,30 @@ class _AdminPanelPageState extends State<AdminPanelPage>
                 key: ValueKey('add_product_fab'),
                 onPressed: () => _showAddEditProductDialog(),
                 backgroundColor: AppColors.accent,
-                icon: Icon(Icons.add, color: Colors.white),
+                icon: Icon(Icons.add, color: Colors.white, size: 20),
                 label: Text(
                   'Add Product',
                   style: TextStyle(
                     color: Colors.white,
                     fontWeight: FontWeight.bold,
                     fontFamily: 'ADLaMDisplay',
+                    fontSize: 12,
+                  ),
+                ),
+              )
+            : _tabController.index == 3
+            ? FloatingActionButton.extended(
+                key: ValueKey('add_coupon_fab'),
+                onPressed: _showAddCouponDialog,
+                backgroundColor: AppColors.accent,
+                icon: Icon(Icons.add, color: Colors.white, size: 20),
+                label: Text(
+                  'Add Coupon',
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontWeight: FontWeight.bold,
+                    fontFamily: 'ADLaMDisplay',
+                    fontSize: 12,
                   ),
                 ),
               )
@@ -268,12 +301,16 @@ class _AdminPanelPageState extends State<AdminPanelPage>
             ),
             SizedBox(height: 12),
 
-            _buildStatCard(
-              title: 'Total Users',
-              value: '$totalUsers',
-              icon: Icons.people,
-              color: Colors.teal,
-              subtitle: 'Registered customers',
+            // Clickable Total Users Card
+            InkWell(
+              onTap: () => _showAllUsersDialog(),
+              child: _buildStatCard(
+                title: 'Total Users',
+                value: '$totalUsers',
+                icon: Icons.people,
+                color: Colors.teal,
+                subtitle: 'Tap to view all users',
+              ),
             ),
             SizedBox(height: 24),
 
@@ -353,7 +390,11 @@ class _AdminPanelPageState extends State<AdminPanelPage>
                 child: ListTile(
                   leading: CircleAvatar(
                     backgroundColor: AppColors.accent.withOpacity(0.2),
-                    child: Icon(Icons.shopping_bag, color: AppColors.accent),
+                    child: Icon(
+                      Icons.shopping_bag,
+                      color: AppColors.accent,
+                      size: 20,
+                    ),
                   ),
                   title: Text(
                     'Order #${order['orderId'].substring(0, 8)}',
@@ -361,6 +402,7 @@ class _AdminPanelPageState extends State<AdminPanelPage>
                       fontWeight: FontWeight.bold,
                       color: AppColors.textPrimary,
                       fontFamily: 'ADLaMDisplay',
+                      fontSize: 14,
                     ),
                   ),
                   subtitle: Text(
@@ -368,6 +410,7 @@ class _AdminPanelPageState extends State<AdminPanelPage>
                     style: TextStyle(
                       color: AppColors.textSecondary,
                       fontFamily: 'ADLaMDisplay',
+                      fontSize: 12,
                     ),
                   ),
                   trailing: Text(
@@ -376,12 +419,91 @@ class _AdminPanelPageState extends State<AdminPanelPage>
                       fontWeight: FontWeight.bold,
                       color: AppColors.accent,
                       fontFamily: 'ADLaMDisplay',
+                      fontSize: 14,
                     ),
                   ),
                 ),
               );
             }).toList(),
           ],
+        ),
+      ),
+    );
+  }
+
+  void _showAllUsersDialog() {
+    showDialog(
+      context: context,
+      builder: (context) => Dialog(
+        backgroundColor: AppColors.card,
+        child: Container(
+          width: MediaQuery.of(context).size.width * 0.95,
+          height: MediaQuery.of(context).size.height * 0.8,
+          child: Column(
+            children: [
+              Container(
+                padding: EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  color: AppColors.accent,
+                  borderRadius: BorderRadius.only(
+                    topLeft: Radius.circular(4),
+                    topRight: Radius.circular(4),
+                  ),
+                ),
+                child: Row(
+                  children: [
+                    Icon(Icons.people, color: Colors.white, size: 24),
+                    SizedBox(width: 12),
+                    Expanded(
+                      child: Text(
+                        'All Users ($totalUsers)',
+                        style: TextStyle(
+                          fontSize: 20,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.white,
+                          fontFamily: 'IrishGrover',
+                        ),
+                      ),
+                    ),
+                    IconButton(
+                      icon: Icon(Icons.close, color: Colors.white),
+                      onPressed: () => Navigator.pop(context),
+                    ),
+                  ],
+                ),
+              ),
+              Expanded(
+                child: users.isEmpty
+                    ? Center(
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Icon(
+                              Icons.people_outline,
+                              size: 80,
+                              color: Colors.grey,
+                            ),
+                            SizedBox(height: 16),
+                            Text(
+                              'No users registered yet',
+                              style: TextStyle(
+                                fontSize: 18,
+                                color: AppColors.textPrimary,
+                                fontFamily: 'IrishGrover',
+                              ),
+                            ),
+                          ],
+                        ),
+                      )
+                    : ListView.builder(
+                        padding: EdgeInsets.all(16),
+                        itemCount: users.length,
+                        itemBuilder: (context, index) =>
+                            _buildUserCard(users[index]),
+                      ),
+              ),
+            ],
+          ),
         ),
       ),
     );
@@ -429,7 +551,7 @@ class _AdminPanelPageState extends State<AdminPanelPage>
           Text(
             value,
             style: TextStyle(
-              fontSize: isCompact ? 20 : 28,
+              fontSize: isCompact ? 18 : 24,
               fontWeight: FontWeight.bold,
               color: AppColors.textPrimary,
               fontFamily: 'IrishGrover',
@@ -439,7 +561,7 @@ class _AdminPanelPageState extends State<AdminPanelPage>
           Text(
             title,
             style: TextStyle(
-              fontSize: isCompact ? 12 : 14,
+              fontSize: isCompact ? 11 : 13,
               color: AppColors.textSecondary,
               fontFamily: 'ADLaMDisplay',
             ),
@@ -449,7 +571,7 @@ class _AdminPanelPageState extends State<AdminPanelPage>
             Text(
               subtitle,
               style: TextStyle(
-                fontSize: 12,
+                fontSize: 11,
                 color: color,
                 fontWeight: FontWeight.w500,
                 fontFamily: 'ADLaMDisplay',
@@ -467,18 +589,21 @@ class _AdminPanelPageState extends State<AdminPanelPage>
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Text(
-            label,
-            style: TextStyle(
-              fontSize: 14,
-              color: AppColors.textSecondary,
-              fontFamily: 'ADLaMDisplay',
+          Expanded(
+            child: Text(
+              label,
+              style: TextStyle(
+                fontSize: 13,
+                color: AppColors.textSecondary,
+                fontFamily: 'ADLaMDisplay',
+              ),
             ),
           ),
+          SizedBox(width: 8),
           Text(
             value,
             style: TextStyle(
-              fontSize: 16,
+              fontSize: 14,
               fontWeight: FontWeight.bold,
               color: AppColors.textPrimary,
               fontFamily: 'ADLaMDisplay',
@@ -508,7 +633,11 @@ class _AdminPanelPageState extends State<AdminPanelPage>
             SizedBox(height: 8),
             Text(
               'Add your first product using the + button',
-              style: TextStyle(color: Colors.grey, fontFamily: 'ADLaMDisplay'),
+              style: TextStyle(
+                color: Colors.grey,
+                fontFamily: 'ADLaMDisplay',
+                fontSize: 12,
+              ),
             ),
           ],
         ),
@@ -541,7 +670,12 @@ class _AdminPanelPageState extends State<AdminPanelPage>
             SizedBox(height: 8),
             Text(
               'Orders will appear here once customers place them',
-              style: TextStyle(color: Colors.grey, fontFamily: 'ADLaMDisplay'),
+              style: TextStyle(
+                color: Colors.grey,
+                fontFamily: 'ADLaMDisplay',
+                fontSize: 12,
+              ),
+              textAlign: TextAlign.center,
             ),
           ],
         ),
@@ -578,14 +712,14 @@ class _AdminPanelPageState extends State<AdminPanelPage>
                     width: 60,
                     height: 60,
                     color: AppColors.border,
-                    child: Icon(Icons.image, color: Colors.grey),
+                    child: Icon(Icons.image, color: Colors.grey, size: 30),
                   ),
                 )
               : Container(
                   width: 60,
                   height: 60,
                   color: AppColors.border,
-                  child: Icon(Icons.image, color: Colors.grey),
+                  child: Icon(Icons.image, color: Colors.grey, size: 30),
                 ),
         ),
         title: Text(
@@ -594,7 +728,10 @@ class _AdminPanelPageState extends State<AdminPanelPage>
             fontWeight: FontWeight.bold,
             color: AppColors.textPrimary,
             fontFamily: 'ADLaMDisplay',
+            fontSize: 14,
           ),
+          maxLines: 1,
+          overflow: TextOverflow.ellipsis,
         ),
         subtitle: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -605,16 +742,17 @@ class _AdminPanelPageState extends State<AdminPanelPage>
                 color: Colors.green,
                 fontWeight: FontWeight.bold,
                 fontFamily: 'ADLaMDisplay',
+                fontSize: 13,
               ),
             ),
             if (product['description'] != null &&
                 product['description'].isNotEmpty)
               Text(
                 product['description'],
-                maxLines: 2,
+                maxLines: 1,
                 overflow: TextOverflow.ellipsis,
                 style: TextStyle(
-                  fontSize: 12,
+                  fontSize: 11,
                   color: AppColors.textSecondary,
                   fontFamily: 'ADLaMDisplay',
                 ),
@@ -625,12 +763,16 @@ class _AdminPanelPageState extends State<AdminPanelPage>
           mainAxisSize: MainAxisSize.min,
           children: [
             IconButton(
-              icon: Icon(Icons.edit, color: Colors.blue),
+              icon: Icon(Icons.edit, color: Colors.blue, size: 20),
               onPressed: () => _showAddEditProductDialog(product: product),
+              padding: EdgeInsets.all(4),
+              constraints: BoxConstraints(),
             ),
             IconButton(
-              icon: Icon(Icons.delete, color: Colors.red),
+              icon: Icon(Icons.delete, color: Colors.red, size: 20),
               onPressed: () => _confirmDelete(product),
+              padding: EdgeInsets.all(4),
+              constraints: BoxConstraints(),
             ),
           ],
         ),
@@ -644,11 +786,22 @@ class _AdminPanelPageState extends State<AdminPanelPage>
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            const Text("No coupons generated yet."),
+            Icon(Icons.discount_outlined, size: 80, color: Colors.grey),
+            SizedBox(height: 16),
+            const Text(
+              "No coupons generated yet.",
+              style: TextStyle(fontSize: 16),
+            ),
             const SizedBox(height: 10),
             ElevatedButton(
               onPressed: _showAddCouponDialog,
-              child: const Text("Create First Coupon"),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: AppColors.accent,
+              ),
+              child: const Text(
+                "Create First Coupon",
+                style: TextStyle(color: Colors.white),
+              ),
             ),
           ],
         ),
@@ -661,17 +814,23 @@ class _AdminPanelPageState extends State<AdminPanelPage>
         final coupon = coupons[index];
         return Card(
           color: AppColors.card,
+          margin: EdgeInsets.only(bottom: 12),
           child: ListTile(
+            contentPadding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
             title: Text(
               coupon['code'],
               style: const TextStyle(
                 fontWeight: FontWeight.bold,
                 color: Colors.amber,
+                fontSize: 16,
               ),
             ),
-            subtitle: Text("${coupon['discountPercent']}% Off"),
+            subtitle: Text(
+              "${coupon['discountPercent']}% Off",
+              style: TextStyle(fontSize: 13),
+            ),
             trailing: IconButton(
-              icon: const Icon(Icons.delete, color: Colors.red),
+              icon: const Icon(Icons.delete, color: Colors.red, size: 20),
               onPressed: () async {
                 await DatabaseService.instance.deleteCoupon(coupon['code']);
                 _loadData();
@@ -683,37 +842,417 @@ class _AdminPanelPageState extends State<AdminPanelPage>
     );
   }
 
-  void _showAddCouponDialog() {
-    final codeController = TextEditingController();
-    final discountController = TextEditingController();
+  Widget _buildUserCard(Map<String, dynamic> user) {
+    final timestamp = user['createdAt'];
+    final dateStr = timestamp != null
+        ? timestamp.toDate().toString().substring(0, 10)
+        : 'N/A';
+
+    return Card(
+      color: AppColors.card,
+      margin: EdgeInsets.only(bottom: 12),
+      elevation: 2,
+      child: ExpansionTile(
+        leading: CircleAvatar(
+          backgroundColor: AppColors.accent.withOpacity(0.2),
+          child: Text(
+            (user['name'] ?? 'U')[0].toUpperCase(),
+            style: TextStyle(
+              color: AppColors.accent,
+              fontWeight: FontWeight.bold,
+              fontSize: 18,
+            ),
+          ),
+        ),
+        title: Text(
+          user['name'] ?? 'Unknown User',
+          style: TextStyle(
+            fontWeight: FontWeight.bold,
+            color: AppColors.textPrimary,
+            fontFamily: 'ADLaMDisplay',
+            fontSize: 14,
+          ),
+          maxLines: 1,
+          overflow: TextOverflow.ellipsis,
+        ),
+        subtitle: Text(
+          user['email'] ?? 'No email',
+          style: TextStyle(
+            fontSize: 12,
+            color: AppColors.textSecondary,
+            fontFamily: 'ADLaMDisplay',
+          ),
+          maxLines: 1,
+          overflow: TextOverflow.ellipsis,
+        ),
+        children: [
+          Divider(height: 1),
+          SingleChildScrollView(
+            padding: EdgeInsets.all(16),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                _buildUserDetailRow(Icons.calendar_today, 'Joined', dateStr),
+                if (user['address'] != null && user['address'].isNotEmpty) ...[
+                  SizedBox(height: 8),
+                  _buildUserDetailRow(
+                    Icons.location_on,
+                    'Address',
+                    user['address'],
+                  ),
+                ],
+                SizedBox(height: 16),
+                FutureBuilder<int>(
+                  future: DatabaseService.instance.getRewardPoints(
+                    user['userId'],
+                  ),
+                  builder: (context, snapshot) {
+                    final points = snapshot.data ?? 0;
+                    return Container(
+                      padding: EdgeInsets.all(12),
+                      decoration: BoxDecoration(
+                        color: AppColors.accent.withOpacity(0.1),
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: Row(
+                        children: [
+                          Icon(Icons.stars, color: AppColors.accent, size: 20),
+                          SizedBox(width: 8),
+                          Expanded(
+                            child: Text(
+                              'Reward Points: $points',
+                              style: TextStyle(
+                                fontWeight: FontWeight.bold,
+                                color: AppColors.accent,
+                                fontFamily: 'ADLaMDisplay',
+                                fontSize: 13,
+                              ),
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ),
+                        ],
+                      ),
+                    );
+                  },
+                ),
+                SizedBox(height: 12),
+                FutureBuilder<double>(
+                  future: DatabaseService.instance.getWalletBalance(
+                    user['userId'],
+                  ),
+                  builder: (context, snapshot) {
+                    final balance = snapshot.data ?? 0.0;
+                    return Container(
+                      padding: EdgeInsets.all(12),
+                      decoration: BoxDecoration(
+                        color: Colors.green.withOpacity(0.1),
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: Row(
+                        children: [
+                          Icon(
+                            Icons.account_balance_wallet,
+                            color: Colors.green,
+                            size: 20,
+                          ),
+                          SizedBox(width: 8),
+                          Expanded(
+                            child: Text(
+                              'Wallet Balance: Rs. ${balance.toStringAsFixed(2)}',
+                              style: TextStyle(
+                                fontWeight: FontWeight.bold,
+                                color: Colors.green,
+                                fontFamily: 'ADLaMDisplay',
+                                fontSize: 13,
+                              ),
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ),
+                        ],
+                      ),
+                    );
+                  },
+                ),
+                SizedBox(height: 12),
+                FutureBuilder<List<Map<String, dynamic>>>(
+                  future: DatabaseService.instance.getUserOrders(
+                    user['userId'],
+                  ),
+                  builder: (context, snapshot) {
+                    final userOrders = snapshot.data ?? [];
+                    return Container(
+                      padding: EdgeInsets.all(12),
+                      decoration: BoxDecoration(
+                        color: Colors.blue.withOpacity(0.1),
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: Row(
+                        children: [
+                          Icon(
+                            Icons.shopping_bag,
+                            color: Colors.blue,
+                            size: 20,
+                          ),
+                          SizedBox(width: 8),
+                          Expanded(
+                            child: Text(
+                              'Total Orders: ${userOrders.length}',
+                              style: TextStyle(
+                                fontWeight: FontWeight.bold,
+                                color: Colors.blue,
+                                fontFamily: 'ADLaMDisplay',
+                                fontSize: 13,
+                              ),
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ),
+                        ],
+                      ),
+                    );
+                  },
+                ),
+                SizedBox(height: 16),
+                SizedBox(
+                  width: double.infinity,
+                  child: ElevatedButton.icon(
+                    onPressed: () =>
+                        _confirmDeleteUser(user['userId'], user['name']),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.red,
+                      foregroundColor: Colors.white,
+                      padding: EdgeInsets.symmetric(vertical: 12),
+                    ),
+                    icon: Icon(Icons.delete_forever, size: 18),
+                    label: Text(
+                      'Delete User',
+                      style: TextStyle(
+                        fontFamily: 'ADLaMDisplay',
+                        fontSize: 13,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildUserDetailRow(IconData icon, String label, String value) {
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Icon(icon, color: AppColors.accent, size: 18),
+        SizedBox(width: 8),
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                label,
+                style: TextStyle(
+                  fontSize: 11,
+                  color: AppColors.textSecondary,
+                  fontFamily: 'ADLaMDisplay',
+                ),
+              ),
+              Text(
+                value,
+                style: TextStyle(
+                  fontSize: 13,
+                  color: AppColors.textPrimary,
+                  fontFamily: 'ADLaMDisplay',
+                ),
+                overflow: TextOverflow.ellipsis,
+                maxLines: 2,
+              ),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+
+  void _confirmDeleteUser(String userId, String? userName) {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text("New Coupon"),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
+        backgroundColor: AppColors.card,
+        title: Row(
           children: [
-            TextField(
-              controller: codeController,
-              decoration: const InputDecoration(
-                hintText: "Enter Code (e.g., WELCOME10)",
+            Icon(Icons.warning, color: Colors.red, size: 24),
+            SizedBox(width: 8),
+            Expanded(
+              child: Text(
+                'Delete User',
+                style: TextStyle(
+                  color: AppColors.textPrimary,
+                  fontFamily: 'IrishGrover',
+                  fontSize: 18,
+                ),
               ),
-            ),
-            TextField(
-              controller: discountController,
-              decoration: const InputDecoration(
-                hintText: "Discount Percentage",
-              ),
-              keyboardType: TextInputType.number,
             ),
           ],
+        ),
+        content: SingleChildScrollView(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                'Are you sure you want to permanently delete ${userName ?? 'this user'}?',
+                style: TextStyle(
+                  color: AppColors.textPrimary,
+                  fontFamily: 'ADLaMDisplay',
+                  fontSize: 14,
+                ),
+              ),
+              SizedBox(height: 12),
+              Container(
+                padding: EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  color: Colors.red.withOpacity(0.1),
+                  borderRadius: BorderRadius.circular(8),
+                  border: Border.all(color: Colors.red.withOpacity(0.3)),
+                ),
+                child: Row(
+                  children: [
+                    Icon(Icons.info_outline, color: Colors.red, size: 18),
+                    SizedBox(width: 8),
+                    Expanded(
+                      child: Text(
+                        'This will delete all user data and cannot be undone!',
+                        style: TextStyle(
+                          color: Colors.red,
+                          fontWeight: FontWeight.bold,
+                          fontSize: 12,
+                          fontFamily: 'ADLaMDisplay',
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: const Text("Cancel"),
+            child: Text(
+              'Cancel',
+              style: TextStyle(
+                color: AppColors.textPrimary,
+                fontFamily: 'ADLaMDisplay',
+              ),
+            ),
           ),
           ElevatedButton(
+            style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
+            onPressed: () async {
+              Navigator.pop(context);
+              Navigator.pop(context); // Close users dialog too
+
+              try {
+                await FirebaseFirestore.instance
+                    .collection('users')
+                    .doc(userId)
+                    .delete();
+
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content: Text(
+                      'User deleted successfully',
+                      style: TextStyle(fontFamily: 'ADLaMDisplay'),
+                    ),
+                    backgroundColor: AppColors.success,
+                  ),
+                );
+                _loadData();
+              } catch (e) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content: Text(
+                      'Failed to delete user: $e',
+                      style: TextStyle(fontFamily: 'ADLaMDisplay'),
+                    ),
+                    backgroundColor: AppColors.error,
+                  ),
+                );
+              }
+            },
+            child: Text(
+              'Delete',
+              style: TextStyle(color: Colors.white, fontFamily: 'ADLaMDisplay'),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _showAddCouponDialog() {
+    final codeController = TextEditingController();
+    final discountController = TextEditingController();
+
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        backgroundColor: AppColors.card,
+        title: const Text("New Coupon", style: TextStyle(fontSize: 18)),
+        contentPadding: EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+        content: SingleChildScrollView(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              TextField(
+                controller: codeController,
+                style: TextStyle(color: AppColors.textPrimary, fontSize: 14),
+                decoration: InputDecoration(
+                  hintText: "Enter Code (e.g., WELCOME10)",
+                  hintStyle: TextStyle(fontSize: 13),
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  contentPadding: EdgeInsets.symmetric(
+                    horizontal: 12,
+                    vertical: 12,
+                  ),
+                ),
+              ),
+              SizedBox(height: 12),
+              TextField(
+                controller: discountController,
+                style: TextStyle(color: AppColors.textPrimary, fontSize: 14),
+                decoration: InputDecoration(
+                  hintText: "Discount Percentage",
+                  hintStyle: TextStyle(fontSize: 13),
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  contentPadding: EdgeInsets.symmetric(
+                    horizontal: 12,
+                    vertical: 12,
+                  ),
+                ),
+                keyboardType: TextInputType.number,
+              ),
+            ],
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text("Cancel", style: TextStyle(fontSize: 14)),
+          ),
+          ElevatedButton(
+            style: ElevatedButton.styleFrom(
+              backgroundColor: AppColors.accent,
+              padding: EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+            ),
             onPressed: () async {
               if (codeController.text.isNotEmpty &&
                   discountController.text.isNotEmpty) {
@@ -723,10 +1262,13 @@ class _AdminPanelPageState extends State<AdminPanelPage>
                   expiryDate: DateTime.now().add(const Duration(days: 30)),
                 );
                 Navigator.pop(context);
-                _loadData(); // Refresh list
+                _loadData();
               }
             },
-            child: const Text("Save"),
+            child: const Text(
+              "Save",
+              style: TextStyle(color: Colors.white, fontSize: 14),
+            ),
           ),
         ],
       ),
@@ -771,7 +1313,8 @@ class _AdminPanelPageState extends State<AdminPanelPage>
       child: ExpansionTile(
         leading: CircleAvatar(
           backgroundColor: statusColor.withOpacity(0.2),
-          child: Icon(statusIcon, color: statusColor),
+          radius: 18,
+          child: Icon(statusIcon, color: statusColor, size: 20),
         ),
         title: Text(
           'Order #${orderId.substring(0, 8)}',
@@ -779,6 +1322,7 @@ class _AdminPanelPageState extends State<AdminPanelPage>
             fontWeight: FontWeight.bold,
             color: AppColors.textPrimary,
             fontFamily: 'ADLaMDisplay',
+            fontSize: 14,
           ),
         ),
         subtitle: Column(
@@ -788,7 +1332,7 @@ class _AdminPanelPageState extends State<AdminPanelPage>
             Text(
               dateStr,
               style: TextStyle(
-                fontSize: 12,
+                fontSize: 11,
                 color: AppColors.textSecondary,
                 fontFamily: 'ADLaMDisplay',
               ),
@@ -797,15 +1341,15 @@ class _AdminPanelPageState extends State<AdminPanelPage>
             Row(
               children: [
                 Container(
-                  padding: EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                  padding: EdgeInsets.symmetric(horizontal: 6, vertical: 2),
                   decoration: BoxDecoration(
                     color: statusColor.withOpacity(0.2),
-                    borderRadius: BorderRadius.circular(12),
+                    borderRadius: BorderRadius.circular(8),
                   ),
                   child: Text(
                     status.toUpperCase(),
                     style: TextStyle(
-                      fontSize: 10,
+                      fontSize: 9,
                       fontWeight: FontWeight.bold,
                       color: statusColor,
                       fontFamily: 'ADLaMDisplay',
@@ -816,7 +1360,7 @@ class _AdminPanelPageState extends State<AdminPanelPage>
                 Text(
                   '${items.length} items',
                   style: TextStyle(
-                    fontSize: 12,
+                    fontSize: 11,
                     color: AppColors.textSecondary,
                     fontFamily: 'ADLaMDisplay',
                   ),
@@ -829,14 +1373,14 @@ class _AdminPanelPageState extends State<AdminPanelPage>
           'Rs. $totalAmount',
           style: TextStyle(
             fontWeight: FontWeight.bold,
-            fontSize: 16,
+            fontSize: 14,
             color: AppColors.accent,
             fontFamily: 'ADLaMDisplay',
           ),
         ),
         children: [
           Divider(height: 1),
-          Padding(
+          SingleChildScrollView(
             padding: EdgeInsets.all(16),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -847,6 +1391,7 @@ class _AdminPanelPageState extends State<AdminPanelPage>
                     fontWeight: FontWeight.bold,
                     color: AppColors.textPrimary,
                     fontFamily: 'IrishGrover',
+                    fontSize: 14,
                   ),
                 ),
                 SizedBox(height: 8),
@@ -899,12 +1444,15 @@ class _AdminPanelPageState extends State<AdminPanelPage>
                                   fontWeight: FontWeight.w500,
                                   color: AppColors.textPrimary,
                                   fontFamily: 'ADLaMDisplay',
+                                  fontSize: 13,
                                 ),
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
                               ),
                               Text(
                                 'Qty: ${item['quantity']} × Rs. ${item['price']}',
                                 style: TextStyle(
-                                  fontSize: 12,
+                                  fontSize: 11,
                                   color: AppColors.textSecondary,
                                   fontFamily: 'ADLaMDisplay',
                                 ),
@@ -918,6 +1466,7 @@ class _AdminPanelPageState extends State<AdminPanelPage>
                             fontWeight: FontWeight.bold,
                             color: AppColors.textPrimary,
                             fontFamily: 'ADLaMDisplay',
+                            fontSize: 13,
                           ),
                         ),
                       ],
@@ -932,7 +1481,7 @@ class _AdminPanelPageState extends State<AdminPanelPage>
                       'Total Amount:',
                       style: TextStyle(
                         fontWeight: FontWeight.bold,
-                        fontSize: 16,
+                        fontSize: 14,
                         color: AppColors.textPrimary,
                         fontFamily: 'IrishGrover',
                       ),
@@ -941,7 +1490,7 @@ class _AdminPanelPageState extends State<AdminPanelPage>
                       'Rs. $totalAmount',
                       style: TextStyle(
                         fontWeight: FontWeight.bold,
-                        fontSize: 18,
+                        fontSize: 16,
                         color: AppColors.accent,
                         fontFamily: 'IrishGrover',
                       ),
@@ -949,116 +1498,85 @@ class _AdminPanelPageState extends State<AdminPanelPage>
                   ],
                 ),
                 SizedBox(height: 16),
-                Row(
+                Wrap(
+                  spacing: 6,
+                  runSpacing: 6,
                   children: [
-                    Expanded(
-                      child: ElevatedButton(
-                        onPressed: status == 'pending'
-                            ? () => _updateOrderStatus(orderId, 'processing')
-                            : null,
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.blue,
-                          foregroundColor: Colors.white,
-                          disabledBackgroundColor: Colors.grey.shade300,
-                          padding: EdgeInsets.symmetric(vertical: 10),
-                        ),
-                        child: Column(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Icon(Icons.hourglass_empty, size: 16),
-                            SizedBox(height: 2),
-                            Text(
-                              'Process',
-                              style: TextStyle(
-                                fontFamily: 'ADLaMDisplay',
-                                fontSize: 11,
-                              ),
-                            ),
-                          ],
+                    if (status == 'pending')
+                      SizedBox(
+                        height: 36,
+                        child: ElevatedButton.icon(
+                          onPressed: () =>
+                              _updateOrderStatus(orderId, 'processing'),
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Colors.blue,
+                            foregroundColor: Colors.white,
+                            padding: EdgeInsets.symmetric(horizontal: 12),
+                          ),
+                          icon: Icon(Icons.hourglass_empty, size: 16),
+                          label: Text(
+                            'Process',
+                            style: TextStyle(fontSize: 11),
+                          ),
                         ),
                       ),
-                    ),
-                    SizedBox(width: 6),
-                    Expanded(
-                      child: ElevatedButton(
-                        onPressed:
-                            status != 'delivered' && status != 'cancelled'
-                            ? () => _updateOrderStatus(orderId, 'delivered')
-                            : null,
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.green,
-                          foregroundColor: Colors.white,
-                          disabledBackgroundColor: Colors.grey.shade300,
-                          padding: EdgeInsets.symmetric(vertical: 10),
-                        ),
-                        child: Column(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Icon(Icons.check_circle, size: 16),
-                            SizedBox(height: 2),
-                            Text(
-                              'Deliver',
-                              style: TextStyle(
-                                fontFamily: 'ADLaMDisplay',
-                                fontSize: 11,
-                              ),
-                            ),
-                          ],
+                    if (status != 'delivered' && status != 'cancelled')
+                      SizedBox(
+                        height: 36,
+                        child: ElevatedButton.icon(
+                          onPressed: () =>
+                              _updateOrderStatus(orderId, 'delivered'),
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Colors.green,
+                            foregroundColor: Colors.white,
+                            padding: EdgeInsets.symmetric(horizontal: 12),
+                          ),
+                          icon: Icon(Icons.check_circle, size: 16),
+                          label: Text(
+                            'Deliver',
+                            style: TextStyle(fontSize: 11),
+                          ),
                         ),
                       ),
-                    ),
-                    SizedBox(width: 6),
-                    Expanded(
-                      child: ElevatedButton(
-                        onPressed:
-                            status != 'delivered' && status != 'cancelled'
-                            ? () => _updateOrderStatus(orderId, 'cancelled')
-                            : null,
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.red,
-                          foregroundColor: Colors.white,
-                          disabledBackgroundColor: Colors.grey.shade300,
-                          padding: EdgeInsets.symmetric(vertical: 10),
-                        ),
-                        child: Column(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Icon(Icons.cancel, size: 16),
-                            SizedBox(height: 2),
-                            Text(
-                              'Cancel',
-                              style: TextStyle(
-                                fontFamily: 'ADLaMDisplay',
-                                fontSize: 11,
-                              ),
-                            ),
-                          ],
+                    if (status != 'delivered' && status != 'cancelled')
+                      SizedBox(
+                        height: 36,
+                        child: ElevatedButton.icon(
+                          onPressed: () =>
+                              _updateOrderStatus(orderId, 'cancelled'),
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Colors.red,
+                            foregroundColor: Colors.white,
+                            padding: EdgeInsets.symmetric(horizontal: 12),
+                          ),
+                          icon: Icon(Icons.cancel, size: 16),
+                          label: Text('Cancel', style: TextStyle(fontSize: 11)),
                         ),
                       ),
-                    ),
                   ],
                 ),
                 SizedBox(height: 10),
                 SizedBox(
                   width: double.infinity,
+                  height: 36,
                   child: OutlinedButton.icon(
                     onPressed: () => _confirmDeleteOrder(orderId),
                     icon: Icon(
                       Icons.delete_forever,
-                      size: 18,
+                      size: 16,
                       color: Colors.red,
                     ),
                     label: Text(
-                      'Delete Order Permanently',
+                      'Delete Order',
                       style: TextStyle(
                         fontFamily: 'ADLaMDisplay',
                         color: Colors.red,
                         fontWeight: FontWeight.bold,
+                        fontSize: 12,
                       ),
                     ),
                     style: OutlinedButton.styleFrom(
                       side: BorderSide(color: Colors.red),
-                      padding: EdgeInsets.symmetric(vertical: 12),
                     ),
                   ),
                 ),
@@ -1107,7 +1625,7 @@ class _AdminPanelPageState extends State<AdminPanelPage>
         backgroundColor: AppColors.card,
         title: Row(
           children: [
-            Icon(Icons.warning, color: Colors.red),
+            Icon(Icons.warning, color: Colors.red, size: 24),
             SizedBox(width: 8),
             Expanded(
               child: Text(
@@ -1115,49 +1633,53 @@ class _AdminPanelPageState extends State<AdminPanelPage>
                 style: TextStyle(
                   color: AppColors.textPrimary,
                   fontFamily: 'IrishGrover',
+                  fontSize: 18,
                 ),
               ),
             ),
           ],
         ),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              'Are you sure you want to permanently delete this order?',
-              style: TextStyle(
-                color: AppColors.textPrimary,
-                fontFamily: 'ADLaMDisplay',
+        content: SingleChildScrollView(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                'Are you sure you want to permanently delete this order?',
+                style: TextStyle(
+                  color: AppColors.textPrimary,
+                  fontFamily: 'ADLaMDisplay',
+                  fontSize: 14,
+                ),
               ),
-            ),
-            SizedBox(height: 12),
-            Container(
-              padding: EdgeInsets.all(8),
-              decoration: BoxDecoration(
-                color: Colors.red.withOpacity(0.1),
-                borderRadius: BorderRadius.circular(8),
-                border: Border.all(color: Colors.red.withOpacity(0.3)),
-              ),
-              child: Row(
-                children: [
-                  Icon(Icons.info_outline, color: Colors.red, size: 20),
-                  SizedBox(width: 8),
-                  Expanded(
-                    child: Text(
-                      'This action cannot be undone!',
-                      style: TextStyle(
-                        color: Colors.red,
-                        fontWeight: FontWeight.bold,
-                        fontSize: 12,
-                        fontFamily: 'ADLaMDisplay',
+              SizedBox(height: 12),
+              Container(
+                padding: EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  color: Colors.red.withOpacity(0.1),
+                  borderRadius: BorderRadius.circular(8),
+                  border: Border.all(color: Colors.red.withOpacity(0.3)),
+                ),
+                child: Row(
+                  children: [
+                    Icon(Icons.info_outline, color: Colors.red, size: 18),
+                    SizedBox(width: 8),
+                    Expanded(
+                      child: Text(
+                        'This action cannot be undone!',
+                        style: TextStyle(
+                          color: Colors.red,
+                          fontWeight: FontWeight.bold,
+                          fontSize: 12,
+                          fontFamily: 'ADLaMDisplay',
+                        ),
                       ),
                     ),
-                  ),
-                ],
+                  ],
+                ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
         actions: [
           TextButton(
@@ -1235,13 +1757,11 @@ class _AdminPanelPageState extends State<AdminPanelPage>
       context: context,
       builder: (context) => StatefulBuilder(
         builder: (context, setDialogState) {
-          // Update available categories when gender changes
           if (selectedGender != null) {
             availableCategories = categories
                 .where((cat) => cat['parentCategory'] == selectedGender)
                 .toList();
 
-            // If category is selected but not in available categories, reset it
             if (selectedCategoryId != null &&
                 !availableCategories.any(
                   (cat) => cat['id'] == selectedCategoryId,
@@ -1257,8 +1777,10 @@ class _AdminPanelPageState extends State<AdminPanelPage>
               style: TextStyle(
                 color: AppColors.textPrimary,
                 fontFamily: 'IrishGrover',
+                fontSize: 18,
               ),
             ),
+            contentPadding: EdgeInsets.symmetric(horizontal: 20, vertical: 16),
             content: SingleChildScrollView(
               child: Column(
                 mainAxisSize: MainAxisSize.min,
@@ -1268,12 +1790,14 @@ class _AdminPanelPageState extends State<AdminPanelPage>
                     style: TextStyle(
                       color: AppColors.textPrimary,
                       fontFamily: 'ADLaMDisplay',
+                      fontSize: 14,
                     ),
                     decoration: InputDecoration(
                       labelText: 'Product Name *',
                       labelStyle: TextStyle(
                         color: AppColors.textSecondary,
                         fontFamily: 'ADLaMDisplay',
+                        fontSize: 13,
                       ),
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(12),
@@ -1281,6 +1805,10 @@ class _AdminPanelPageState extends State<AdminPanelPage>
                       enabledBorder: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(12),
                         borderSide: BorderSide(color: AppColors.border),
+                      ),
+                      contentPadding: EdgeInsets.symmetric(
+                        horizontal: 12,
+                        vertical: 12,
                       ),
                     ),
                   ),
@@ -1291,12 +1819,14 @@ class _AdminPanelPageState extends State<AdminPanelPage>
                     style: TextStyle(
                       color: AppColors.textPrimary,
                       fontFamily: 'ADLaMDisplay',
+                      fontSize: 14,
                     ),
                     decoration: InputDecoration(
                       labelText: 'Price (Rs.) *',
                       labelStyle: TextStyle(
                         color: AppColors.textSecondary,
                         fontFamily: 'ADLaMDisplay',
+                        fontSize: 13,
                       ),
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(12),
@@ -1304,22 +1834,28 @@ class _AdminPanelPageState extends State<AdminPanelPage>
                       enabledBorder: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(12),
                         borderSide: BorderSide(color: AppColors.border),
+                      ),
+                      contentPadding: EdgeInsets.symmetric(
+                        horizontal: 12,
+                        vertical: 12,
                       ),
                     ),
                   ),
                   SizedBox(height: 12),
                   TextField(
                     controller: descriptionController,
-                    maxLines: 3,
+                    maxLines: 2,
                     style: TextStyle(
                       color: AppColors.textPrimary,
                       fontFamily: 'ADLaMDisplay',
+                      fontSize: 14,
                     ),
                     decoration: InputDecoration(
                       labelText: 'Description',
                       labelStyle: TextStyle(
                         color: AppColors.textSecondary,
                         fontFamily: 'ADLaMDisplay',
+                        fontSize: 13,
                       ),
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(12),
@@ -1327,6 +1863,10 @@ class _AdminPanelPageState extends State<AdminPanelPage>
                       enabledBorder: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(12),
                         borderSide: BorderSide(color: AppColors.border),
+                      ),
+                      contentPadding: EdgeInsets.symmetric(
+                        horizontal: 12,
+                        vertical: 12,
                       ),
                     ),
                   ),
@@ -1337,12 +1877,14 @@ class _AdminPanelPageState extends State<AdminPanelPage>
                     style: TextStyle(
                       color: AppColors.textPrimary,
                       fontFamily: 'ADLaMDisplay',
+                      fontSize: 14,
                     ),
                     decoration: InputDecoration(
                       labelText: 'Gender *',
                       labelStyle: TextStyle(
                         color: AppColors.textSecondary,
                         fontFamily: 'ADLaMDisplay',
+                        fontSize: 13,
                       ),
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(12),
@@ -1350,6 +1892,10 @@ class _AdminPanelPageState extends State<AdminPanelPage>
                       enabledBorder: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(12),
                         borderSide: BorderSide(color: AppColors.border),
+                      ),
+                      contentPadding: EdgeInsets.symmetric(
+                        horizontal: 12,
+                        vertical: 12,
                       ),
                     ),
                     items: ['Men', 'Women']
@@ -1363,8 +1909,7 @@ class _AdminPanelPageState extends State<AdminPanelPage>
                     onChanged: (value) {
                       setDialogState(() {
                         selectedGender = value;
-                        selectedCategoryId =
-                            null; // Reset category when gender changes
+                        selectedCategoryId = null;
                       });
                     },
                   ),
@@ -1375,12 +1920,14 @@ class _AdminPanelPageState extends State<AdminPanelPage>
                     style: TextStyle(
                       color: AppColors.textPrimary,
                       fontFamily: 'ADLaMDisplay',
+                      fontSize: 14,
                     ),
                     decoration: InputDecoration(
                       labelText: 'Category *',
                       labelStyle: TextStyle(
                         color: AppColors.textSecondary,
                         fontFamily: 'ADLaMDisplay',
+                        fontSize: 13,
                       ),
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(12),
@@ -1389,26 +1936,39 @@ class _AdminPanelPageState extends State<AdminPanelPage>
                         borderRadius: BorderRadius.circular(12),
                         borderSide: BorderSide(color: AppColors.border),
                       ),
+                      contentPadding: EdgeInsets.symmetric(
+                        horizontal: 12,
+                        vertical: 12,
+                      ),
                     ),
                     items: selectedGender == null
                         ? [
                             DropdownMenuItem<String>(
                               value: null,
-                              child: Text('Select Gender First'),
+                              child: Text(
+                                'Select Gender First',
+                                style: TextStyle(fontSize: 13),
+                              ),
                             ),
                           ]
                         : availableCategories.isEmpty
                         ? [
                             DropdownMenuItem<String>(
                               value: null,
-                              child: Text('No categories for $selectedGender'),
+                              child: Text(
+                                'No categories for $selectedGender',
+                                style: TextStyle(fontSize: 13),
+                              ),
                             ),
                           ]
                         : availableCategories
                               .map(
                                 (cat) => DropdownMenuItem<String>(
                                   value: cat['id'].toString(),
-                                  child: Text(cat['title']),
+                                  child: Text(
+                                    cat['title'],
+                                    style: TextStyle(fontSize: 13),
+                                  ),
                                 ),
                               )
                               .toList(),
@@ -1424,12 +1984,14 @@ class _AdminPanelPageState extends State<AdminPanelPage>
                     style: TextStyle(
                       color: AppColors.textPrimary,
                       fontFamily: 'ADLaMDisplay',
+                      fontSize: 14,
                     ),
                     decoration: InputDecoration(
                       labelText: 'Image URL',
                       labelStyle: TextStyle(
                         color: AppColors.textSecondary,
                         fontFamily: 'ADLaMDisplay',
+                        fontSize: 13,
                       ),
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(12),
@@ -1442,6 +2004,11 @@ class _AdminPanelPageState extends State<AdminPanelPage>
                       helperStyle: TextStyle(
                         color: AppColors.textSecondary,
                         fontFamily: 'ADLaMDisplay',
+                        fontSize: 11,
+                      ),
+                      contentPadding: EdgeInsets.symmetric(
+                        horizontal: 12,
+                        vertical: 12,
                       ),
                     ),
                   ),
@@ -1456,15 +2023,16 @@ class _AdminPanelPageState extends State<AdminPanelPage>
                   style: TextStyle(
                     color: AppColors.textPrimary,
                     fontFamily: 'ADLaMDisplay',
+                    fontSize: 14,
                   ),
                 ),
               ),
               ElevatedButton(
                 style: ElevatedButton.styleFrom(
                   backgroundColor: AppColors.accent,
+                  padding: EdgeInsets.symmetric(horizontal: 16, vertical: 10),
                 ),
                 onPressed: () async {
-                  // Validation
                   if (nameController.text.trim().isEmpty) {
                     ScaffoldMessenger.of(context).showSnackBar(
                       SnackBar(
@@ -1517,7 +2085,6 @@ class _AdminPanelPageState extends State<AdminPanelPage>
                     return;
                   }
 
-                  // Validate price is a number
                   final price = int.tryParse(priceController.text.trim());
                   if (price == null || price <= 0) {
                     ScaffoldMessenger.of(context).showSnackBar(
@@ -1589,6 +2156,7 @@ class _AdminPanelPageState extends State<AdminPanelPage>
                   style: TextStyle(
                     color: Colors.white,
                     fontFamily: 'ADLaMDisplay',
+                    fontSize: 14,
                   ),
                 ),
               ),
@@ -1623,33 +2191,21 @@ class _AdminPanelPageState extends State<AdminPanelPage>
             onPressed: () => Navigator.pop(context),
             child: Text(
               'Cancel',
-              style: TextStyle(
-                color: AppColors.textPrimary,
-                fontFamily: 'ADLaMDisplay',
-              ),
+              style: TextStyle(color: AppColors.textPrimary),
             ),
           ),
           ElevatedButton(
             style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
-            onPressed: () {
+            onPressed: () async {
               Navigator.pop(context);
-              DatabaseService.instance.deleteProduct(product['id']).then((_) {
+              final success = await DatabaseService.instance.deleteProduct(
+                product['id'],
+              );
+              if (success) {
                 _loadData();
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(
-                    content: Text(
-                      'Product deleted successfully',
-                      style: TextStyle(fontFamily: 'ADLaMDisplay'),
-                    ),
-                    backgroundColor: AppColors.success,
-                  ),
-                );
-              });
+              }
             },
-            child: Text(
-              'Delete',
-              style: TextStyle(color: Colors.white, fontFamily: 'ADLaMDisplay'),
-            ),
+            child: Text('Delete', style: TextStyle(color: Colors.white)),
           ),
         ],
       ),

@@ -11,11 +11,17 @@ class CategoriesPage extends StatefulWidget {
 }
 
 class _CategoriesPageState extends State<CategoriesPage> {
+  bool isAdmin = false;
+  @override
+  void initState() {
+    super.initState();
+    _checkAdminStatus();
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppColors.background,
-
       appBar: AppBar(
         backgroundColor: AppColors.background,
         title: Text(
@@ -100,13 +106,25 @@ class _CategoriesPageState extends State<CategoriesPage> {
         },
       ),
 
-      floatingActionButton: FloatingActionButton.extended(
-        onPressed: () => _showAddCategoryDialog(),
-        backgroundColor: AppColors.accent,
-        icon: Icon(Icons.add, color: Colors.white),
-        label: Text('Add Category', style: TextStyle(color: Colors.white)),
-      ),
+      floatingActionButton: isAdmin
+          ? FloatingActionButton.extended(
+              onPressed: () => _showAddCategoryDialog(),
+              backgroundColor: AppColors.accent,
+              icon: Icon(Icons.add, color: Colors.white),
+              label: Text(
+                'Add Category',
+                style: TextStyle(color: Colors.white),
+              ),
+            )
+          : null,
     );
+  }
+
+  void _checkAdminStatus() {
+    final user = FirebaseAuth.instance.currentUser;
+    setState(() {
+      isAdmin = user?.email == 'cartifyshops@gmail.com';
+    });
   }
 
   // CATEGORY SECTION

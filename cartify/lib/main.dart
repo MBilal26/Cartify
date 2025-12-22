@@ -465,7 +465,6 @@ class _HomeScreenState extends State<HomeScreen> {
 
             if (isAdmin)
               ListTile(
-                
                 leading: Icon(
                   Icons.admin_panel_settings_outlined,
                   color: AppColors.accent,
@@ -487,7 +486,7 @@ class _HomeScreenState extends State<HomeScreen> {
           ],
         ),
       ),
-     appBar: AppBar(
+      appBar: AppBar(
         elevation: 2,
         flexibleSpace: Container(
           decoration: BoxDecoration(gradient: AppGradients.splashBackground),
@@ -654,13 +653,10 @@ class _HomeScreenState extends State<HomeScreen> {
 
               Container(
                 height: 150,
-                margin: EdgeInsets.symmetric(horizontal: 16),
+
                 decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(12),
                   image: DecorationImage(
-                    image: NetworkImage(
-                      'https://images.unsplash.com/photo-1602810319428-019690571b5b',
-                    ),
+                    image: AssetImage('assets/images/CARTIFY-banner.png'),
                     fit: BoxFit.cover,
                   ),
                 ),
@@ -755,14 +751,16 @@ class _HomeScreenState extends State<HomeScreen> {
                     )
                   : GridView.builder(
                       shrinkWrap: true,
-                      physics: NeverScrollableScrollPhysics(),
+                      physics: const NeverScrollableScrollPhysics(),
                       itemCount: filteredProducts.length,
-                      gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                        crossAxisCount: 2,
-                        crossAxisSpacing: 10,
-                        mainAxisSpacing: 10,
-                        childAspectRatio: 0.7,
-                      ),
+                      gridDelegate:
+                          const SliverGridDelegateWithFixedCrossAxisCount(
+                            crossAxisCount: 2,
+                            crossAxisSpacing: 14,
+                            mainAxisSpacing: 14,
+                            childAspectRatio:
+                                0.62, // Increased height to fit buttons
+                          ),
                       itemBuilder: (context, index) {
                         final product = filteredProducts[index];
                         return GestureDetector(
@@ -776,86 +774,202 @@ class _HomeScreenState extends State<HomeScreen> {
                           child: Container(
                             decoration: BoxDecoration(
                               color: AppColors.card,
-                              borderRadius: BorderRadius.circular(12),
+                              borderRadius: BorderRadius.circular(20),
                               boxShadow: [
                                 BoxShadow(
-                                  color: Colors.black12,
-                                  blurRadius: 5,
-                                  offset: Offset(0, 3),
+                                  color: Colors.black.withOpacity(0.06),
+                                  blurRadius: 12,
+                                  offset: const Offset(0, 4),
                                 ),
                               ],
                             ),
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
+                                // --- Image Section ---
                                 Expanded(
-                                  child: Container(
-                                    width: double.infinity,
-                                    decoration: BoxDecoration(
-                                      color: AppColors.border,
-                                      borderRadius: BorderRadius.vertical(
-                                        top: Radius.circular(12),
-                                      ),
-                                    ),
-                                    child:
-                                        product['imageUrl'] != null &&
-                                            product['imageUrl'].isNotEmpty
-                                        ? ClipRRect(
-                                            borderRadius: BorderRadius.vertical(
-                                              top: Radius.circular(12),
-                                            ),
-                                            child: Image.network(
-                                              product['imageUrl'],
-                                              fit: BoxFit.cover,
-                                              errorBuilder:
-                                                  (context, error, stackTrace) {
-                                                    return Center(
-                                                      child: Icon(
-                                                        Icons.image,
-                                                        size: 50,
-                                                        color: Colors.grey,
-                                                      ),
-                                                    );
-                                                  },
-                                            ),
-                                          )
-                                        : Center(
-                                            child: Icon(
-                                              Icons.image,
-                                              size: 50,
-                                              color: Colors.grey,
-                                            ),
-                                          ),
-                                  ),
-                                ),
-                                Padding(
-                                  padding: const EdgeInsets.all(8.0),
-                                  child: Column(
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.start,
+                                  flex: 5,
+                                  child: Stack(
                                     children: [
-                                      Text(
-                                        product['name'] ?? 'Product',
-                                        maxLines: 1,
-                                        overflow: TextOverflow.ellipsis,
-                                        style: TextStyle(
-                                          fontWeight: FontWeight.bold,
-                                          fontSize: 14,
-                                          color: AppColors.textPrimary,
-                                          fontFamily: 'ADLaMDisplay',
+                                      Container(
+                                        width: double.infinity,
+                                        decoration: BoxDecoration(
+                                          color: AppColors.border.withOpacity(
+                                            0.2,
+                                          ),
+                                          borderRadius:
+                                              const BorderRadius.vertical(
+                                                top: Radius.circular(20),
+                                              ),
+                                        ),
+                                        child: ClipRRect(
+                                          borderRadius:
+                                              const BorderRadius.vertical(
+                                                top: Radius.circular(20),
+                                              ),
+                                          child:
+                                              product['imageUrl'] != null &&
+                                                  product['imageUrl'].isNotEmpty
+                                              ? Image.network(
+                                                  product['imageUrl'],
+                                                  fit: BoxFit.cover,
+                                                  errorBuilder:
+                                                      (
+                                                        context,
+                                                        error,
+                                                        stackTrace,
+                                                      ) => const Icon(
+                                                        Icons.broken_image,
+                                                        color: Colors.grey,
+                                                        size: 40,
+                                                      ),
+                                                )
+                                              : const Icon(
+                                                  Icons.image,
+                                                  size: 50,
+                                                  color: Colors.grey,
+                                                ),
                                         ),
                                       ),
-                                      SizedBox(height: 4),
-                                      Text(
-                                        'Rs. ${product['price'] ?? 0}',
-                                        style: TextStyle(
-                                          color: Colors.green,
-                                          fontWeight: FontWeight.bold,
-                                          fontSize: 16,
-                                          fontFamily: 'ADLaMDisplay',
+                                      // Price Tag Overlay
+                                      Positioned(
+                                        top: 10,
+                                        left: 10,
+                                        child: Container(
+                                          padding: const EdgeInsets.symmetric(
+                                            horizontal: 8,
+                                            vertical: 4,
+                                          ),
+                                          decoration: BoxDecoration(
+                                            color: Colors.white.withOpacity(
+                                              0.9,
+                                            ),
+                                            borderRadius: BorderRadius.circular(
+                                              10,
+                                            ),
+                                          ),
+                                          child: Text(
+                                            'Rs. ${product['price'] ?? 0}',
+                                            style: const TextStyle(
+                                              color: Colors.green,
+                                              fontWeight: FontWeight.bold,
+                                              fontSize: 12,
+                                            ),
+                                          ),
                                         ),
                                       ),
                                     ],
+                                  ),
+                                ),
+
+                                // --- Details Section ---
+                                Expanded(
+                                  flex: 5,
+                                  child: Padding(
+                                    padding: const EdgeInsets.all(10.0),
+                                    child: Column(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.spaceBetween,
+                                      children: [
+                                        Column(
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.start,
+                                          children: [
+                                            Text(
+                                              product['name'] ?? 'Product',
+                                              maxLines: 1,
+                                              overflow: TextOverflow.ellipsis,
+                                              style: TextStyle(
+                                                fontWeight: FontWeight.bold,
+                                                fontSize: 14,
+                                                color: AppColors.textPrimary,
+                                                fontFamily: 'ADLaMDisplay',
+                                              ),
+                                            ),
+                                            const SizedBox(height: 2),
+                                            Text(
+                                              "Freshly Stocked", // Subtle sub-label
+                                              style: TextStyle(
+                                                fontSize: 11,
+                                                color: AppColors.textSecondary
+                                                    .withOpacity(0.7),
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+
+                                        // --- Action Buttons ---
+                                        Column(
+                                          children: [
+                                            // Add to Cart Button (Outlined style)
+                                            SizedBox(
+                                              width: double.infinity,
+                                              height: 32,
+                                              child: OutlinedButton(
+                                                onPressed: () {
+                                                  // Logic for Add to Cart
+                                                },
+                                                style: OutlinedButton.styleFrom(
+                                                  side: BorderSide(
+                                                    color: AppColors.accent,
+                                                    width: 1,
+                                                  ),
+                                                  shape: RoundedRectangleBorder(
+                                                    borderRadius:
+                                                        BorderRadius.circular(
+                                                          8,
+                                                        ),
+                                                  ),
+                                                  padding: EdgeInsets.zero,
+                                                ),
+                                                child: Text(
+                                                  "Add to Cart",
+                                                  style: TextStyle(
+                                                    fontSize: 12,
+                                                    color: AppColors.accent,
+                                                    fontFamily: 'ADLaMDisplay',
+                                                  ),
+                                                ),
+                                              ),
+                                            ),
+                                            const SizedBox(height: 6),
+                                            // Buy Now Button (Solid style)
+                                            SizedBox(
+                                              width: double.infinity,
+                                              height: 32,
+                                              child: ElevatedButton(
+                                                onPressed: () {
+                                                  // Logic for Buy Now
+                                                },
+                                                style: ElevatedButton.styleFrom(
+                                                  backgroundColor:
+                                                      AppColors.accent,
+                                                  foregroundColor: Colors.white,
+                                                  elevation: 0,
+                                                  shape: RoundedRectangleBorder(
+                                                    borderRadius:
+                                                        BorderRadius.circular(
+                                                          8,
+                                                        ),
+                                                  ),
+                                                  padding: EdgeInsets.zero,
+                                                ),
+                                                child: const Text(
+                                                  "Buy Now",
+                                                  style: TextStyle(
+                                                    fontSize: 12,
+                                                    fontWeight: FontWeight.bold,
+                                                    fontFamily: 'ADLaMDisplay',
+                                                  ),
+                                                ),
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                      ],
+                                    ),
                                   ),
                                 ),
                               ],
@@ -1025,23 +1139,25 @@ class _AutoBannerState extends State<AutoBanner> {
   @override
   void initState() {
     super.initState();
-    _controller = PageController(initialPage: 0);
+    // viewportFraction: 0.85 makes the previous/next images slightly visible
+    _controller = PageController(initialPage: 0, viewportFraction: 0.85);
+    _startTimer();
+  }
 
-    _timer = Timer.periodic(const Duration(seconds: 3), (timer) {
-      if (!mounted) {
-        timer.cancel();
-        return;
-      }
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    for (var path in _images) {
+      precacheImage(AssetImage(path), context);
+    }
+  }
 
-      if (_currentPage < _images.length - 1) {
-        _currentPage++;
-      } else {
-        _currentPage = 0;
-      }
-
+  void _startTimer() {
+    _timer = Timer.periodic(const Duration(seconds: 4), (timer) {
       if (_controller.hasClients) {
+        int nextPage = (_currentPage + 1) % _images.length;
         _controller.animateToPage(
-          _currentPage,
+          nextPage,
           duration: const Duration(milliseconds: 900),
           curve: Curves.easeInOutCubic,
         );
@@ -1058,62 +1174,95 @@ class _AutoBannerState extends State<AutoBanner> {
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      children: [
-        SizedBox(
-          height: 160,
-          width: double.infinity,
-          child: Stack(
-            alignment: Alignment.bottomCenter,
-            children: [
-              PageView.builder(
-                controller: _controller,
-                onPageChanged: (v) {
-                  if (mounted) {
-                    setState(() => _currentPage = v);
-                  }
-                },
-                itemCount: _images.length,
-                allowImplicitScrolling: true,
-                itemBuilder: (context, i) {
-                  return Container(
-                    margin: const EdgeInsets.symmetric(horizontal: 5),
-                    child: ClipRRect(
-                      borderRadius: BorderRadius.circular(15),
-                      child: Image.asset(
-                        _images[i],
-                        fit: BoxFit.cover,
-                        gaplessPlayback: true,
-                      ),
+    return SizedBox(
+      height: 160, // Kept exactly as requested
+      width: double.infinity,
+      child: Stack(
+        alignment: Alignment.bottomCenter,
+        children: [
+          PageView.builder(
+            controller: _controller,
+            physics: const BouncingScrollPhysics(),
+            onPageChanged: (v) => setState(() => _currentPage = v),
+            itemCount: _images.length,
+            itemBuilder: (context, i) {
+              // Active item scaling logic
+              double scale = _currentPage == i ? 1.0 : 0.9;
+
+              return AnimatedTransform(
+                scale: scale,
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 0,
+                    vertical: 6,
+                  ),
+                  child: PhysicalModel(
+                    color: Colors.transparent,
+                    borderRadius: BorderRadius.circular(12),
+                    elevation: 8,
+                    shadowColor: Colors.black.withOpacity(0.3),
+                    clipBehavior: Clip.antiAlias,
+                    child: Image.asset(
+                      _images[i],
+                      fit: BoxFit.fill,
+                      cacheWidth: 1000,
+                      gaplessPlayback: true,
                     ),
-                  );
-                },
-              ),
-              Padding(
-                padding: const EdgeInsets.only(bottom: 12),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: List.generate(_images.length, (index) {
-                    bool isActive = _currentPage == index;
-                    return AnimatedContainer(
-                      duration: const Duration(milliseconds: 400),
-                      margin: const EdgeInsets.symmetric(horizontal: 4),
-                      width: isActive ? 24 : 8,
-                      height: 8,
-                      decoration: BoxDecoration(
-                        color: isActive
-                            ? Colors.white
-                            : Colors.white.withOpacity(0.5),
-                        borderRadius: BorderRadius.circular(4),
-                      ),
-                    );
-                  }),
+                  ),
                 ),
-              ),
-            ],
+              );
+            },
           ),
-        ),
-      ],
+          _buildIndicators(),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildIndicators() {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 20),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: List.generate(_images.length, (index) {
+          bool isActive = _currentPage == index;
+          return AnimatedContainer(
+            duration: const Duration(milliseconds: 300),
+            margin: const EdgeInsets.symmetric(horizontal: 4),
+            width: isActive ? 24 : 8, // Modern elongated active dot
+            height: 4, // Slimmer profile
+            decoration: BoxDecoration(
+              color: isActive ? Colors.white : Colors.white.withOpacity(0.5),
+              borderRadius: BorderRadius.circular(2),
+              boxShadow: isActive
+                  ? [BoxShadow(color: Colors.black26, blurRadius: 4)]
+                  : [],
+            ),
+          );
+        }),
+      ),
+    );
+  }
+}
+
+// Helper widget for smooth scaling transitions
+class AnimatedTransform extends StatelessWidget {
+  final double scale;
+  final Widget child;
+  const AnimatedTransform({
+    super.key,
+    required this.scale,
+    required this.child,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return AnimatedContainer(
+      duration: const Duration(milliseconds: 400),
+      curve: Curves.easeOut,
+      transform: Matrix4.identity()..scale(scale),
+      transformAlignment: Alignment.center,
+      child: child,
     );
   }
 }
