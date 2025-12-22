@@ -3,6 +3,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'colors.dart';
 import 'reset_password.dart';
 import 'database_functions.dart';
+import 'map_address_picker.dart';
 
 class ProfilePage extends StatefulWidget {
   const ProfilePage({super.key});
@@ -48,7 +49,7 @@ class _ProfilePageState extends State<ProfilePage> {
     }
   }
 
-  // ===================== ACTIONS (UNCHANGED) =====================
+  // ===================== ACTIONS =====================
 
   void _addNewAddress() async {
     if (userId == null) {
@@ -103,6 +104,56 @@ class _ProfilePageState extends State<ProfilePage> {
         ],
       ),
     );
+  }
+
+  void _selectAddressFromMap() async {
+    if (userId == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          backgroundColor: AppColors.error,
+          content: Text('Please login first'),
+        ),
+      );
+      return;
+    }
+
+    // Navigate to map picker and wait for result
+    final selectedAddress = await Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => MapAddressPickerPage(
+          currentAddress: userAddress,
+        ),
+      ),
+    );
+
+    // If user selected an address, save it
+    if (selectedAddress != null && selectedAddress.isNotEmpty) {
+      final success = await DatabaseService.instance.updateUser(
+        uid: userId!,
+        address: selectedAddress,
+      );
+
+      if (success) {
+        setState(() {
+          userAddress = selectedAddress;
+        });
+
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            backgroundColor: AppColors.success,
+            content: Text('Address updated successfully!'),
+          ),
+        );
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            backgroundColor: AppColors.error,
+            content: Text('Failed to update address'),
+          ),
+        );
+      }
+    }
   }
 
   void _editProfileDetails() async {
@@ -250,135 +301,157 @@ class _ProfilePageState extends State<ProfilePage> {
       backgroundColor: AppColors.background,
       body: _isLoading
           ? const Center(
-              child: CircularProgressIndicator(color: AppColors.accent),
-            )
+        child: CircularProgressIndicator(color: AppColors.accent),
+      )
           : SingleChildScrollView(
+        child: Column(
+          children: [
+            // HEADER
+            Container(
+              height: 280,
+              width: double.infinity,
+              decoration: BoxDecoration(
+                gradient: AppGradients.splashBackground,
+              ),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Container(
+                    padding: const EdgeInsets.all(4),
+                    decoration: const BoxDecoration(
+                      color: Colors.white,
+                      shape: BoxShape.circle,
+                    ),
+                    child: CircleAvatar(
+                      radius: 46,
+                      backgroundColor: AppColors.background,
+                      child: Icon(
+                        Icons.person,
+                        size: 50,
+                        color: AppColors.secondary,
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 14),
+                  Text(
+                    userName,
+                    style: TextStyle(
+                      fontFamily: 'IrishGrover',
+                      fontSize: 26,
+                      color: AppColors.secondary,
+                    ),
+                  ),
+                  Text(
+                    userEmail,
+                    style: TextStyle(
+                      fontFamily: 'ADLaMDisplay',
+                      color: AppColors.secondary,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+
+            const SizedBox(height: 30),
+
+            // ADDRESS CARD WITH BUTTON
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 24),
               child: Column(
                 children: [
-                  // HEADER
                   Container(
-                    height: 280,
-                    width: double.infinity,
+                    padding: const EdgeInsets.all(18),
                     decoration: BoxDecoration(
-                      gradient: AppGradients.splashBackground,
+                      color: AppColors.card,
+                      borderRadius: BorderRadius.circular(18),
+                      border: Border.all(color: AppColors.border),
                     ),
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
+                    child: Row(
                       children: [
-                        Container(
-                          padding: const EdgeInsets.all(4),
-                          decoration: const BoxDecoration(
-                            color: Colors.white,
-                            shape: BoxShape.circle,
-                          ),
-                          child: CircleAvatar(
-                            radius: 46,
-                            backgroundColor: AppColors.background,
-                            child: Icon(
-                              Icons.person,
-                              size: 50,
-                              color: AppColors.secondary,
-                            ),
-                          ),
-                        ),
-                        const SizedBox(height: 14),
-                        Text(
-                          userName,
-                          style: TextStyle(
-                            fontFamily: 'IrishGrover',
-                            fontSize: 26,
-                            color: AppColors.secondary,
-                          ),
-                        ),
-                        Text(
-                          userEmail,
-                          style: TextStyle(
-                            fontFamily: 'ADLaMDisplay',
-                            color: AppColors.secondary,
+                        Icon(Icons.location_on, color: AppColors.accent),
+                        const SizedBox(width: 14),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                "Delivery Address",
+                                style: const TextStyle(
+                                  fontFamily: 'IrishGrover',
+                                  fontSize: 16,
+                                ),
+                              ),
+                              const SizedBox(height: 4),
+                              Text(
+                                userAddress ?? "No address added yet",
+                                style: const TextStyle(
+                                  fontFamily: 'ADLaMDisplay',
+                                ),
+                              ),
+                            ],
                           ),
                         ),
                       ],
                     ),
                   ),
 
-                  const SizedBox(height: 30),
+                  const SizedBox(height: 12),
 
-                  // ADDRESS CARD
-                  _infoCard(
-                    icon: Icons.location_on,
-                    title: "Delivery Address",
-                    subtitle: userAddress ?? "No address added yet",
-                  ),
-
-                  const SizedBox(height: 30),
-
-                  // ACTIONS
-                  _actionTile(
-                    Icons.add_location_alt,
-                    "Add New Address",
-                    _addNewAddress,
-                  ),
-                  _actionTile(
-                    Icons.edit,
-                    "Edit Profile Details",
-                    _editProfileDetails,
-                  ),
-                  _actionTile(Icons.lock, "Change Password", _changePassword),
-
-                  const SizedBox(height: 40),
-
-                  _authPillButton(
-                    text: "Logout",
-                    icon: Icons.logout,
-                    backgroundColor: AppColors.error,
-                    textColor: Colors.white,
-                    onTap: _logout,
-                  ),
-
-                  const SizedBox(height: 40),
-                ],
-              ),
-            ),
-    );
-  }
-
-  Widget _infoCard({
-    required IconData icon,
-    required String title,
-    required String subtitle,
-  }) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 24),
-      child: Container(
-        padding: const EdgeInsets.all(18),
-        decoration: BoxDecoration(
-          color: AppColors.card,
-          borderRadius: BorderRadius.circular(18),
-          border: Border.all(color: AppColors.border),
-        ),
-        child: Row(
-          children: [
-            Icon(icon, color: AppColors.accent),
-            const SizedBox(width: 14),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    title,
-                    style: const TextStyle(
-                      fontFamily: 'IrishGrover',
-                      fontSize: 16,
+                  // MAP SELECTION BUTTON
+                  SizedBox(
+                    width: double.infinity,
+                    child: ElevatedButton.icon(
+                      onPressed: _selectAddressFromMap,
+                      icon: Icon(Icons.map_outlined, color: Colors.white),
+                      label: Text(
+                        'Select Address from Map',
+                        style: TextStyle(
+                          fontFamily: 'ADLaMDisplay',
+                          fontSize: 16,
+                          color: Colors.white,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: AppColors.accent,
+                        padding: EdgeInsets.symmetric(vertical: 14),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        elevation: 2,
+                      ),
                     ),
                   ),
-                  const SizedBox(height: 4),
-                  Text(
-                    subtitle,
-                    style: const TextStyle(fontFamily: 'ADLaMDisplay'),
-                  ),
                 ],
               ),
             ),
+
+            const SizedBox(height: 30),
+
+            // ACTIONS
+            _actionTile(
+              Icons.add_location_alt,
+              "Add New Address",
+              _addNewAddress,
+            ),
+            _actionTile(
+              Icons.edit,
+              "Edit Profile Details",
+              _editProfileDetails,
+            ),
+            _actionTile(Icons.lock, "Change Password", _changePassword),
+
+            const SizedBox(height: 40),
+
+            _authPillButton(
+              text: "Logout",
+              icon: Icons.logout,
+              backgroundColor: AppColors.error,
+              textColor: Colors.white,
+              onTap: _logout,
+            ),
+
+            const SizedBox(height: 40),
           ],
         ),
       ),

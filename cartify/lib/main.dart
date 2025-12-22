@@ -159,14 +159,14 @@ class _HomeScreenState extends State<HomeScreen> {
         filteredProducts = products
             .where(
               (product) =>
-          product['name'].toString().toLowerCase().contains(
-            query.toLowerCase(),
-          ) ||
-              (product['description'] ?? '')
-                  .toString()
-                  .toLowerCase()
-                  .contains(query.toLowerCase()),
-        )
+                  product['name'].toString().toLowerCase().contains(
+                    query.toLowerCase(),
+                  ) ||
+                  (product['description'] ?? '')
+                      .toString()
+                      .toLowerCase()
+                      .contains(query.toLowerCase()),
+            )
             .toList();
       }
     });
@@ -174,8 +174,8 @@ class _HomeScreenState extends State<HomeScreen> {
 
   void _navigateToCategory(String categoryTitle, String parentCategory) {
     final category = categories.firstWhere(
-          (cat) =>
-      cat['title'] == categoryTitle &&
+      (cat) =>
+          cat['title'] == categoryTitle &&
           cat['parentCategory'] == parentCategory,
       orElse: () => {},
     );
@@ -220,7 +220,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   Text(
                     'Cartify',
                     style: TextStyle(
-                      fontFamily: 'ADLaMDisplay',
+                      fontFamily: 'IrishGrover',
                       fontSize: 24,
                       color: Colors.white,
                     ),
@@ -294,11 +294,36 @@ class _HomeScreenState extends State<HomeScreen> {
                     ),
                   ),
                   children: [
-                    _buildCategoryItem(context, 'Shirts', Icons.checkroom_outlined, 'Men'),
-                    _buildCategoryItem(context, 'Jeans', Icons.line_style_outlined, 'Men'),
-                    _buildCategoryItem(context, 'Eyewear', Icons.visibility_outlined, 'Men'),
-                    _buildCategoryItem(context, 'Accessories', Icons.watch_outlined, 'Men'),
-                    _buildCategoryItem(context, 'Footwear', Icons.directions_walk_outlined, 'Men'),
+                    _buildCategoryItem(
+                      context,
+                      'Shirts',
+                      Icons.checkroom_outlined,
+                      'Men',
+                    ),
+                    _buildCategoryItem(
+                      context,
+                      'Jeans',
+                      Icons.line_style_outlined,
+                      'Men',
+                    ),
+                    _buildCategoryItem(
+                      context,
+                      'Eyewear',
+                      Icons.visibility_outlined,
+                      'Men',
+                    ),
+                    _buildCategoryItem(
+                      context,
+                      'Accessories',
+                      Icons.watch_outlined,
+                      'Men',
+                    ),
+                    _buildCategoryItem(
+                      context,
+                      'Footwear',
+                      Icons.directions_walk_outlined,
+                      'Men',
+                    ),
                   ],
                 ),
                 ExpansionTile(
@@ -312,11 +337,36 @@ class _HomeScreenState extends State<HomeScreen> {
                     ),
                   ),
                   children: [
-                    _buildCategoryItem(context, 'Dresses', Icons.dry_cleaning_outlined, 'Women'),
-                    _buildCategoryItem(context, 'Jeans', Icons.line_weight_outlined, 'Women'),
-                    _buildCategoryItem(context, 'Eyewear', Icons.face_retouching_natural_outlined, 'Women'),
-                    _buildCategoryItem(context, 'Accessories', Icons.shopping_basket_outlined, 'Women'),
-                    _buildCategoryItem(context, 'Footwear', Icons.directions_walk_outlined, 'Women'),
+                    _buildCategoryItem(
+                      context,
+                      'Dresses',
+                      Icons.dry_cleaning_outlined,
+                      'Women',
+                    ),
+                    _buildCategoryItem(
+                      context,
+                      'Jeans',
+                      Icons.line_weight_outlined,
+                      'Women',
+                    ),
+                    _buildCategoryItem(
+                      context,
+                      'Eyewear',
+                      Icons.face_retouching_natural_outlined,
+                      'Women',
+                    ),
+                    _buildCategoryItem(
+                      context,
+                      'Accessories',
+                      Icons.shopping_basket_outlined,
+                      'Women',
+                    ),
+                    _buildCategoryItem(
+                      context,
+                      'Footwear',
+                      Icons.directions_walk_outlined,
+                      'Women',
+                    ),
                   ],
                 ),
               ],
@@ -346,7 +396,7 @@ class _HomeScreenState extends State<HomeScreen> {
               ),
             ),
             Divider(),
-            // INTEGRATED: Carti AI Chatbot from File 2
+            //Carti AI Chatbot from File 2
             ListTile(
               leading: Container(
                 padding: EdgeInsets.all(6),
@@ -357,7 +407,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 child: Icon(Icons.smart_toy, color: AppColors.accent),
               ),
               title: Text(
-                'Carti AI Assistant',
+                'Cartify AI Assistant',
                 style: TextStyle(
                   fontFamily: 'ADLaMDisplay',
                   fontSize: 16,
@@ -415,6 +465,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
             if (isAdmin)
               ListTile(
+                
                 leading: Icon(
                   Icons.admin_panel_settings_outlined,
                   color: AppColors.accent,
@@ -436,7 +487,7 @@ class _HomeScreenState extends State<HomeScreen> {
           ],
         ),
       ),
-      appBar: AppBar(
+     appBar: AppBar(
         elevation: 2,
         flexibleSpace: Container(
           decoration: BoxDecoration(gradient: AppGradients.splashBackground),
@@ -565,12 +616,12 @@ class _HomeScreenState extends State<HomeScreen> {
                     CategoryCard(
                       title: 'Dress',
                       image: 'assets/icons/categories_icon/dress_icon.png',
-                      onTap: () => _navigateToCategory('Dress', 'Women'),
+                      onTap: () => _navigateToCategory('Dresses', 'Women'),
                     ),
                     CategoryCard(
                       title: 'Pants',
                       image: 'assets/icons/categories_icon/pants_icon.png',
-                      onTap: () => _navigateToCategory('Pants', 'Men'),
+                      onTap: () => _navigateToCategory('Jeans', 'Men'),
                     ),
                     CategoryCard(
                       title: 'Eyewear',
@@ -584,9 +635,16 @@ class _HomeScreenState extends State<HomeScreen> {
                     ),
 
                     CategoryCard(
+                      title: 'Shirts',
+                      image: 'assets/icons/categories_icon/shirts_icon.png',
+                      onTap: () => _navigateToCategory('Shirts', 'Men'),
+                    ),
+
+                    CategoryCard(
                       title: 'Accessories',
-                      image: 'assets/icons/categories_icon/a_icon.png',
-                      onTap: () => _navigateToCategory('Accessories', 'Men'),
+                      image:
+                          'assets/icons/categories_icon/accessories_icon.png',
+                      onTap: () => _navigateToCategory('Accessories', 'Women'),
                     ),
                   ],
                 ),
@@ -631,181 +689,181 @@ class _HomeScreenState extends State<HomeScreen> {
               padding: const EdgeInsets.all(16.0),
               child: isLoadingProducts
                   ? Center(
-                child: Column(
-                  children: [
-                    SizedBox(height: 40),
-                    CircularProgressIndicator(color: AppColors.accent),
-                    SizedBox(height: 16),
-                    Text(
-                      'Loading products...',
-                      style: TextStyle(
-                        color: AppColors.textSecondary,
-                        fontFamily: 'ADLaMDisplay',
-                      ),
-                    ),
-                  ],
-                ),
-              )
-                  : filteredProducts.isEmpty
-                  ? Center(
-                child: Column(
-                  children: [
-                    SizedBox(height: 40),
-                    Icon(Icons.search_off, size: 80, color: Colors.grey),
-                    SizedBox(height: 16),
-                    Text(
-                      isSearching
-                          ? 'No products found'
-                          : 'No products available',
-                      style: TextStyle(
-                        fontSize: 16,
-                        color: AppColors.textPrimary,
-                        fontFamily: 'IrishGrover',
-                      ),
-                    ),
-                    SizedBox(height: 8),
-                    Text(
-                      isSearching
-                          ? 'Try different keywords'
-                          : 'Products will appear here once added',
-                      style: TextStyle(
-                        color: Colors.grey,
-                        fontFamily: 'ADLaMDisplay',
-                      ),
-                    ),
-                    if (isSearching) ...[
-                      SizedBox(height: 16),
-                      ElevatedButton(
-                        onPressed: () {
-                          _searchController.clear();
-                          _searchProducts('');
-                        },
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: AppColors.accent,
-                        ),
-                        child: Text(
-                          'Clear Search',
-                          style: TextStyle(
-                            color: Colors.white,
-                            fontFamily: 'ADLaMDisplay',
-                          ),
-                        ),
-                      ),
-                    ],
-                  ],
-                ),
-              )
-                  : GridView.builder(
-                shrinkWrap: true,
-                physics: NeverScrollableScrollPhysics(),
-                itemCount: filteredProducts.length,
-                gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                  crossAxisCount: 2,
-                  crossAxisSpacing: 10,
-                  mainAxisSpacing: 10,
-                  childAspectRatio: 0.7,
-                ),
-                itemBuilder: (context, index) {
-                  final product = filteredProducts[index];
-                  return GestureDetector(
-                    onTap: () {
-                      Navigator.pushNamed(
-                        context,
-                        '/product_detail',
-                        arguments: product,
-                      );
-                    },
-                    child: Container(
-                      decoration: BoxDecoration(
-                        color: AppColors.card,
-                        borderRadius: BorderRadius.circular(12),
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.black12,
-                            blurRadius: 5,
-                            offset: Offset(0, 3),
+                      child: Column(
+                        children: [
+                          SizedBox(height: 40),
+                          CircularProgressIndicator(color: AppColors.accent),
+                          SizedBox(height: 16),
+                          Text(
+                            'Loading products...',
+                            style: TextStyle(
+                              color: AppColors.textSecondary,
+                              fontFamily: 'ADLaMDisplay',
+                            ),
                           ),
                         ],
                       ),
+                    )
+                  : filteredProducts.isEmpty
+                  ? Center(
                       child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Expanded(
-                            child: Container(
-                              width: double.infinity,
-                              decoration: BoxDecoration(
-                                color: AppColors.border,
-                                borderRadius: BorderRadius.vertical(
-                                  top: Radius.circular(12),
-                                ),
+                          SizedBox(height: 40),
+                          Icon(Icons.search_off, size: 80, color: Colors.grey),
+                          SizedBox(height: 16),
+                          Text(
+                            isSearching
+                                ? 'No products found'
+                                : 'No products available',
+                            style: TextStyle(
+                              fontSize: 16,
+                              color: AppColors.textPrimary,
+                              fontFamily: 'IrishGrover',
+                            ),
+                          ),
+                          SizedBox(height: 8),
+                          Text(
+                            isSearching
+                                ? 'Try different keywords'
+                                : 'Products will appear here once added',
+                            style: TextStyle(
+                              color: Colors.grey,
+                              fontFamily: 'ADLaMDisplay',
+                            ),
+                          ),
+                          if (isSearching) ...[
+                            SizedBox(height: 16),
+                            ElevatedButton(
+                              onPressed: () {
+                                _searchController.clear();
+                                _searchProducts('');
+                              },
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: AppColors.accent,
                               ),
-                              child:
-                              product['imageUrl'] != null &&
-                                  product['imageUrl'].isNotEmpty
-                                  ? ClipRRect(
-                                borderRadius: BorderRadius.vertical(
-                                  top: Radius.circular(12),
-                                ),
-                                child: Image.network(
-                                  product['imageUrl'],
-                                  fit: BoxFit.cover,
-                                  errorBuilder:
-                                      (context, error, stackTrace) {
-                                    return Center(
-                                      child: Icon(
-                                        Icons.image,
-                                        size: 50,
-                                        color: Colors.grey,
-                                      ),
-                                    );
-                                  },
-                                ),
-                              )
-                                  : Center(
-                                child: Icon(
-                                  Icons.image,
-                                  size: 50,
-                                  color: Colors.grey,
+                              child: Text(
+                                'Clear Search',
+                                style: TextStyle(
+                                  color: Colors.white,
+                                  fontFamily: 'ADLaMDisplay',
                                 ),
                               ),
                             ),
-                          ),
-                          Padding(
-                            padding: const EdgeInsets.all(8.0),
+                          ],
+                        ],
+                      ),
+                    )
+                  : GridView.builder(
+                      shrinkWrap: true,
+                      physics: NeverScrollableScrollPhysics(),
+                      itemCount: filteredProducts.length,
+                      gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                        crossAxisCount: 2,
+                        crossAxisSpacing: 10,
+                        mainAxisSpacing: 10,
+                        childAspectRatio: 0.7,
+                      ),
+                      itemBuilder: (context, index) {
+                        final product = filteredProducts[index];
+                        return GestureDetector(
+                          onTap: () {
+                            Navigator.pushNamed(
+                              context,
+                              '/product_detail',
+                              arguments: product,
+                            );
+                          },
+                          child: Container(
+                            decoration: BoxDecoration(
+                              color: AppColors.card,
+                              borderRadius: BorderRadius.circular(12),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: Colors.black12,
+                                  blurRadius: 5,
+                                  offset: Offset(0, 3),
+                                ),
+                              ],
+                            ),
                             child: Column(
-                              crossAxisAlignment:
-                              CrossAxisAlignment.start,
+                              crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                Text(
-                                  product['name'] ?? 'Product',
-                                  maxLines: 1,
-                                  overflow: TextOverflow.ellipsis,
-                                  style: TextStyle(
-                                    fontWeight: FontWeight.bold,
-                                    fontSize: 14,
-                                    color: AppColors.textPrimary,
-                                    fontFamily: 'ADLaMDisplay',
+                                Expanded(
+                                  child: Container(
+                                    width: double.infinity,
+                                    decoration: BoxDecoration(
+                                      color: AppColors.border,
+                                      borderRadius: BorderRadius.vertical(
+                                        top: Radius.circular(12),
+                                      ),
+                                    ),
+                                    child:
+                                        product['imageUrl'] != null &&
+                                            product['imageUrl'].isNotEmpty
+                                        ? ClipRRect(
+                                            borderRadius: BorderRadius.vertical(
+                                              top: Radius.circular(12),
+                                            ),
+                                            child: Image.network(
+                                              product['imageUrl'],
+                                              fit: BoxFit.cover,
+                                              errorBuilder:
+                                                  (context, error, stackTrace) {
+                                                    return Center(
+                                                      child: Icon(
+                                                        Icons.image,
+                                                        size: 50,
+                                                        color: Colors.grey,
+                                                      ),
+                                                    );
+                                                  },
+                                            ),
+                                          )
+                                        : Center(
+                                            child: Icon(
+                                              Icons.image,
+                                              size: 50,
+                                              color: Colors.grey,
+                                            ),
+                                          ),
                                   ),
                                 ),
-                                SizedBox(height: 4),
-                                Text(
-                                  'Rs. ${product['price'] ?? 0}',
-                                  style: TextStyle(
-                                    color: Colors.green,
-                                    fontWeight: FontWeight.bold,
-                                    fontSize: 16,
-                                    fontFamily: 'ADLaMDisplay',
+                                Padding(
+                                  padding: const EdgeInsets.all(8.0),
+                                  child: Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      Text(
+                                        product['name'] ?? 'Product',
+                                        maxLines: 1,
+                                        overflow: TextOverflow.ellipsis,
+                                        style: TextStyle(
+                                          fontWeight: FontWeight.bold,
+                                          fontSize: 14,
+                                          color: AppColors.textPrimary,
+                                          fontFamily: 'ADLaMDisplay',
+                                        ),
+                                      ),
+                                      SizedBox(height: 4),
+                                      Text(
+                                        'Rs. ${product['price'] ?? 0}',
+                                        style: TextStyle(
+                                          color: Colors.green,
+                                          fontWeight: FontWeight.bold,
+                                          fontSize: 16,
+                                          fontFamily: 'ADLaMDisplay',
+                                        ),
+                                      ),
+                                    ],
                                   ),
                                 ),
                               ],
                             ),
                           ),
-                        ],
-                      ),
+                        );
+                      },
                     ),
-                  );
-                },
-              ),
             ),
 
             if (isSearching && filteredProducts.isNotEmpty)
@@ -867,9 +925,18 @@ class _HomeScreenState extends State<HomeScreen> {
             },
             items: [
               BottomNavigationBarItem(icon: Icon(Icons.home), label: "Home"),
-              BottomNavigationBarItem(icon: Icon(Icons.grid_view), label: "Categories"),
-              BottomNavigationBarItem(icon: Icon(Icons.shopping_cart), label: "Cart"),
-              BottomNavigationBarItem(icon: Icon(Icons.redeem), label: "Rewards"),
+              BottomNavigationBarItem(
+                icon: Icon(Icons.grid_view),
+                label: "Categories",
+              ),
+              BottomNavigationBarItem(
+                icon: Icon(Icons.shopping_cart),
+                label: "Cart",
+              ),
+              BottomNavigationBarItem(
+                icon: Icon(Icons.redeem),
+                label: "Rewards",
+              ),
             ],
           ),
         ),
@@ -878,11 +945,11 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Widget _buildCategoryItem(
-      BuildContext context,
-      String title,
-      IconData icon,
-      String parentCategory,
-      ) {
+    BuildContext context,
+    String title,
+    IconData icon,
+    String parentCategory,
+  ) {
     return ListTile(
       contentPadding: EdgeInsets.only(left: 40),
       leading: Icon(icon, color: AppColors.accent, size: 20),
@@ -920,7 +987,7 @@ class CategoryCard extends StatelessWidget {
       onTap: onTap,
       child: Container(
         width: 140,
-        height: 180,
+        height: 200,
         margin: const EdgeInsets.only(right: 2),
         decoration: BoxDecoration(borderRadius: BorderRadius.circular(16)),
         child: ClipRRect(

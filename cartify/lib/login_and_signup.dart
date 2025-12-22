@@ -6,19 +6,51 @@ import 'reset_password.dart';
 import 'database_functions.dart';
 
 // 1.__Splash Screen
+
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
+
   @override
-  SplashScreenState createState() => SplashScreenState();
+  State<SplashScreen> createState() => _SplashScreenState();
 }
 
-class SplashScreenState extends State<SplashScreen> {
+class _SplashScreenState extends State<SplashScreen>
+    with SingleTickerProviderStateMixin {
+  late AnimationController _controller;
+  late Animation<double> _fadeAnimation;
+  late Animation<double> _scaleAnimation;
+
   @override
   void initState() {
     super.initState();
-    Timer(Duration(seconds: 4), () {
-      Navigator.pushReplacementNamed(context, '/home');
+
+    // Animation setup
+    _controller = AnimationController(
+      vsync: this,
+      duration: const Duration(seconds: 2),
+    );
+
+    _fadeAnimation = CurvedAnimation(parent: _controller, curve: Curves.easeIn);
+
+    _scaleAnimation = Tween<double>(
+      begin: 0.8,
+      end: 1.0,
+    ).animate(CurvedAnimation(parent: _controller, curve: Curves.easeOutBack));
+
+    _controller.forward();
+
+    // Navigate to Home after 4 seconds
+    Timer(const Duration(seconds: 4), () {
+      if (mounted) {
+        Navigator.pushReplacementNamed(context, '/home');
+      }
     });
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
   }
 
   @override
@@ -27,21 +59,35 @@ class SplashScreenState extends State<SplashScreen> {
       body: Container(
         width: double.infinity,
         height: double.infinity,
-        decoration: BoxDecoration(gradient: AppGradients.splashBackground),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Image.asset('assets/images/glass-logo.png', height: 150),
-            Text(
-              " CARTIFY",
-              style: TextStyle(
-                fontSize: 35,
-                fontFamily: 'IrishGrover',
-                letterSpacing: 2,
-                color: AppColors.accent,
-              ),
+        decoration: BoxDecoration(
+          gradient: AppGradients.splashBackground, // keep your gradient
+        ),
+        child: FadeTransition(
+          opacity: _fadeAnimation,
+          child: ScaleTransition(
+            scale: _scaleAnimation,
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Image.asset('assets/images/glass-logo.png', height: 150),
+
+                Text(
+                  " CARTIFY",
+                  style: TextStyle(
+                    fontSize: 35,
+                    fontFamily: 'IrishGrover',
+                    letterSpacing: 2,
+                    color: AppColors.accent,
+                  ),
+                ),
+                const SizedBox(height: 30),
+                const CircularProgressIndicator(
+                  color: Colors.white,
+                  strokeWidth: 2.5,
+                ),
+              ],
             ),
-          ],
+          ),
         ),
       ),
     );

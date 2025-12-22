@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'colors.dart';
 import 'database_functions.dart';
-import 'map_address_picker.dart'; // NEW: Import map address picker
+import 'map_address_picker.dart';
 
 class CheckoutPage extends StatefulWidget {
   const CheckoutPage({super.key});
@@ -21,6 +21,8 @@ class _CheckoutPageState extends State<CheckoutPage> {
   final TextEditingController cardNumberController = TextEditingController();
   final TextEditingController expiryController = TextEditingController();
   final TextEditingController cvvController = TextEditingController();
+  final TextEditingController couponController = TextEditingController();
+  int discountPercent = 0;
 
   String paymentMethod = 'Cash on Delivery';
   bool _isLoading = false;
@@ -61,9 +63,8 @@ class _CheckoutPageState extends State<CheckoutPage> {
     final selectedAddress = await Navigator.push<String>(
       context,
       MaterialPageRoute(
-        builder: (context) => MapAddressPickerPage(
-          currentAddress: addressController.text,
-        ),
+        builder: (context) =>
+            MapAddressPickerPage(currentAddress: addressController.text),
       ),
     );
 
@@ -112,7 +113,8 @@ class _CheckoutPageState extends State<CheckoutPage> {
         return;
       }
 
-      int total = 0;
+      int subtotal = 0;
+
       List<Map<String, dynamic>> orderItems = [];
 
       for (var cartItem in cartItems) {
@@ -122,7 +124,7 @@ class _CheckoutPageState extends State<CheckoutPage> {
 
         if (product != null) {
           int itemTotal = (product['price'] * cartItem['quantity']) as int;
-          total += itemTotal;
+          subtotal += itemTotal;
 
           orderItems.add({
             'productId': cartItem['productId'],
@@ -133,6 +135,8 @@ class _CheckoutPageState extends State<CheckoutPage> {
           });
         }
       }
+      int discount = _calculateDiscount(subtotal);
+      int total = subtotal - discount;
 
       final orderId = await DatabaseService.instance.placeOrder(
         userId: userId!,
@@ -203,237 +207,237 @@ class _CheckoutPageState extends State<CheckoutPage> {
       ),
       body: _isLoading
           ? Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            CircularProgressIndicator(color: AppColors.accent),
-            SizedBox(height: 16),
-            Text(
-              'Placing your order...',
-              style: TextStyle(
-                color: AppColors.textPrimary,
-                fontFamily: 'ADLaMDisplay',
-              ),
-            ),
-          ],
-        ),
-      )
-          : SingleChildScrollView(
-        padding: const EdgeInsets.all(16),
-        child: Form(
-          key: _formKey,
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                'Shipping Details',
-                style: TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.bold,
-                  color: AppColors.textPrimary,
-                  fontFamily: 'ADLaMDisplay',
-                ),
-              ),
-              const SizedBox(height: 12),
-              _buildTextField(
-                nameController,
-                'Full Name',
-                Icons.person_outline,
-              ),
-              const SizedBox(height: 12),
-              _buildTextField(
-                phoneController,
-                'Phone Number',
-                Icons.phone_outlined,
-                keyboardType: TextInputType.phone,
-              ),
-              const SizedBox(height: 12),
-
-              // UPDATED: Address field with map button
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  TextFormField(
-                    controller: addressController,
-                    maxLines: 3,
+                  CircularProgressIndicator(color: AppColors.accent),
+                  SizedBox(height: 16),
+                  Text(
+                    'Placing your order...',
                     style: TextStyle(
                       color: AppColors.textPrimary,
                       fontFamily: 'ADLaMDisplay',
                     ),
-                    decoration: InputDecoration(
-                      labelText: 'Delivery Address',
-                      prefixIcon: Icon(
-                        Icons.home_outlined,
-                        color: AppColors.accent,
-                      ),
-                      labelStyle: TextStyle(
-                        color: AppColors.textSecondary,
-                        fontFamily: 'ADLaMDisplay',
-                      ),
-                      border: OutlineInputBorder(),
-                      enabledBorder: OutlineInputBorder(
-                        borderSide: BorderSide(color: AppColors.border),
-                      ),
-                    ),
-                    validator: (value) =>
-                    value!.isEmpty ? 'This field is required' : null,
-                  ),
-
-                  // NEW: Map button below address field
-                  SizedBox(height: 8),
-                  SizedBox(
-                    width: double.infinity,
-                    child: OutlinedButton.icon(
-                      onPressed: _selectAddressFromMap,
-                      icon: Icon(
-                        Icons.map_outlined,
-                        color: AppColors.accent,
-                      ),
-                      label: Text(
-                        'Select Address from Map',
-                        style: TextStyle(
-                          color: AppColors.accent,
-                          fontFamily: 'ADLaMDisplay',
-                        ),
-                      ),
-                      style: OutlinedButton.styleFrom(
-                        padding: EdgeInsets.symmetric(vertical: 12),
-                        side: BorderSide(color: AppColors.accent),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(8),
-                        ),
-                      ),
-                    ),
                   ),
                 ],
               ),
-
-              const SizedBox(height: 24),
-              Text(
-                'Payment Method',
-                style: TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.bold,
-                  color: AppColors.textPrimary,
-                  fontFamily: 'ADLaMDisplay',
-                ),
-              ),
-              const SizedBox(height: 8),
-              RadioListTile(
-                value: 'Cash on Delivery',
-                groupValue: paymentMethod,
-                title: Text(
-                  'Cash on Delivery',
-                  style: TextStyle(
-                    color: AppColors.textPrimary,
-                    fontFamily: 'ADLaMDisplay',
-                  ),
-                ),
-                onChanged: (value) =>
-                    setState(() => paymentMethod = value!),
-                activeColor: AppColors.accent,
-              ),
-              RadioListTile(
-                value: 'Card Payment',
-                groupValue: paymentMethod,
-                title: Text(
-                  'Card Payment',
-                  style: TextStyle(
-                    color: AppColors.textPrimary,
-                    fontFamily: 'ADLaMDisplay',
-                  ),
-                ),
-                onChanged: (value) =>
-                    setState(() => paymentMethod = value!),
-                activeColor: AppColors.accent,
-              ),
-
-              // Card Details Section
-              if (paymentMethod == 'Card Payment') ...[
-                const SizedBox(height: 16),
-                Container(
-                  padding: EdgeInsets.all(16),
-                  decoration: BoxDecoration(
-                    color: AppColors.card,
-                    borderRadius: BorderRadius.circular(12),
-                    border: Border.all(
-                      color: AppColors.accent.withOpacity(0.5),
-                    ),
-                  ),
-                  child: Column(
-                    children: [
-                      _buildTextField(
-                        cardNumberController,
-                        'Card Number',
-                        Icons.credit_card,
-                        keyboardType: TextInputType.number,
+            )
+          : SingleChildScrollView(
+              padding: const EdgeInsets.all(16),
+              child: Form(
+                key: _formKey,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Shipping Details',
+                      style: TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                        color: AppColors.textPrimary,
+                        fontFamily: 'ADLaMDisplay',
                       ),
-                      const SizedBox(height: 12),
-                      Row(
-                        children: [
-                          Expanded(
-                            child: _buildTextField(
-                              expiryController,
-                              'MM/YY',
-                              Icons.calendar_today,
-                              keyboardType: TextInputType.datetime,
+                    ),
+                    const SizedBox(height: 12),
+                    _buildTextField(
+                      nameController,
+                      'Full Name',
+                      Icons.person_outline,
+                    ),
+                    const SizedBox(height: 12),
+                    _buildTextField(
+                      phoneController,
+                      'Phone Number',
+                      Icons.phone_outlined,
+                      keyboardType: TextInputType.phone,
+                    ),
+                    const SizedBox(height: 12),
+
+                    // UPDATED: Address field with map button
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        TextFormField(
+                          controller: addressController,
+                          maxLines: 3,
+                          style: TextStyle(
+                            color: AppColors.textPrimary,
+                            fontFamily: 'ADLaMDisplay',
+                          ),
+                          decoration: InputDecoration(
+                            labelText: 'Delivery Address',
+                            prefixIcon: Icon(
+                              Icons.home_outlined,
+                              color: AppColors.accent,
+                            ),
+                            labelStyle: TextStyle(
+                              color: AppColors.textSecondary,
+                              fontFamily: 'ADLaMDisplay',
+                            ),
+                            border: OutlineInputBorder(),
+                            enabledBorder: OutlineInputBorder(
+                              borderSide: BorderSide(color: AppColors.border),
                             ),
                           ),
-                          const SizedBox(width: 12),
-                          Expanded(
-                            child: _buildTextField(
-                              cvvController,
-                              'CVV',
-                              Icons.lock_outline,
+                          validator: (value) =>
+                              value!.isEmpty ? 'This field is required' : null,
+                        ),
+
+                        // NEW: Map button below address field
+                        SizedBox(height: 8),
+                        SizedBox(
+                          width: double.infinity,
+                          child: OutlinedButton.icon(
+                            onPressed: _selectAddressFromMap,
+                            icon: Icon(
+                              Icons.map_outlined,
+                              color: AppColors.accent,
+                            ),
+                            label: Text(
+                              'Select Address from Map',
+                              style: TextStyle(
+                                color: AppColors.accent,
+                                fontFamily: 'ADLaMDisplay',
+                              ),
+                            ),
+                            style: OutlinedButton.styleFrom(
+                              padding: EdgeInsets.symmetric(vertical: 12),
+                              side: BorderSide(color: AppColors.accent),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(8),
+                              ),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+
+                    const SizedBox(height: 24),
+                    Text(
+                      'Payment Method',
+                      style: TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                        color: AppColors.textPrimary,
+                        fontFamily: 'ADLaMDisplay',
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    RadioListTile(
+                      value: 'Cash on Delivery',
+                      groupValue: paymentMethod,
+                      title: Text(
+                        'Cash on Delivery',
+                        style: TextStyle(
+                          color: AppColors.textPrimary,
+                          fontFamily: 'ADLaMDisplay',
+                        ),
+                      ),
+                      onChanged: (value) =>
+                          setState(() => paymentMethod = value!),
+                      activeColor: AppColors.accent,
+                    ),
+                    RadioListTile(
+                      value: 'Card Payment',
+                      groupValue: paymentMethod,
+                      title: Text(
+                        'Card Payment',
+                        style: TextStyle(
+                          color: AppColors.textPrimary,
+                          fontFamily: 'ADLaMDisplay',
+                        ),
+                      ),
+                      onChanged: (value) =>
+                          setState(() => paymentMethod = value!),
+                      activeColor: AppColors.accent,
+                    ),
+
+                    // Card Details Section
+                    if (paymentMethod == 'Card Payment') ...[
+                      const SizedBox(height: 16),
+                      Container(
+                        padding: EdgeInsets.all(16),
+                        decoration: BoxDecoration(
+                          color: AppColors.card,
+                          borderRadius: BorderRadius.circular(12),
+                          border: Border.all(
+                            color: AppColors.accent.withOpacity(0.5),
+                          ),
+                        ),
+                        child: Column(
+                          children: [
+                            _buildTextField(
+                              cardNumberController,
+                              'Card Number',
+                              Icons.credit_card,
                               keyboardType: TextInputType.number,
-                              obscureText: true,
                             ),
-                          ),
-                        ],
+                            const SizedBox(height: 12),
+                            Row(
+                              children: [
+                                Expanded(
+                                  child: _buildTextField(
+                                    expiryController,
+                                    'MM/YY',
+                                    Icons.calendar_today,
+                                    keyboardType: TextInputType.datetime,
+                                  ),
+                                ),
+                                const SizedBox(width: 12),
+                                Expanded(
+                                  child: _buildTextField(
+                                    cvvController,
+                                    'CVV',
+                                    Icons.lock_outline,
+                                    keyboardType: TextInputType.number,
+                                    obscureText: true,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ],
+                        ),
                       ),
                     ],
-                  ),
-                ),
-              ],
 
-              const SizedBox(height: 24),
-              _buildOrderSummary(),
-              const SizedBox(height: 24),
-              SizedBox(
-                width: double.infinity,
-                child: ElevatedButton(
-                  onPressed: _isLoading ? null : _placeOrder,
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: AppColors.accent,
-                    padding: const EdgeInsets.symmetric(vertical: 14),
-                  ),
-                  child: Text(
-                    'PLACE ORDER',
-                    style: TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.bold,
-                      fontFamily: 'ADLaMDisplay',
-                      color: Colors.white,
+                    const SizedBox(height: 24),
+                    _buildOrderSummary(),
+                    const SizedBox(height: 24),
+                    SizedBox(
+                      width: double.infinity,
+                      child: ElevatedButton(
+                        onPressed: _isLoading ? null : _placeOrder,
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: AppColors.accent,
+                          padding: const EdgeInsets.symmetric(vertical: 14),
+                        ),
+                        child: Text(
+                          'PLACE ORDER',
+                          style: TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold,
+                            fontFamily: 'ADLaMDisplay',
+                            color: Colors.white,
+                          ),
+                        ),
+                      ),
                     ),
-                  ),
+                  ],
                 ),
               ),
-            ],
-          ),
-        ),
-      ),
+            ),
     );
   }
 
   // Helper Widget for TextFields
   Widget _buildTextField(
-      TextEditingController controller,
-      String label,
-      IconData icon, {
-        TextInputType keyboardType = TextInputType.text,
-        int maxLines = 1,
-        bool obscureText = false,
-      }) {
+    TextEditingController controller,
+    String label,
+    IconData icon, {
+    TextInputType keyboardType = TextInputType.text,
+    int maxLines = 1,
+    bool obscureText = false,
+  }) {
     return TextFormField(
       controller: controller,
       keyboardType: keyboardType,
@@ -470,7 +474,10 @@ class _CheckoutPageState extends State<CheckoutPage> {
         }
         if (snapshot.hasData && snapshot.data!.isNotEmpty) {
           final items = snapshot.data!;
-          int total = _calculateTotal(items);
+          int subtotal = _calculateSubtotal(items);
+          int discount = _calculateDiscount(subtotal);
+          int total = subtotal - discount;
+
           return Container(
             padding: EdgeInsets.all(16),
             decoration: BoxDecoration(
@@ -492,7 +499,7 @@ class _CheckoutPageState extends State<CheckoutPage> {
                 ),
                 SizedBox(height: 12),
                 ...items.map(
-                      (item) => Padding(
+                  (item) => Padding(
                     padding: EdgeInsets.symmetric(vertical: 4),
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -516,15 +523,58 @@ class _CheckoutPageState extends State<CheckoutPage> {
                   ),
                 ),
                 Divider(height: 20, color: AppColors.border),
+                SizedBox(height: 8),
+                _buildCouponInput(),
+
+                const SizedBox(height: 8),
+
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     Text(
-                      'Total:',
+                      'Subtotal',
+                      style: TextStyle(fontFamily: 'ADLaMDisplay'),
+                    ),
+                    Text(
+                      'Rs. $subtotal',
+                      style: TextStyle(fontFamily: 'ADLaMDisplay'),
+                    ),
+                  ],
+                ),
+
+                if (discountPercent > 0) ...[
+                  const SizedBox(height: 4),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text(
+                        'Discount ($discountPercent%)',
+                        style: TextStyle(
+                          color: Colors.green,
+                          fontFamily: 'ADLaMDisplay',
+                        ),
+                      ),
+                      Text(
+                        '- Rs. $discount',
+                        style: TextStyle(
+                          color: Colors.green,
+                          fontFamily: 'ADLaMDisplay',
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+
+                const Divider(height: 20),
+
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text(
+                      'Total',
                       style: TextStyle(
                         fontSize: 18,
                         fontWeight: FontWeight.bold,
-                        color: AppColors.textPrimary,
                         fontFamily: 'ADLaMDisplay',
                       ),
                     ),
@@ -567,12 +617,76 @@ class _CheckoutPageState extends State<CheckoutPage> {
     return items;
   }
 
-  int _calculateTotal(List<Map<String, dynamic>> items) {
+  int _calculateSubtotal(List<Map<String, dynamic>> items) {
     int total = 0;
     for (var item in items) {
       total += ((item['price'] ?? 0) * (item['quantity'] ?? 1)) as int;
     }
     return total;
+  }
+
+  int _calculateDiscount(int subtotal) {
+    return ((subtotal * discountPercent) / 100).round();
+  }
+
+  void _applyCoupon() async {
+    final couponData = await DatabaseService.instance.validateCoupon(
+      couponController.text,
+    );
+    if (couponData != null) {
+      setState(() {
+        discountPercent = couponData['discountPercent'];
+      });
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text("Coupon Applied Successfully!"),
+          backgroundColor: AppColors.success,
+        ),
+      );
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text("Invalid or Expired Coupon"),
+          backgroundColor: AppColors.error,
+        ),
+      );
+    }
+  }
+
+  Widget _buildCouponInput() {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(10),
+        border: Border.all(color: AppColors.border),
+      ),
+      child: Row(
+        children: [
+          Icon(Icons.local_offer, color: AppColors.accent),
+          const SizedBox(width: 8),
+          Expanded(
+            child: TextField(
+              controller: couponController,
+              decoration: InputDecoration(
+                hintText: 'Coupon code',
+                border: InputBorder.none,
+              ),
+            ),
+          ),
+          TextButton(
+            onPressed: _applyCoupon,
+            child: Text(
+              'APPLY',
+              style: TextStyle(
+                color: AppColors.accent,
+                fontWeight: FontWeight.bold,
+                fontFamily: 'ADLaMDisplay',
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
   }
 
   void _showOrderSuccess(BuildContext context, String orderId, int total) {

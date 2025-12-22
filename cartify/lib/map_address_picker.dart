@@ -109,7 +109,8 @@ class _MapAddressPickerPageState extends State<MapAddressPickerPage> {
           formattedAddress += address['road'];
         }
         if (address['suburb'] != null || address['neighbourhood'] != null) {
-          formattedAddress += ', ${address['suburb'] ?? address['neighbourhood']}';
+          formattedAddress +=
+              ', ${address['suburb'] ?? address['neighbourhood']}';
         }
         if (address['city'] != null) {
           formattedAddress += ', ${address['city']}';
@@ -158,7 +159,10 @@ class _MapAddressPickerPageState extends State<MapAddressPickerPage> {
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: Text('Cancel', style: TextStyle(color: AppColors.textPrimary)),
+            child: Text(
+              'Cancel',
+              style: TextStyle(color: AppColors.textPrimary),
+            ),
           ),
           ElevatedButton(
             style: ElevatedButton.styleFrom(backgroundColor: AppColors.accent),
@@ -196,10 +200,7 @@ class _MapAddressPickerPageState extends State<MapAddressPickerPage> {
         backgroundColor: AppColors.accent,
         title: Text(
           'Select Delivery Location',
-          style: TextStyle(
-            color: Colors.white,
-            fontFamily: 'IrishGrover',
-          ),
+          style: TextStyle(color: Colors.white, fontFamily: 'IrishGrover'),
         ),
         centerTitle: true,
         iconTheme: IconThemeData(color: Colors.white),
@@ -321,33 +322,33 @@ class _MapAddressPickerPageState extends State<MapAddressPickerPage> {
                     ),
                     child: isLoadingAddress
                         ? Row(
-                      children: [
-                        SizedBox(
-                          width: 16,
-                          height: 16,
-                          child: CircularProgressIndicator(
-                            strokeWidth: 2,
-                            color: AppColors.accent,
-                          ),
-                        ),
-                        SizedBox(width: 12),
-                        Text(
-                          'Fetching address...',
-                          style: TextStyle(
-                            color: AppColors.textSecondary,
-                            fontFamily: 'ADLaMDisplay',
-                          ),
-                        ),
-                      ],
-                    )
+                            children: [
+                              SizedBox(
+                                width: 16,
+                                height: 16,
+                                child: CircularProgressIndicator(
+                                  strokeWidth: 2,
+                                  color: AppColors.accent,
+                                ),
+                              ),
+                              SizedBox(width: 12),
+                              Text(
+                                'Fetching address...',
+                                style: TextStyle(
+                                  color: AppColors.textSecondary,
+                                  fontFamily: 'ADLaMDisplay',
+                                ),
+                              ),
+                            ],
+                          )
                         : Text(
-                      selectedAddress,
-                      style: TextStyle(
-                        fontSize: 14,
-                        color: AppColors.textPrimary,
-                        fontFamily: 'ADLaMDisplay',
-                      ),
-                    ),
+                            selectedAddress,
+                            style: TextStyle(
+                              fontSize: 14,
+                              color: AppColors.textPrimary,
+                              fontFamily: 'ADLaMDisplay',
+                            ),
+                          ),
                   ),
 
                   SizedBox(height: 16),
@@ -390,9 +391,9 @@ class _MapAddressPickerPageState extends State<MapAddressPickerPage> {
                           onPressed: isLoadingAddress
                               ? null
                               : () {
-                            // Return selected address to previous screen
-                            Navigator.pop(context, selectedAddress);
-                          },
+                                  // Return selected address to previous screen
+                                  Navigator.pop(context, selectedAddress);
+                                },
                           icon: Icon(Icons.check, color: Colors.white),
                           label: Text(
                             'Confirm Location',

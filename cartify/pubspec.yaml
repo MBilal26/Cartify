@@ -57,3 +57,6 @@ flutter:
 
   assets:
     - assets/images/
+    - assets/icons/categories_icon/
+    - assets/icons/categories_icon/shirts_icon.png
+    - assets/icons/categories_icon/accessories_icon.png

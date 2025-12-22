@@ -19,7 +19,6 @@ class _CartiChatbotPageState extends State<CartiChatbotPage> {
   final List<ChatMessage> _messages = [];
 
   String userName = "Guest";
-  bool _isLoading = false;
   bool _isTyping = false;
 
   // UPDATED: Your NEW Gemini API key integrated here

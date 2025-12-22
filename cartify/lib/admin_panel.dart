@@ -15,6 +15,7 @@ class _AdminPanelPageState extends State<AdminPanelPage>
   List<Map<String, dynamic>> products = [];
   List<Map<String, dynamic>> categories = [];
   List<Map<String, dynamic>> orders = [];
+  List<Map<String, dynamic>> coupons = [];
   bool isLoading = true;
 
   late TabController _tabController;
@@ -30,10 +31,9 @@ class _AdminPanelPageState extends State<AdminPanelPage>
   @override
   void initState() {
     super.initState();
-    _tabController = TabController(length: 3, vsync: this);
-    _tabController.addListener(() {
-      setState(() {}); // Rebuild to show/hide FAB
-    });
+    // 1. Updated length to 4
+    _tabController = TabController(length: 4, vsync: this);
+    _tabController.addListener(() => setState(() {}));
     _loadData();
   }
 
@@ -45,13 +45,11 @@ class _AdminPanelPageState extends State<AdminPanelPage>
 
   Future<void> _loadData() async {
     setState(() => isLoading = true);
-
     products = await DatabaseService.instance.getAllProducts();
     categories = await DatabaseService.instance.getCategories();
     orders = await _getAllOrders();
-
+    coupons = await DatabaseService.instance.getAllCoupons(); // Fetch from DB
     _calculateAnalytics();
-
     setState(() => isLoading = false);
   }
 
@@ -141,6 +139,7 @@ class _AdminPanelPageState extends State<AdminPanelPage>
               icon: Icon(Icons.shopping_bag),
               text: 'Orders (${orders.length})',
             ),
+            Tab(icon: Icon(Icons.discount), text: 'Coupons'),
           ],
         ),
       ),
@@ -152,6 +151,7 @@ class _AdminPanelPageState extends State<AdminPanelPage>
                 _buildAnalyticsTab(),
                 _buildProductsTab(),
                 _buildOrdersTab(),
+                _buildCouponsTab(),
               ],
             ),
       floatingActionButton: AnimatedSwitcher(
@@ -634,6 +634,101 @@ class _AdminPanelPageState extends State<AdminPanelPage>
             ),
           ],
         ),
+      ),
+    );
+  }
+
+  Widget _buildCouponsTab() {
+    if (coupons.isEmpty) {
+      return Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            const Text("No coupons generated yet."),
+            const SizedBox(height: 10),
+            ElevatedButton(
+              onPressed: _showAddCouponDialog,
+              child: const Text("Create First Coupon"),
+            ),
+          ],
+        ),
+      );
+    }
+    return ListView.builder(
+      padding: const EdgeInsets.all(16),
+      itemCount: coupons.length,
+      itemBuilder: (context, index) {
+        final coupon = coupons[index];
+        return Card(
+          color: AppColors.card,
+          child: ListTile(
+            title: Text(
+              coupon['code'],
+              style: const TextStyle(
+                fontWeight: FontWeight.bold,
+                color: Colors.amber,
+              ),
+            ),
+            subtitle: Text("${coupon['discountPercent']}% Off"),
+            trailing: IconButton(
+              icon: const Icon(Icons.delete, color: Colors.red),
+              onPressed: () async {
+                await DatabaseService.instance.deleteCoupon(coupon['code']);
+                _loadData();
+              },
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  void _showAddCouponDialog() {
+    final codeController = TextEditingController();
+    final discountController = TextEditingController();
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text("New Coupon"),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            TextField(
+              controller: codeController,
+              decoration: const InputDecoration(
+                hintText: "Enter Code (e.g., WELCOME10)",
+              ),
+            ),
+            TextField(
+              controller: discountController,
+              decoration: const InputDecoration(
+                hintText: "Discount Percentage",
+              ),
+              keyboardType: TextInputType.number,
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text("Cancel"),
+          ),
+          ElevatedButton(
+            onPressed: () async {
+              if (codeController.text.isNotEmpty &&
+                  discountController.text.isNotEmpty) {
+                await DatabaseService.instance.addCoupon(
+                  code: codeController.text,
+                  discountPercent: int.parse(discountController.text),
+                  expiryDate: DateTime.now().add(const Duration(days: 30)),
+                );
+                Navigator.pop(context);
+                _loadData(); // Refresh list
+              }
+            },
+            child: const Text("Save"),
+          ),
+        ],
       ),
     );
   }

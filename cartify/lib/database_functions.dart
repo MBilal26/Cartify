@@ -24,6 +24,109 @@ class DatabaseService {
   final String _cartCollection = 'cart';
   final String _ordersCollection = 'orders';
   final String _rewardsCollection = 'rewards';
+  final String _couponsCollection = 'coupons';
+
+  // COUPONS COLLECTION
+  // ============================================================================
+
+  Future<bool> addCoupon({
+    required String code,
+    required int discountPercent,
+    required DateTime expiryDate,
+  }) async {
+    try {
+      await _db.collection(_couponsCollection).doc(code.toUpperCase()).set({
+        'code': code.toUpperCase(),
+        'discountPercent': discountPercent,
+        'expiryDate': Timestamp.fromDate(expiryDate),
+        'createdAt': FieldValue.serverTimestamp(),
+      });
+      return true;
+    } catch (e) {
+      print('Error adding coupon: $e');
+      return false;
+    }
+  }
+
+  Future<List<Map<String, dynamic>>> getAllCoupons() async {
+    try {
+      final snapshot = await _db.collection(_couponsCollection).get();
+      return snapshot.docs.map((doc) => doc.data()).toList();
+    } catch (e) {
+      return [];
+    }
+  }
+
+  Future<void> deleteCoupon(String code) async {
+    await _db.collection(_couponsCollection).doc(code).delete();
+  }
+
+  Future<Map<String, dynamic>?> validateCoupon(String code) async {
+  final doc = await FirebaseFirestore.instance
+      .collection('coupons')
+      .doc(code)
+      .get();
+
+  if (!doc.exists) return null;
+
+  final data = doc.data()!;
+
+  // 🔒 Check if already used
+  if (data['used'] == true) return null;
+
+  // ⏰ Check expiry (if exists)
+  if (data.containsKey('expiresAt')) {
+    final expiry = (data['expiresAt'] as Timestamp).toDate();
+    if (DateTime.now().isAfter(expiry)) return null;
+  }
+
+  return {
+    'code': doc.id,
+    'discountPercent': data['discountPercent'],
+  };
+}
+
+
+//WALLET
+Future<double> getWalletBalance(String uid) async {
+  final doc = await FirebaseFirestore.instance
+      .collection('users')
+      .doc(uid)
+      .get();
+
+  if (!doc.exists) return 0.0;
+
+  return (doc.data()?['walletBalance'] ?? 0).toDouble();
+}
+
+Future<void> updateWalletBalance({
+  required String uid,
+  required double newBalance,
+}) async {
+  await FirebaseFirestore.instance
+      .collection('users')
+      .doc(uid)
+      .update({
+    'walletBalance': newBalance,
+  });
+}
+
+Future<void> addToWallet({
+  required String uid,
+  required double amount,
+}) async {
+  final ref =
+      FirebaseFirestore.instance.collection('users').doc(uid);
+
+  await FirebaseFirestore.instance.runTransaction((tx) async {
+    final snapshot = await tx.get(ref);
+    final current = (snapshot.data()?['walletBalance'] ?? 0).toDouble();
+    tx.update(ref, {
+      'walletBalance': current + amount,
+    });
+  });
+}
+
 
   // ============================================================================
   // FIREBASE STORAGE FUNCTIONS (For uploading product images)
@@ -60,6 +163,34 @@ class DatabaseService {
       print('Error deleting image: $e');
       return false;
     }
+  }
+
+  Future<void> createRewardCoupon(String userId) async {
+    final couponRef = FirebaseFirestore.instance
+        .collection('users')
+        .doc(userId)
+        .collection('coupons')
+        .doc(); // auto ID
+
+    await couponRef.set({
+      'code': 'REWARD500',
+      'discountType': 'flat',
+      'discountValue': 500,
+      'used': false,
+      'createdAt': FieldValue.serverTimestamp(),
+      'expiresAt': Timestamp.fromDate(
+        DateTime.now().add(const Duration(days: 30)),
+      ),
+    });
+  }
+
+  Future<void> markCouponUsed(String userId, String couponId) async {
+    await FirebaseFirestore.instance
+        .collection('users')
+        .doc(userId)
+        .collection('coupons')
+        .doc(couponId)
+        .update({'used': true});
   }
 
   // ============================================================================
@@ -174,7 +305,9 @@ class DatabaseService {
 
   /// Get categories by parent (for nested categories)
   /// Example: List<Map<String, dynamic>> menCategories = await DatabaseService.instance.getCategoriesByParent('Men');
-  Future<List<Map<String, dynamic>>> getCategoriesByParent(String? parentCategory) async {
+  Future<List<Map<String, dynamic>>> getCategoriesByParent(
+    String? parentCategory,
+  ) async {
     try {
       final snapshot = await _db
           .collection(_categoriesCollection)
@@ -244,7 +377,10 @@ class DatabaseService {
 
       if (updates.isNotEmpty) {
         updates['updatedAt'] = FieldValue.serverTimestamp();
-        await _db.collection(_productsCollection).doc(productId).update(updates);
+        await _db
+            .collection(_productsCollection)
+            .doc(productId)
+            .update(updates);
       }
       return true;
     } catch (e) {
@@ -267,7 +403,9 @@ class DatabaseService {
 
   /// Get products by category
   /// Example: List<Map<String, dynamic>> products = await DatabaseService.instance.getProductsByCategory('cat_123');
-  Future<List<Map<String, dynamic>>> getProductsByCategory(String categoryId) async {
+  Future<List<Map<String, dynamic>>> getProductsByCategory(
+    String categoryId,
+  ) async {
     try {
       final snapshot = await _db
           .collection(_productsCollection)
@@ -304,7 +442,10 @@ class DatabaseService {
   /// Example: Map<String, dynamic>? product = await DatabaseService.instance.getProduct('prod_123');
   Future<Map<String, dynamic>?> getProduct(String productId) async {
     try {
-      final doc = await _db.collection(_productsCollection).doc(productId).get();
+      final doc = await _db
+          .collection(_productsCollection)
+          .doc(productId)
+          .get();
       if (doc.exists) {
         final data = doc.data()!;
         data['id'] = doc.id;
@@ -369,11 +510,13 @@ class DatabaseService {
         .collection(_cartCollection)
         .where('userId', isEqualTo: userId)
         .snapshots()
-        .map((snapshot) => snapshot.docs.map((doc) {
-      final data = doc.data();
-      data['id'] = doc.id;
-      return data;
-    }).toList());
+        .map(
+          (snapshot) => snapshot.docs.map((doc) {
+            final data = doc.data();
+            data['id'] = doc.id;
+            return data;
+          }).toList(),
+        );
   }
 
   /// Update cart item quantity

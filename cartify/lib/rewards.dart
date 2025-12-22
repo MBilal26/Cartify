@@ -32,7 +32,10 @@ class RewardsPage extends StatelessWidget {
                   SizedBox(height: 16),
                   Text(
                     'Please login to view your rewards',
-                    style: TextStyle(fontSize: 16, color: AppColors.textPrimary),
+                    style: TextStyle(
+                      fontSize: 16,
+                      color: AppColors.textPrimary,
+                    ),
                   ),
                   SizedBox(height: 16),
                   ElevatedButton(
@@ -42,10 +45,7 @@ class RewardsPage extends StatelessWidget {
                     style: ElevatedButton.styleFrom(
                       backgroundColor: AppColors.accent,
                     ),
-                    child: Text(
-                      'Login',
-                      style: TextStyle(color: Colors.white),
-                    ),
+                    child: Text('Login', style: TextStyle(color: Colors.white)),
                   ),
                 ],
               ),
@@ -54,7 +54,9 @@ class RewardsPage extends StatelessWidget {
               stream: DatabaseService.instance.getRewardPointsStream(userId),
               builder: (context, snapshot) {
                 if (snapshot.connectionState == ConnectionState.waiting) {
-                  return Center(child: CircularProgressIndicator(color: AppColors.accent));
+                  return Center(
+                    child: CircularProgressIndicator(color: AppColors.accent),
+                  );
                 }
 
                 if (snapshot.hasError) {
@@ -96,11 +98,18 @@ class RewardsPage extends StatelessWidget {
                           ),
                           child: Column(
                             children: [
-                              Icon(Icons.stars_rounded, color: Colors.white, size: 48),
+                              Icon(
+                                Icons.stars_rounded,
+                                color: Colors.white,
+                                size: 48,
+                              ),
                               SizedBox(height: 8),
                               Text(
                                 'Total Points',
-                                style: TextStyle(color: Colors.white70, fontSize: 16),
+                                style: TextStyle(
+                                  color: Colors.white70,
+                                  fontSize: 16,
+                                ),
                               ),
                               SizedBox(height: 8),
                               Text(
@@ -165,7 +174,10 @@ class RewardsPage extends StatelessWidget {
                             children: [
                               Row(
                                 children: [
-                                  Icon(Icons.info_outline, color: AppColors.accent),
+                                  Icon(
+                                    Icons.info_outline,
+                                    color: AppColors.accent,
+                                  ),
                                   SizedBox(width: 8),
                                   Text(
                                     'Rewards Information',
@@ -179,7 +191,7 @@ class RewardsPage extends StatelessWidget {
                               ),
                               SizedBox(height: 12),
                               Text(
-                                '• 1000 points = Rs. 100 discount\n'
+                                '• 1000 points = Rs. 500 discount\n'
                                 '• Points can be redeemed at checkout\n'
                                 '• Points expire after 1 year\n'
                                 '• Earn more by shopping and referring friends',
@@ -303,12 +315,19 @@ class RewardsPage extends StatelessWidget {
     );
   }
 
-  void _showRedeemDialog(BuildContext context, String userId, int currentPoints) {
+  void _showRedeemDialog(
+    BuildContext context,
+    String userId,
+    int currentPoints,
+  ) {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
         backgroundColor: AppColors.card,
-        title: Text('Redeem Rewards', style: TextStyle(color: AppColors.textPrimary)),
+        title: Text(
+          'Redeem Rewards',
+          style: TextStyle(color: AppColors.textPrimary),
+        ),
         content: Column(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -319,7 +338,7 @@ class RewardsPage extends StatelessWidget {
             ),
             SizedBox(height: 8),
             Text(
-              'Redeem 1000 points for Rs. 100 discount?',
+              'Redeem 1000 points for Rs. 500 discount?',
               style: TextStyle(color: AppColors.textPrimary),
             ),
           ],
@@ -327,16 +346,23 @@ class RewardsPage extends StatelessWidget {
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: Text('Cancel', style: TextStyle(color: AppColors.textPrimary)),
+            child: Text(
+              'Cancel',
+              style: TextStyle(color: AppColors.textPrimary),
+            ),
           ),
           ElevatedButton(
             style: ElevatedButton.styleFrom(backgroundColor: AppColors.accent),
             onPressed: () async {
               await DatabaseService.instance.updateRewardPoints(userId, -1000);
+              await DatabaseService.instance.createRewardCoupon(userId);
+
               Navigator.pop(context);
               ScaffoldMessenger.of(context).showSnackBar(
                 SnackBar(
-                  content: Text('Redeemed! Rs. 100 discount added to your wallet'),
+                  content: Text(
+                    'Coupon unlocked! Use REWARD500 at checkout 🎉',
+                  ),
                   backgroundColor: AppColors.success,
                 ),
               );
@@ -425,7 +451,10 @@ class RewardsPage extends StatelessWidget {
                           child: ListTile(
                             leading: CircleAvatar(
                               backgroundColor: AppColors.accent,
-                              child: Icon(Icons.shopping_bag, color: Colors.white),
+                              child: Icon(
+                                Icons.shopping_bag,
+                                color: Colors.white,
+                              ),
                             ),
                             title: Text(
                               'Order #${order['orderId'].substring(0, 8)}',
