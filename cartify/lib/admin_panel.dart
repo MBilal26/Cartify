@@ -139,7 +139,7 @@ class _AdminPanelPageState extends State<AdminPanelPage>
           indicatorColor: Colors.white,
           labelColor: Colors.white,
           unselectedLabelColor: Colors.white70,
-          isScrollable: true,
+
           labelStyle: TextStyle(fontFamily: 'ADLaMDisplay', fontSize: 12),
           unselectedLabelStyle: TextStyle(
             fontFamily: 'ADLaMDisplay',

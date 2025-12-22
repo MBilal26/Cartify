@@ -911,8 +911,45 @@ class _HomeScreenState extends State<HomeScreen> {
                                               width: double.infinity,
                                               height: 32,
                                               child: OutlinedButton(
-                                                onPressed: () {
-                                                  // Logic for Add to Cart
+                                                onPressed: () async {
+                                                  final user = FirebaseAuth
+                                                      .instance
+                                                      .currentUser;
+
+                                                  if (user == null) {
+                                                    ScaffoldMessenger.of(
+                                                      context,
+                                                    ).showSnackBar(
+                                                      SnackBar(
+                                                        content: Text(
+                                                          "Please login first",
+                                                        ),
+                                                      ),
+                                                    );
+                                                    return;
+                                                  }
+
+                                                  final success =
+                                                      await DatabaseService
+                                                          .instance
+                                                          .addToCart(
+                                                            userId: user.uid,
+                                                            productId:
+                                                                product['id'],
+                                                            quantity: 1,
+                                                          );
+
+                                                  if (success) {
+                                                    ScaffoldMessenger.of(
+                                                      context,
+                                                    ).showSnackBar(
+                                                      SnackBar(
+                                                        content: Text(
+                                                          "Added to cart",
+                                                        ),
+                                                      ),
+                                                    );
+                                                  }
                                                 },
                                                 style: OutlinedButton.styleFrom(
                                                   side: BorderSide(
@@ -943,8 +980,25 @@ class _HomeScreenState extends State<HomeScreen> {
                                               width: double.infinity,
                                               height: 32,
                                               child: ElevatedButton(
-                                                onPressed: () {
-                                                  // Logic for Buy Now
+                                                onPressed: () async {
+                                                  final user = FirebaseAuth
+                                                      .instance
+                                                      .currentUser;
+
+                                                  if (user == null) return;
+
+                                                  await DatabaseService.instance
+                                                      .addToCart(
+                                                        userId: user.uid,
+                                                        productId:
+                                                            product['id'],
+                                                        quantity: 1,
+                                                      );
+
+                                                  Navigator.pushNamed(
+                                                    context,
+                                                    '/checkout',
+                                                  );
                                                 },
                                                 style: ElevatedButton.styleFrom(
                                                   backgroundColor:
