@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'colors.dart';
 import 'database_functions.dart';
+import 'map_address_picker.dart'; // NEW: Import map address picker
 
 class CheckoutPage extends StatefulWidget {
   const CheckoutPage({super.key});
@@ -52,6 +53,24 @@ class _CheckoutPageState extends State<CheckoutPage> {
           addressController.text = userData['address'] ?? '';
         });
       }
+    }
+  }
+
+  // NEW: Open map to select address
+  Future<void> _selectAddressFromMap() async {
+    final selectedAddress = await Navigator.push<String>(
+      context,
+      MaterialPageRoute(
+        builder: (context) => MapAddressPickerPage(
+          currentAddress: addressController.text,
+        ),
+      ),
+    );
+
+    if (selectedAddress != null && selectedAddress.isNotEmpty) {
+      setState(() {
+        addressController.text = selectedAddress;
+      });
     }
   }
 
@@ -184,183 +203,237 @@ class _CheckoutPageState extends State<CheckoutPage> {
       ),
       body: _isLoading
           ? Center(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            CircularProgressIndicator(color: AppColors.accent),
+            SizedBox(height: 16),
+            Text(
+              'Placing your order...',
+              style: TextStyle(
+                color: AppColors.textPrimary,
+                fontFamily: 'ADLaMDisplay',
+              ),
+            ),
+          ],
+        ),
+      )
+          : SingleChildScrollView(
+        padding: const EdgeInsets.all(16),
+        child: Form(
+          key: _formKey,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                'Shipping Details',
+                style: TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                  color: AppColors.textPrimary,
+                  fontFamily: 'ADLaMDisplay',
+                ),
+              ),
+              const SizedBox(height: 12),
+              _buildTextField(
+                nameController,
+                'Full Name',
+                Icons.person_outline,
+              ),
+              const SizedBox(height: 12),
+              _buildTextField(
+                phoneController,
+                'Phone Number',
+                Icons.phone_outlined,
+                keyboardType: TextInputType.phone,
+              ),
+              const SizedBox(height: 12),
+
+              // UPDATED: Address field with map button
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  CircularProgressIndicator(color: AppColors.accent),
-                  SizedBox(height: 16),
-                  Text(
-                    'Placing your order...',
+                  TextFormField(
+                    controller: addressController,
+                    maxLines: 3,
                     style: TextStyle(
                       color: AppColors.textPrimary,
                       fontFamily: 'ADLaMDisplay',
                     ),
+                    decoration: InputDecoration(
+                      labelText: 'Delivery Address',
+                      prefixIcon: Icon(
+                        Icons.home_outlined,
+                        color: AppColors.accent,
+                      ),
+                      labelStyle: TextStyle(
+                        color: AppColors.textSecondary,
+                        fontFamily: 'ADLaMDisplay',
+                      ),
+                      border: OutlineInputBorder(),
+                      enabledBorder: OutlineInputBorder(
+                        borderSide: BorderSide(color: AppColors.border),
+                      ),
+                    ),
+                    validator: (value) =>
+                    value!.isEmpty ? 'This field is required' : null,
+                  ),
+
+                  // NEW: Map button below address field
+                  SizedBox(height: 8),
+                  SizedBox(
+                    width: double.infinity,
+                    child: OutlinedButton.icon(
+                      onPressed: _selectAddressFromMap,
+                      icon: Icon(
+                        Icons.map_outlined,
+                        color: AppColors.accent,
+                      ),
+                      label: Text(
+                        'Select Address from Map',
+                        style: TextStyle(
+                          color: AppColors.accent,
+                          fontFamily: 'ADLaMDisplay',
+                        ),
+                      ),
+                      style: OutlinedButton.styleFrom(
+                        padding: EdgeInsets.symmetric(vertical: 12),
+                        side: BorderSide(color: AppColors.accent),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                      ),
+                    ),
                   ),
                 ],
               ),
-            )
-          : SingleChildScrollView(
-              padding: const EdgeInsets.all(16),
-              child: Form(
-                key: _formKey,
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      'Shipping Details',
-                      style: TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold,
-                        color: AppColors.textPrimary,
-                        fontFamily: 'ADLaMDisplay',
-                      ),
-                    ),
-                    const SizedBox(height: 12),
-                    _buildTextField(
-                      nameController,
-                      'Full Name',
-                      Icons.person_outline,
-                    ),
-                    const SizedBox(height: 12),
-                    _buildTextField(
-                      phoneController,
-                      'Phone Number',
-                      Icons.phone_outlined,
-                      keyboardType: TextInputType.phone,
-                    ),
-                    const SizedBox(height: 12),
-                    _buildTextField(
-                      addressController,
-                      'Delivery Address',
-                      Icons.home_outlined,
-                      maxLines: 3,
-                    ),
-                    const SizedBox(height: 24),
-                    Text(
-                      'Payment Method',
-                      style: TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold,
-                        color: AppColors.textPrimary,
-                        fontFamily: 'ADLaMDisplay',
-                      ),
-                    ),
-                    const SizedBox(height: 8),
-                    RadioListTile(
-                      value: 'Cash on Delivery',
-                      groupValue: paymentMethod,
-                      title: Text(
-                        'Cash on Delivery',
-                        style: TextStyle(
-                          color: AppColors.textPrimary,
-                          fontFamily: 'ADLaMDisplay',
-                        ),
-                      ),
-                      onChanged: (value) =>
-                          setState(() => paymentMethod = value!),
-                      activeColor: AppColors.accent,
-                    ),
-                    RadioListTile(
-                      value: 'Card Payment',
-                      groupValue: paymentMethod,
-                      title: Text(
-                        'Card Payment',
-                        style: TextStyle(
-                          color: AppColors.textPrimary,
-                          fontFamily: 'ADLaMDisplay',
-                        ),
-                      ),
-                      onChanged: (value) =>
-                          setState(() => paymentMethod = value!),
-                      activeColor: AppColors.accent,
-                    ),
 
-                    // Card Details Section
-                    if (paymentMethod == 'Card Payment') ...[
-                      const SizedBox(height: 16),
-                      Container(
-                        padding: EdgeInsets.all(16),
-                        decoration: BoxDecoration(
-                          color: AppColors.card,
-                          borderRadius: BorderRadius.circular(12),
-                          border: Border.all(
-                            color: AppColors.accent.withOpacity(0.5),
-                          ),
-                        ),
-                        child: Column(
-                          children: [
-                            _buildTextField(
-                              cardNumberController,
-                              'Card Number',
-                              Icons.credit_card,
-                              keyboardType: TextInputType.number,
-                            ),
-                            const SizedBox(height: 12),
-                            Row(
-                              children: [
-                                Expanded(
-                                  child: _buildTextField(
-                                    expiryController,
-                                    'MM/YY',
-                                    Icons.calendar_today,
-                                    keyboardType: TextInputType.datetime,
-                                  ),
-                                ),
-                                const SizedBox(width: 12),
-                                Expanded(
-                                  child: _buildTextField(
-                                    cvvController,
-                                    'CVV',
-                                    Icons.lock_outline,
-                                    keyboardType: TextInputType.number,
-                                    obscureText: true,
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ],
-                        ),
-                      ),
-                    ],
-
-                    const SizedBox(height: 24),
-                    _buildOrderSummary(),
-                    const SizedBox(height: 24),
-                    SizedBox(
-                      width: double.infinity,
-                      child: ElevatedButton(
-                        onPressed: _isLoading ? null : _placeOrder,
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: AppColors.accent,
-                          padding: const EdgeInsets.symmetric(vertical: 14),
-                        ),
-                        child: Text(
-                          'PLACE ORDER',
-                          style: TextStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.bold,
-                            fontFamily: 'ADLaMDisplay',
-                            color: Colors.white,
-                          ),
-                        ),
-                      ),
-                    ),
-                  ],
+              const SizedBox(height: 24),
+              Text(
+                'Payment Method',
+                style: TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                  color: AppColors.textPrimary,
+                  fontFamily: 'ADLaMDisplay',
                 ),
               ),
-            ),
+              const SizedBox(height: 8),
+              RadioListTile(
+                value: 'Cash on Delivery',
+                groupValue: paymentMethod,
+                title: Text(
+                  'Cash on Delivery',
+                  style: TextStyle(
+                    color: AppColors.textPrimary,
+                    fontFamily: 'ADLaMDisplay',
+                  ),
+                ),
+                onChanged: (value) =>
+                    setState(() => paymentMethod = value!),
+                activeColor: AppColors.accent,
+              ),
+              RadioListTile(
+                value: 'Card Payment',
+                groupValue: paymentMethod,
+                title: Text(
+                  'Card Payment',
+                  style: TextStyle(
+                    color: AppColors.textPrimary,
+                    fontFamily: 'ADLaMDisplay',
+                  ),
+                ),
+                onChanged: (value) =>
+                    setState(() => paymentMethod = value!),
+                activeColor: AppColors.accent,
+              ),
+
+              // Card Details Section
+              if (paymentMethod == 'Card Payment') ...[
+                const SizedBox(height: 16),
+                Container(
+                  padding: EdgeInsets.all(16),
+                  decoration: BoxDecoration(
+                    color: AppColors.card,
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(
+                      color: AppColors.accent.withOpacity(0.5),
+                    ),
+                  ),
+                  child: Column(
+                    children: [
+                      _buildTextField(
+                        cardNumberController,
+                        'Card Number',
+                        Icons.credit_card,
+                        keyboardType: TextInputType.number,
+                      ),
+                      const SizedBox(height: 12),
+                      Row(
+                        children: [
+                          Expanded(
+                            child: _buildTextField(
+                              expiryController,
+                              'MM/YY',
+                              Icons.calendar_today,
+                              keyboardType: TextInputType.datetime,
+                            ),
+                          ),
+                          const SizedBox(width: 12),
+                          Expanded(
+                            child: _buildTextField(
+                              cvvController,
+                              'CVV',
+                              Icons.lock_outline,
+                              keyboardType: TextInputType.number,
+                              obscureText: true,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+
+              const SizedBox(height: 24),
+              _buildOrderSummary(),
+              const SizedBox(height: 24),
+              SizedBox(
+                width: double.infinity,
+                child: ElevatedButton(
+                  onPressed: _isLoading ? null : _placeOrder,
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: AppColors.accent,
+                    padding: const EdgeInsets.symmetric(vertical: 14),
+                  ),
+                  child: Text(
+                    'PLACE ORDER',
+                    style: TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                      fontFamily: 'ADLaMDisplay',
+                      color: Colors.white,
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
     );
   }
 
   // Helper Widget for TextFields
   Widget _buildTextField(
-    TextEditingController controller,
-    String label,
-    IconData icon, {
-    TextInputType keyboardType = TextInputType.text,
-    int maxLines = 1,
-    bool obscureText = false,
-  }) {
+      TextEditingController controller,
+      String label,
+      IconData icon, {
+        TextInputType keyboardType = TextInputType.text,
+        int maxLines = 1,
+        bool obscureText = false,
+      }) {
     return TextFormField(
       controller: controller,
       keyboardType: keyboardType,
@@ -419,7 +492,7 @@ class _CheckoutPageState extends State<CheckoutPage> {
                 ),
                 SizedBox(height: 12),
                 ...items.map(
-                  (item) => Padding(
+                      (item) => Padding(
                     padding: EdgeInsets.symmetric(vertical: 4),
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,

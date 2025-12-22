@@ -15,6 +15,13 @@ dependencies:
   cloud_firestore: ^5.4.4
   firebase_storage: ^12.4.10
   image_picker: ^1.2.1
+  google_maps_flutter: ^2.5.0
+  geolocator: ^10.1.0
+  geocoding: ^2.1.1
+  flutter_map: ^6.1.0
+  latlong2: ^0.9.0
+  http: ^1.1.0
+  google_generative_ai: ^0.4.0
 
 dependency_overrides:
   firebase_auth_web: ^5.13.2

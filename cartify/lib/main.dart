@@ -16,6 +16,7 @@ import 'admin_panel.dart';
 import 'database_functions.dart';
 import 'about_us.dart';
 import 'privacy_policy.dart';
+import 'carti_chatbot.dart'; // From File 2
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -70,6 +71,17 @@ class MainApp extends StatelessWidget {
             return MaterialPageRoute(builder: (_) => AboutUsPage());
           case '/privacy_policy':
             return MaterialPageRoute(builder: (_) => PrivacyPolicyPage());
+          case '/carti': // From File 2
+            return MaterialPageRoute(builder: (_) => CartiChatbotPage());
+          case '/category_products':
+            final args = settings.arguments as Map<String, dynamic>;
+            return MaterialPageRoute(
+              builder: (_) => CategoryProductsPage(
+                categoryId: args['categoryId'],
+                categoryName: args['categoryName'],
+                parentCategory: args['parentCategory'],
+              ),
+            );
         }
         return null;
       },
@@ -89,9 +101,9 @@ class _HomeScreenState extends State<HomeScreen> {
   bool isAdmin = false;
   List<Map<String, dynamic>> products = [];
   List<Map<String, dynamic>> filteredProducts = [];
+  List<Map<String, dynamic>> categories = [];
   bool isLoadingProducts = true;
 
-  // Search functionality
   final TextEditingController _searchController = TextEditingController();
   bool isSearching = false;
 
@@ -100,6 +112,7 @@ class _HomeScreenState extends State<HomeScreen> {
     super.initState();
     _checkAdminStatus();
     _loadProducts();
+    _loadCategories();
   }
 
   @override
@@ -129,6 +142,13 @@ class _HomeScreenState extends State<HomeScreen> {
     });
   }
 
+  Future<void> _loadCategories() async {
+    final allCategories = await DatabaseService.instance.getCategories();
+    setState(() {
+      categories = allCategories;
+    });
+  }
+
   void _searchProducts(String query) {
     setState(() {
       if (query.isEmpty) {
@@ -139,17 +159,45 @@ class _HomeScreenState extends State<HomeScreen> {
         filteredProducts = products
             .where(
               (product) =>
-                  product['name'].toString().toLowerCase().contains(
-                    query.toLowerCase(),
-                  ) ||
-                  (product['description'] ?? '')
-                      .toString()
-                      .toLowerCase()
-                      .contains(query.toLowerCase()),
-            )
+          product['name'].toString().toLowerCase().contains(
+            query.toLowerCase(),
+          ) ||
+              (product['description'] ?? '')
+                  .toString()
+                  .toLowerCase()
+                  .contains(query.toLowerCase()),
+        )
             .toList();
       }
     });
+  }
+
+  void _navigateToCategory(String categoryTitle, String parentCategory) {
+    final category = categories.firstWhere(
+          (cat) =>
+      cat['title'] == categoryTitle &&
+          cat['parentCategory'] == parentCategory,
+      orElse: () => {},
+    );
+
+    if (category.isNotEmpty) {
+      Navigator.pushNamed(
+        context,
+        '/category_products',
+        arguments: {
+          'categoryId': category['id'],
+          'categoryName': categoryTitle,
+          'parentCategory': parentCategory,
+        },
+      );
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Category not found'),
+          backgroundColor: AppColors.error,
+        ),
+      );
+    }
   }
 
   @override
@@ -246,31 +294,11 @@ class _HomeScreenState extends State<HomeScreen> {
                     ),
                   ),
                   children: [
-                    _buildCategoryItem(
-                      context,
-                      'Shirts',
-                      Icons.checkroom_outlined,
-                    ),
-                    _buildCategoryItem(
-                      context,
-                      'Jeans',
-                      Icons.line_style_outlined,
-                    ),
-                    _buildCategoryItem(
-                      context,
-                      'Eyewear',
-                      Icons.visibility_outlined,
-                    ),
-                    _buildCategoryItem(
-                      context,
-                      'Accessories',
-                      Icons.watch_outlined,
-                    ),
-                    _buildCategoryItem(
-                      context,
-                      'Footwear',
-                      Icons.directions_walk_outlined,
-                    ),
+                    _buildCategoryItem(context, 'Shirts', Icons.checkroom_outlined, 'Men'),
+                    _buildCategoryItem(context, 'Jeans', Icons.line_style_outlined, 'Men'),
+                    _buildCategoryItem(context, 'Eyewear', Icons.visibility_outlined, 'Men'),
+                    _buildCategoryItem(context, 'Accessories', Icons.watch_outlined, 'Men'),
+                    _buildCategoryItem(context, 'Footwear', Icons.directions_walk_outlined, 'Men'),
                   ],
                 ),
                 ExpansionTile(
@@ -284,31 +312,11 @@ class _HomeScreenState extends State<HomeScreen> {
                     ),
                   ),
                   children: [
-                    _buildCategoryItem(
-                      context,
-                      'Dresses',
-                      Icons.dry_cleaning_outlined,
-                    ),
-                    _buildCategoryItem(
-                      context,
-                      'Jeans',
-                      Icons.line_weight_outlined,
-                    ),
-                    _buildCategoryItem(
-                      context,
-                      'Eyewear',
-                      Icons.face_retouching_natural_outlined,
-                    ),
-                    _buildCategoryItem(
-                      context,
-                      'Accessories',
-                      Icons.shopping_basket_outlined,
-                    ),
-                    _buildCategoryItem(
-                      context,
-                      'Footwear',
-                      Icons.height_outlined,
-                    ),
+                    _buildCategoryItem(context, 'Dresses', Icons.dry_cleaning_outlined, 'Women'),
+                    _buildCategoryItem(context, 'Jeans', Icons.line_weight_outlined, 'Women'),
+                    _buildCategoryItem(context, 'Eyewear', Icons.face_retouching_natural_outlined, 'Women'),
+                    _buildCategoryItem(context, 'Accessories', Icons.shopping_basket_outlined, 'Women'),
+                    _buildCategoryItem(context, 'Footwear', Icons.directions_walk_outlined, 'Women'),
                   ],
                 ),
               ],
@@ -336,6 +344,39 @@ class _HomeScreenState extends State<HomeScreen> {
                 },
                 activeColor: AppColors.accent,
               ),
+            ),
+            Divider(),
+            // INTEGRATED: Carti AI Chatbot from File 2
+            ListTile(
+              leading: Container(
+                padding: EdgeInsets.all(6),
+                decoration: BoxDecoration(
+                  color: AppColors.accent.withOpacity(0.1),
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: Icon(Icons.smart_toy, color: AppColors.accent),
+              ),
+              title: Text(
+                'Carti AI Assistant',
+                style: TextStyle(
+                  fontFamily: 'ADLaMDisplay',
+                  fontSize: 16,
+                  color: AppColors.textPrimary,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+              subtitle: Text(
+                'Your shopping helper',
+                style: TextStyle(
+                  fontFamily: 'ADLaMDisplay',
+                  fontSize: 12,
+                  color: AppColors.textSecondary,
+                ),
+              ),
+              onTap: () {
+                Navigator.pop(context);
+                Navigator.pushNamed(context, '/carti');
+              },
             ),
             Divider(),
 
@@ -450,7 +491,6 @@ class _HomeScreenState extends State<HomeScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Search Bar
             Padding(
               padding: const EdgeInsets.all(16.0),
               child: Container(
@@ -494,12 +534,10 @@ class _HomeScreenState extends State<HomeScreen> {
               ),
             ),
 
-            // Banner Section (hide when searching)
             if (!isSearching) ...[
               AutoBanner(),
               SizedBox(height: 15),
 
-              // Categories Section
               Container(
                 width: double.infinity,
                 padding: EdgeInsets.symmetric(horizontal: 16, vertical: 10),
@@ -514,38 +552,48 @@ class _HomeScreenState extends State<HomeScreen> {
                   ),
                 ),
               ),
+
               SizedBox(
-                height: 120,
+                height: 180,
                 child: ListView(
                   scrollDirection: Axis.horizontal,
-                  padding: EdgeInsets.symmetric(horizontal: 16),
-                  children: const [
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 16,
+                    vertical: 10,
+                  ),
+                  children: [
                     CategoryCard(
-                      title: 'Men',
-                      image:
-                          'https://images.unsplash.com/photo-1521341057461-6eb5f40b07ab',
+                      title: 'Dress',
+                      image: 'assets/icons/categories_icon/dress_icon.png',
+                      onTap: () => _navigateToCategory('Dress', 'Women'),
                     ),
                     CategoryCard(
-                      title: 'Women',
-                      image:
-                          'https://images.unsplash.com/photo-1483985988355-763728e1935b',
+                      title: 'Pants',
+                      image: 'assets/icons/categories_icon/pants_icon.png',
+                      onTap: () => _navigateToCategory('Pants', 'Men'),
+                    ),
+                    CategoryCard(
+                      title: 'Eyewear',
+                      image: 'assets/icons/categories_icon/eyewear_icon.png',
+                      onTap: () => _navigateToCategory('Eyewear', 'Men'),
                     ),
                     CategoryCard(
                       title: 'Shoes',
-                      image:
-                          'https://images.unsplash.com/photo-1542291026-7eec264c27ff',
+                      image: 'assets/icons/categories_icon/shoes_icon.png',
+                      onTap: () => _navigateToCategory('Footwear', 'Men'),
                     ),
+
                     CategoryCard(
                       title: 'Accessories',
-                      image:
-                          'https://images.unsplash.com/photo-1519744792095-2f2205e87b6f',
+                      image: 'assets/icons/categories_icon/a_icon.png',
+                      onTap: () => _navigateToCategory('Accessories', 'Men'),
                     ),
                   ],
                 ),
               ),
+
               SizedBox(height: 15),
 
-              // Promotional Banner
               Container(
                 height: 150,
                 margin: EdgeInsets.symmetric(horizontal: 16),
@@ -562,7 +610,6 @@ class _HomeScreenState extends State<HomeScreen> {
               SizedBox(height: 20),
             ],
 
-            // Products Section
             Container(
               width: double.infinity,
               padding: EdgeInsets.symmetric(horizontal: 16, vertical: 10),
@@ -584,184 +631,183 @@ class _HomeScreenState extends State<HomeScreen> {
               padding: const EdgeInsets.all(16.0),
               child: isLoadingProducts
                   ? Center(
-                      child: Column(
-                        children: [
-                          SizedBox(height: 40),
-                          CircularProgressIndicator(color: AppColors.accent),
-                          SizedBox(height: 16),
-                          Text(
-                            'Loading products...',
-                            style: TextStyle(
-                              color: AppColors.textSecondary,
-                              fontFamily: 'ADLaMDisplay',
-                            ),
-                          ),
-                        ],
+                child: Column(
+                  children: [
+                    SizedBox(height: 40),
+                    CircularProgressIndicator(color: AppColors.accent),
+                    SizedBox(height: 16),
+                    Text(
+                      'Loading products...',
+                      style: TextStyle(
+                        color: AppColors.textSecondary,
+                        fontFamily: 'ADLaMDisplay',
                       ),
-                    )
+                    ),
+                  ],
+                ),
+              )
                   : filteredProducts.isEmpty
                   ? Center(
-                      child: Column(
-                        children: [
-                          SizedBox(height: 40),
-                          Icon(Icons.search_off, size: 80, color: Colors.grey),
-                          SizedBox(height: 16),
-                          Text(
-                            isSearching
-                                ? 'No products found'
-                                : 'No products available',
-                            style: TextStyle(
-                              fontSize: 16,
-                              color: AppColors.textPrimary,
-                              fontFamily: 'IrishGrover',
-                            ),
+                child: Column(
+                  children: [
+                    SizedBox(height: 40),
+                    Icon(Icons.search_off, size: 80, color: Colors.grey),
+                    SizedBox(height: 16),
+                    Text(
+                      isSearching
+                          ? 'No products found'
+                          : 'No products available',
+                      style: TextStyle(
+                        fontSize: 16,
+                        color: AppColors.textPrimary,
+                        fontFamily: 'IrishGrover',
+                      ),
+                    ),
+                    SizedBox(height: 8),
+                    Text(
+                      isSearching
+                          ? 'Try different keywords'
+                          : 'Products will appear here once added',
+                      style: TextStyle(
+                        color: Colors.grey,
+                        fontFamily: 'ADLaMDisplay',
+                      ),
+                    ),
+                    if (isSearching) ...[
+                      SizedBox(height: 16),
+                      ElevatedButton(
+                        onPressed: () {
+                          _searchController.clear();
+                          _searchProducts('');
+                        },
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: AppColors.accent,
+                        ),
+                        child: Text(
+                          'Clear Search',
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontFamily: 'ADLaMDisplay',
                           ),
-                          SizedBox(height: 8),
-                          Text(
-                            isSearching
-                                ? 'Try different keywords'
-                                : 'Products will appear here once added',
-                            style: TextStyle(
-                              color: Colors.grey,
-                              fontFamily: 'ADLaMDisplay',
-                            ),
+                        ),
+                      ),
+                    ],
+                  ],
+                ),
+              )
+                  : GridView.builder(
+                shrinkWrap: true,
+                physics: NeverScrollableScrollPhysics(),
+                itemCount: filteredProducts.length,
+                gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                  crossAxisCount: 2,
+                  crossAxisSpacing: 10,
+                  mainAxisSpacing: 10,
+                  childAspectRatio: 0.7,
+                ),
+                itemBuilder: (context, index) {
+                  final product = filteredProducts[index];
+                  return GestureDetector(
+                    onTap: () {
+                      Navigator.pushNamed(
+                        context,
+                        '/product_detail',
+                        arguments: product,
+                      );
+                    },
+                    child: Container(
+                      decoration: BoxDecoration(
+                        color: AppColors.card,
+                        borderRadius: BorderRadius.circular(12),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black12,
+                            blurRadius: 5,
+                            offset: Offset(0, 3),
                           ),
-                          if (isSearching) ...[
-                            SizedBox(height: 16),
-                            ElevatedButton(
-                              onPressed: () {
-                                _searchController.clear();
-                                _searchProducts('');
-                              },
-                              style: ElevatedButton.styleFrom(
-                                backgroundColor: AppColors.accent,
-                              ),
-                              child: Text(
-                                'Clear Search',
-                                style: TextStyle(
-                                  color: Colors.white,
-                                  fontFamily: 'ADLaMDisplay',
-                                ),
-                              ),
-                            ),
-                          ],
                         ],
                       ),
-                    )
-                  : GridView.builder(
-                      shrinkWrap: true,
-                      physics: NeverScrollableScrollPhysics(),
-                      itemCount: filteredProducts.length,
-                      gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                        crossAxisCount: 2,
-                        crossAxisSpacing: 10,
-                        mainAxisSpacing: 10,
-                        childAspectRatio: 0.7,
-                      ),
-                      itemBuilder: (context, index) {
-                        final product = filteredProducts[index];
-                        return GestureDetector(
-                          onTap: () {
-                            Navigator.pushNamed(
-                              context,
-                              '/product_detail',
-                              arguments: product,
-                            );
-                          },
-                          child: Container(
-                            decoration: BoxDecoration(
-                              color: AppColors.card,
-                              borderRadius: BorderRadius.circular(12),
-                              boxShadow: [
-                                BoxShadow(
-                                  color: Colors.black12,
-                                  blurRadius: 5,
-                                  offset: Offset(0, 3),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Expanded(
+                            child: Container(
+                              width: double.infinity,
+                              decoration: BoxDecoration(
+                                color: AppColors.border,
+                                borderRadius: BorderRadius.vertical(
+                                  top: Radius.circular(12),
                                 ),
-                              ],
-                            ),
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Expanded(
-                                  child: Container(
-                                    width: double.infinity,
-                                    decoration: BoxDecoration(
-                                      color: AppColors.border,
-                                      borderRadius: BorderRadius.vertical(
-                                        top: Radius.circular(12),
+                              ),
+                              child:
+                              product['imageUrl'] != null &&
+                                  product['imageUrl'].isNotEmpty
+                                  ? ClipRRect(
+                                borderRadius: BorderRadius.vertical(
+                                  top: Radius.circular(12),
+                                ),
+                                child: Image.network(
+                                  product['imageUrl'],
+                                  fit: BoxFit.cover,
+                                  errorBuilder:
+                                      (context, error, stackTrace) {
+                                    return Center(
+                                      child: Icon(
+                                        Icons.image,
+                                        size: 50,
+                                        color: Colors.grey,
                                       ),
-                                    ),
-                                    child:
-                                        product['imageUrl'] != null &&
-                                            product['imageUrl'].isNotEmpty
-                                        ? ClipRRect(
-                                            borderRadius: BorderRadius.vertical(
-                                              top: Radius.circular(12),
-                                            ),
-                                            child: Image.network(
-                                              product['imageUrl'],
-                                              fit: BoxFit.cover,
-                                              errorBuilder:
-                                                  (context, error, stackTrace) {
-                                                    return Center(
-                                                      child: Icon(
-                                                        Icons.image,
-                                                        size: 50,
-                                                        color: Colors.grey,
-                                                      ),
-                                                    );
-                                                  },
-                                            ),
-                                          )
-                                        : Center(
-                                            child: Icon(
-                                              Icons.image,
-                                              size: 50,
-                                              color: Colors.grey,
-                                            ),
-                                          ),
+                                    );
+                                  },
+                                ),
+                              )
+                                  : Center(
+                                child: Icon(
+                                  Icons.image,
+                                  size: 50,
+                                  color: Colors.grey,
+                                ),
+                              ),
+                            ),
+                          ),
+                          Padding(
+                            padding: const EdgeInsets.all(8.0),
+                            child: Column(
+                              crossAxisAlignment:
+                              CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  product['name'] ?? 'Product',
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                  style: TextStyle(
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 14,
+                                    color: AppColors.textPrimary,
+                                    fontFamily: 'ADLaMDisplay',
                                   ),
                                 ),
-                                Padding(
-                                  padding: const EdgeInsets.all(8.0),
-                                  child: Column(
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.start,
-                                    children: [
-                                      Text(
-                                        product['name'] ?? 'Product',
-                                        maxLines: 1,
-                                        overflow: TextOverflow.ellipsis,
-                                        style: TextStyle(
-                                          fontWeight: FontWeight.bold,
-                                          fontSize: 14,
-                                          color: AppColors.textPrimary,
-                                          fontFamily: 'ADLaMDisplay',
-                                        ),
-                                      ),
-                                      SizedBox(height: 4),
-                                      Text(
-                                        'Rs. ${product['price'] ?? 0}',
-                                        style: TextStyle(
-                                          color: Colors.green,
-                                          fontWeight: FontWeight.bold,
-                                          fontSize: 16,
-                                          fontFamily: 'ADLaMDisplay',
-                                        ),
-                                      ),
-                                    ],
+                                SizedBox(height: 4),
+                                Text(
+                                  'Rs. ${product['price'] ?? 0}',
+                                  style: TextStyle(
+                                    color: Colors.green,
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 16,
+                                    fontFamily: 'ADLaMDisplay',
                                   ),
                                 ),
                               ],
                             ),
                           ),
-                        );
-                      },
+                        ],
+                      ),
                     ),
+                  );
+                },
+              ),
             ),
 
-            // Show all products button when searching
             if (isSearching && filteredProducts.isNotEmpty)
               Padding(
                 padding: const EdgeInsets.all(16.0),
@@ -796,10 +842,12 @@ class _HomeScreenState extends State<HomeScreen> {
         child: ClipRRect(
           borderRadius: BorderRadius.vertical(top: Radius.circular(15)),
           child: BottomNavigationBar(
-            backgroundColor: AppColors.accent,
+            backgroundColor: AppColors.accentBG,
             currentIndex: _currentIndex,
-            selectedItemColor: Colors.white,
-            unselectedItemColor: Colors.white70,
+            showUnselectedLabels: false,
+            showSelectedLabels: true,
+            selectedItemColor: AppColors.secondary,
+            unselectedItemColor: AppColors.textSecondary,
             type: BottomNavigationBarType.fixed,
             selectedLabelStyle: TextStyle(fontFamily: 'ADLaMDisplay'),
             unselectedLabelStyle: TextStyle(fontFamily: 'ADLaMDisplay'),
@@ -819,38 +867,37 @@ class _HomeScreenState extends State<HomeScreen> {
             },
             items: [
               BottomNavigationBarItem(icon: Icon(Icons.home), label: "Home"),
-              BottomNavigationBarItem(
-                icon: Icon(Icons.grid_view),
-                label: "Categories",
-              ),
-              BottomNavigationBarItem(
-                icon: Icon(Icons.shopping_cart),
-                label: "Cart",
-              ),
-              BottomNavigationBarItem(
-                icon: Icon(Icons.redeem),
-                label: "Rewards",
-              ),
+              BottomNavigationBarItem(icon: Icon(Icons.grid_view), label: "Categories"),
+              BottomNavigationBarItem(icon: Icon(Icons.shopping_cart), label: "Cart"),
+              BottomNavigationBarItem(icon: Icon(Icons.redeem), label: "Rewards"),
             ],
           ),
         ),
       ),
     );
   }
-}
 
-class BannerImage extends StatelessWidget {
-  final String image;
-  const BannerImage({super.key, required this.image});
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 8),
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(12),
-        image: DecorationImage(image: NetworkImage(image), fit: BoxFit.cover),
+  Widget _buildCategoryItem(
+      BuildContext context,
+      String title,
+      IconData icon,
+      String parentCategory,
+      ) {
+    return ListTile(
+      contentPadding: EdgeInsets.only(left: 40),
+      leading: Icon(icon, color: AppColors.accent, size: 20),
+      title: Text(
+        title,
+        style: TextStyle(
+          fontFamily: 'ADLaMDisplay',
+          color: AppColors.textPrimary,
+          fontSize: 14,
+        ),
       ),
+      onTap: () {
+        Navigator.pop(context);
+        _navigateToCategory(title, parentCategory);
+      },
     );
   }
 }
@@ -858,55 +905,36 @@ class BannerImage extends StatelessWidget {
 class CategoryCard extends StatelessWidget {
   final String title;
   final String image;
-  const CategoryCard({super.key, required this.title, required this.image});
+  final VoidCallback onTap;
+
+  const CategoryCard({
+    super.key,
+    required this.title,
+    required this.image,
+    required this.onTap,
+  });
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      width: 100,
-      margin: EdgeInsets.only(right: 12),
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(12),
-        image: DecorationImage(image: NetworkImage(image), fit: BoxFit.cover),
-      ),
-      alignment: Alignment.bottomCenter,
+    return GestureDetector(
+      onTap: onTap,
       child: Container(
-        width: double.infinity,
-        padding: EdgeInsets.all(6),
-        decoration: BoxDecoration(
-          color: Colors.black54,
-          borderRadius: BorderRadius.vertical(bottom: Radius.circular(12)),
-        ),
-        child: Text(
-          title,
-          textAlign: TextAlign.center,
-          style: TextStyle(
-            color: Colors.white,
-            fontWeight: FontWeight.bold,
-            fontFamily: 'ADLaMDisplay',
+        width: 140,
+        height: 180,
+        margin: const EdgeInsets.only(right: 2),
+        decoration: BoxDecoration(borderRadius: BorderRadius.circular(16)),
+        child: ClipRRect(
+          borderRadius: BorderRadius.circular(16),
+          child: Image.asset(
+            image,
+            height: double.infinity,
+            width: double.infinity,
+            fit: BoxFit.fitHeight,
           ),
         ),
       ),
     );
   }
-}
-
-Widget _buildCategoryItem(BuildContext context, String title, IconData icon) {
-  return ListTile(
-    contentPadding: EdgeInsets.only(left: 40),
-    leading: Icon(icon, color: AppColors.accent, size: 20),
-    title: Text(
-      title,
-      style: TextStyle(
-        fontFamily: 'ADLaMDisplay',
-        color: AppColors.textPrimary,
-        fontSize: 14,
-      ),
-    ),
-    onTap: () {
-      Navigator.pop(context);
-    },
-  );
 }
 
 class AutoBanner extends StatefulWidget {
@@ -932,8 +960,12 @@ class _AutoBannerState extends State<AutoBanner> {
     super.initState();
     _controller = PageController(initialPage: 0);
 
-    // Start the auto-rotation
     _timer = Timer.periodic(const Duration(seconds: 3), (timer) {
+      if (!mounted) {
+        timer.cancel();
+        return;
+      }
+
       if (_currentPage < _images.length - 1) {
         _currentPage++;
       } else {
@@ -943,10 +975,8 @@ class _AutoBannerState extends State<AutoBanner> {
       if (_controller.hasClients) {
         _controller.animateToPage(
           _currentPage,
-          duration: const Duration(
-            milliseconds: 900,
-          ), // Smoother, longer transition
-          curve: Curves.easeInOutCubic, // A "natural" acceleration curve
+          duration: const Duration(milliseconds: 900),
+          curve: Curves.easeInOutCubic,
         );
       }
     });
@@ -964,16 +994,19 @@ class _AutoBannerState extends State<AutoBanner> {
     return Column(
       children: [
         SizedBox(
-          height: 180,
+          height: 160,
           width: double.infinity,
           child: Stack(
             alignment: Alignment.bottomCenter,
             children: [
               PageView.builder(
                 controller: _controller,
-                onPageChanged: (v) => setState(() => _currentPage = v),
+                onPageChanged: (v) {
+                  if (mounted) {
+                    setState(() => _currentPage = v);
+                  }
+                },
                 itemCount: _images.length,
-                // allowImplicitScrolling keeps the next image ready in the background
                 allowImplicitScrolling: true,
                 itemBuilder: (context, i) {
                   return Container(
@@ -983,15 +1016,12 @@ class _AutoBannerState extends State<AutoBanner> {
                       child: Image.asset(
                         _images[i],
                         fit: BoxFit.cover,
-                        // gaplessPlayback prevents the flicker when images switch
                         gaplessPlayback: true,
                       ),
                     ),
                   );
                 },
               ),
-
-              // Connected Dots Indicator
               Padding(
                 padding: const EdgeInsets.only(bottom: 12),
                 child: Row(
@@ -1001,20 +1031,13 @@ class _AutoBannerState extends State<AutoBanner> {
                     return AnimatedContainer(
                       duration: const Duration(milliseconds: 400),
                       margin: const EdgeInsets.symmetric(horizontal: 4),
-                      width: isActive ? 24 : 8, // Active dot stretches
+                      width: isActive ? 24 : 8,
                       height: 8,
                       decoration: BoxDecoration(
                         color: isActive
                             ? Colors.white
                             : Colors.white.withOpacity(0.5),
                         borderRadius: BorderRadius.circular(4),
-                        boxShadow: [
-                          if (isActive)
-                            BoxShadow(
-                              color: Colors.black.withOpacity(0.2),
-                              blurRadius: 4,
-                            ),
-                        ],
                       ),
                     );
                   }),
