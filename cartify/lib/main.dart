@@ -274,6 +274,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 Icons.dashboard_customize_outlined,
                 color: AppColors.accent,
               ),
+              collapsedIconColor: AppColors.textPrimary,
               title: Text(
                 'Categories',
                 style: TextStyle(
@@ -285,6 +286,7 @@ class _HomeScreenState extends State<HomeScreen> {
               children: [
                 ExpansionTile(
                   leading: Icon(Icons.man_outlined, color: AppColors.accent),
+                  collapsedIconColor: AppColors.textPrimary,
                   title: Text(
                     'Men',
                     style: TextStyle(
@@ -328,6 +330,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 ),
                 ExpansionTile(
                   leading: Icon(Icons.woman_outlined, color: AppColors.accent),
+                  collapsedIconColor: AppColors.textPrimary,
                   title: Text(
                     'Women',
                     style: TextStyle(
@@ -757,9 +760,9 @@ class _HomeScreenState extends State<HomeScreen> {
                           const SliverGridDelegateWithFixedCrossAxisCount(
                             crossAxisCount: 2,
                             crossAxisSpacing: 14,
-                            mainAxisSpacing: 14,
+                            mainAxisSpacing: 20,
                             childAspectRatio:
-                                0.62, // Increased height to fit buttons
+                                0.51, // Increased height to fit buttons
                           ),
                       itemBuilder: (context, index) {
                         final product = filteredProducts[index];
