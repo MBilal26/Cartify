@@ -5,7 +5,7 @@ import 'dart:convert';
 import 'colors.dart';
 import 'database_functions.dart';
 
-// NEW FILE: Carti AI Chatbot Page
+// Carti AI Chatbot Page with Groq Integration
 class CartiChatbotPage extends StatefulWidget {
   const CartiChatbotPage({super.key});
 
@@ -21,8 +21,8 @@ class _CartiChatbotPageState extends State<CartiChatbotPage> {
   String userName = "Guest";
   bool _isTyping = false;
 
-  // UPDATED: Your NEW Gemini API key integrated here
-  final String apiKey = 'AIzaSyDa1XKDHOgGheQKFWwF_Ueks4o35Rh1nks';
+  // UPDATED: Your Groq API key
+  final String apiKey = String.fromEnvironment('GROQ_API_KEY');
 
   @override
   void initState() {
@@ -70,13 +70,39 @@ class _CartiChatbotPageState extends State<CartiChatbotPage> {
     try {
       final categories = await DatabaseService.instance.getCategories();
       final products = await DatabaseService.instance.getAllProducts();
-      return "Categories: ${categories.length}, Products: ${products.length}";
+
+      // Build detailed context
+      String context = "You are Carti, a friendly shopping assistant for Cartify app.\n\n";
+      context += "AVAILABLE CATEGORIES (${categories.length} total):\n";
+
+      for (var category in categories) {
+        context += "- ${category['title']} (Parent: ${category['parentCategory'] ?? 'None'})\n";
+      }
+
+      context += "\nAVAILABLE PRODUCTS (${products.length} total):\n";
+
+      for (var product in products.take(20)) { // Limit to first 20 to avoid token limits
+        context += "- ${product['name']} - Rs.${product['price']} ";
+        context += "(Category: ${product['categoryId']}, Gender: ${product['gender'] ?? 'N/A'})\n";
+      }
+
+      if (products.length > 20) {
+        context += "... and ${products.length - 20} more products\n";
+      }
+
+      context += "\nYou can help users:\n";
+      context += "- Find products by name, price, category, or gender\n";
+      context += "- Provide shopping tips and recommendations\n";
+      context += "- Answer questions about categories and available items\n";
+      context += "- Give advice on fashion and style\n";
+
+      return context;
     } catch (e) {
-      return "General shopping app.";
+      return "You are Carti, a friendly shopping assistant for Cartify, a general shopping app.";
     }
   }
 
-  // Logic using gemini-2.0-flash
+  // Logic using Groq API
   Future<void> _sendMessage(String message) async {
     if (message.trim().isEmpty) return;
 
@@ -95,28 +121,35 @@ class _CartiChatbotPageState extends State<CartiChatbotPage> {
     try {
       final appContext = await _getAppContext();
 
-      // Using gemini-2.0-flash as confirmed in your terminal diagnostics
-      final url = Uri.parse(
-          'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=$apiKey'
-      );
+      // Using Groq API endpoint
+      final url = Uri.parse('https://api.groq.com/openai/v1/chat/completions');
 
       final response = await http.post(
         url,
-        headers: {'Content-Type': 'application/json'},
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer $apiKey',
+        },
         body: jsonEncode({
-          'contents': [
+          'model': 'llama-3.3-70b-versatile', // Active Groq model (recommended)
+          'messages': [
             {
-              'parts': [
-                {'text': 'Context: $appContext\nUser: $message'}
-              ]
+              'role': 'system',
+              'content': appContext,
+            },
+            {
+              'role': 'user',
+              'content': message,
             }
-          ]
+          ],
+          'temperature': 0.7,
+          'max_tokens': 500,
         }),
       );
 
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
-        final aiResponse = data['candidates'][0]['content']['parts'][0]['text'];
+        final aiResponse = data['choices'][0]['message']['content'];
 
         if (mounted) {
           setState(() {
@@ -130,15 +163,24 @@ class _CartiChatbotPageState extends State<CartiChatbotPage> {
           _scrollToBottom();
         }
       } else {
-        // Keeps diagnostic info visible for testing new project quota
-        throw Exception('API Error ${response.statusCode}: ${response.body}');
+        // Parse error details
+        String errorMsg = "API Error ${response.statusCode}\n\n";
+        try {
+          final errorData = jsonDecode(response.body);
+          errorMsg += "Error Type: ${errorData['error']?['type'] ?? 'Unknown'}\n";
+          errorMsg += "Message: ${errorData['error']?['message'] ?? response.body}\n";
+          errorMsg += "Code: ${errorData['error']?['code'] ?? 'N/A'}";
+        } catch (e) {
+          errorMsg += "Raw Response: ${response.body}";
+        }
+        throw Exception(errorMsg);
       }
     } catch (e) {
       debugPrint('Chatbot Error: $e');
       if (mounted) {
         setState(() {
           _messages.add(ChatMessage(
-            text: "DIAGNOSTIC ERROR: $e",
+            text: "❌ ERROR DETAILS:\n\n$e\n\n💡 Possible fixes:\n• Check your Groq API key\n• Verify internet connection\n• Try again in a moment",
             isUser: false,
             timestamp: DateTime.now(),
           ));
@@ -283,11 +325,19 @@ class _CartiChatbotPageState extends State<CartiChatbotPage> {
             Expanded(
               child: Container(
                 padding: const EdgeInsets.symmetric(horizontal: 16),
-                decoration: BoxDecoration(color: AppColors.background, borderRadius: BorderRadius.circular(24), border: Border.all(color: AppColors.border)),
+                decoration: BoxDecoration(
+                  color: Colors.black, // Changed to black
+                  borderRadius: BorderRadius.circular(24),
+                  border: Border.all(color: AppColors.border),
+                ),
                 child: TextField(
                   controller: _messageController,
-                  style: TextStyle(color: AppColors.textPrimary, fontFamily: 'ADLaMDisplay'),
-                  decoration: const InputDecoration(hintText: 'Ask Carti anything...', border: InputBorder.none),
+                  style: TextStyle(color: Colors.white, fontFamily: 'ADLaMDisplay'), // White text for visibility
+                  decoration: InputDecoration(
+                    hintText: 'Ask Carti anything...',
+                    hintStyle: TextStyle(color: Colors.white.withOpacity(0.5)), // Semi-transparent white hint
+                    border: InputBorder.none,
+                  ),
                   onSubmitted: _sendMessage,
                 ),
               ),
