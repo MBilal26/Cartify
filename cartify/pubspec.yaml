@@ -63,3 +63,4 @@ flutter:
     - assets/icons/categories_icon/shirts_icon.png
     - assets/icons/categories_icon/accessories_icon.png
     - assets/images/CARTIFY-banner.png
+    - .env

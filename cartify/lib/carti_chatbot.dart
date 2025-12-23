@@ -4,6 +4,7 @@ import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'colors.dart';
 import 'database_functions.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 // Carti AI Chatbot Page with Groq Integration
 class CartiChatbotPage extends StatefulWidget {
@@ -22,7 +23,7 @@ class _CartiChatbotPageState extends State<CartiChatbotPage> {
   bool _isTyping = false;
 
   // UPDATED: Your Groq API key
-  final String apiKey = String.fromEnvironment('GROQ_API_KEY');
+  final String apiKey = dotenv.env['GROQ_API_KEY'] ?? '';
 
   @override
   void initState() {
