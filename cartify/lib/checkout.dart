@@ -247,17 +247,17 @@ class _CheckoutPageState extends State<CheckoutPage> {
     return Scaffold(
       backgroundColor: AppColors.background,
       appBar: AppBar(
-        backgroundColor: AppColors.background,
+        backgroundColor: AppColors.accent, //FIXED APPBAR COLOR
         title: Text(
           'Checkout',
           style: TextStyle(
-            color: AppColors.textPrimary,
+            color: Colors.white, //FIXED
             fontFamily: 'IrishGrover',
             fontWeight: FontWeight.bold,
           ),
         ),
         centerTitle: true,
-        iconTheme: IconThemeData(color: AppColors.textPrimary),
+        iconTheme: IconThemeData(color: Colors.white), //FIXED
       ),
       body: _isLoading
           ? Center(

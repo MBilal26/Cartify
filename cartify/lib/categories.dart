@@ -23,17 +23,17 @@ class _CategoriesPageState extends State<CategoriesPage> {
     return Scaffold(
       backgroundColor: AppColors.background,
       appBar: AppBar(
-        backgroundColor: AppColors.background,
+        backgroundColor: AppColors.accent,//FIXED APPBAR
         title: Text(
           'Categories',
           style: TextStyle(
-            color: AppColors.textPrimary,
+            color: Colors.white,//FIXED
             fontFamily: 'IrishGrover',
             fontSize: 22,
           ),
         ),
         centerTitle: true,
-        iconTheme: IconThemeData(color: AppColors.textPrimary),
+        iconTheme: IconThemeData(color: Colors.white),//FIXED
       ),
 
       body: FutureBuilder<List<Map<String, dynamic>>>(

@@ -18,6 +18,7 @@ import 'about_us.dart';
 import 'privacy_policy.dart';
 import 'carti_chatbot.dart'; // From File 2
 import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'customization.dart'; // ✅ NEW: Import customization page
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -69,6 +70,8 @@ class MainApp extends StatelessWidget {
             return MaterialPageRoute(builder: (_) => CheckoutPage());
           case '/admin':
             return MaterialPageRoute(builder: (_) => AdminPanelPage());
+          case '/customization': // ✅ NEW: Route for customization page
+            return MaterialPageRoute(builder: (_) => CustomizationPage());
           case '/about_us':
             return MaterialPageRoute(builder: (_) => AboutUsPage());
           case '/privacy_policy':
@@ -486,6 +489,27 @@ class _HomeScreenState extends State<HomeScreen> {
                 onTap: () {
                   Navigator.pop(context);
                   Navigator.pushNamed(context, '/admin');
+                },
+              ),
+            // ✅ NEW: Customize button (admin only)
+            if (isAdmin)
+              ListTile(
+                leading: Icon(
+                  Icons.palette, // Palette icon for customization
+                  color: AppColors.accent,
+                ),
+                title: Text(
+                  'Customize',
+                  style: TextStyle(
+                    fontFamily: 'ADLaMDisplay',
+                    fontSize: 16,
+                    color: AppColors.textPrimary,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                onTap: () {
+                  Navigator.pop(context);
+                  Navigator.pushNamed(context, '/customization');
                 },
               ),
           ],

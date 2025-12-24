@@ -14,13 +14,13 @@ class RewardsPage extends StatelessWidget {
       backgroundColor: AppColors.background,
 
       appBar: AppBar(
-        backgroundColor: AppColors.background,
+        backgroundColor: AppColors.accent,//FIXED APPBAR
         title: Text(
           'My Rewards',
-          style: TextStyle(color: AppColors.textPrimary),
+          style: TextStyle(color: Colors.white),//FIXED
         ),
         centerTitle: true,
-        iconTheme: IconThemeData(color: AppColors.textPrimary),
+        iconTheme: IconThemeData(color: Colors.white),//FIXED
       ),
 
       body: userId == null

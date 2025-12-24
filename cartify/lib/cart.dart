@@ -25,18 +25,18 @@ class _CartPageState extends State<CartPage> {
       backgroundColor: AppColors.background,
       appBar: AppBar(
         elevation: 0,
-        backgroundColor: AppColors.background,
+        backgroundColor: AppColors.accent,//FIXED APPBAR
         title: Text(
           'My Cart',
           style: TextStyle(
             fontWeight: FontWeight.bold,
             fontSize: 24,
             fontFamily: 'IrishGrover',
-            color: AppColors.textPrimary,
+            color: Colors.white,//FIXED
           ),
         ),
         centerTitle: true,
-        iconTheme: IconThemeData(color: AppColors.textPrimary),
+        iconTheme: IconThemeData(color: Colors.white),//FIXED
       ),
       body: userId == null ? _buildLoginPrompt() : _buildCartStream(),
     );
