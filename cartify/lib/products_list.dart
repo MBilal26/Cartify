@@ -46,9 +46,9 @@ class _ProductsListPageState extends State<ProductsListPage> {
       filteredProducts = allProducts.where((product) {
         final matchesSearch =
             searchQuery.isEmpty ||
-            product['name'].toString().toLowerCase().contains(
-              searchQuery.toLowerCase(),
-            );
+                product['name'].toString().toLowerCase().contains(
+                  searchQuery.toLowerCase(),
+                );
 
         final matchesGender =
             selectedGender == 'All' || product['gender'] == selectedGender;
@@ -56,7 +56,7 @@ class _ProductsListPageState extends State<ProductsListPage> {
         bool matchesCategory = selectedFilter == 'All';
         if (!matchesCategory) {
           final category = categories.firstWhere(
-            (cat) => cat['title'] == selectedFilter,
+                (cat) => cat['title'] == selectedFilter,
             orElse: () => {},
           );
           if (category.isNotEmpty) {
@@ -185,33 +185,33 @@ class _ProductsListPageState extends State<ProductsListPage> {
                       ...categories
                           .where((cat) => cat['parentCategory'] == null)
                           .map((parentCat) {
-                            return Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                SizedBox(height: 8),
-                                _categoryOption(
-                                  parentCat['title'],
-                                  Icons.person,
-                                ),
+                        return Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            SizedBox(height: 8),
+                            _categoryOption(
+                              parentCat['title'],
+                              Icons.person,
+                            ),
 
-                                ...categories
-                                    .where(
-                                      (cat) =>
-                                          cat['parentCategory'] ==
-                                          parentCat['title'],
-                                    )
-                                    .map(
-                                      (subCat) => Padding(
-                                        padding: EdgeInsets.only(left: 24),
-                                        child: _categoryOption(
-                                          subCat['title'],
-                                          Icons.category_outlined,
-                                        ),
-                                      ),
-                                    ),
-                              ],
-                            );
-                          }),
+                            ...categories
+                                .where(
+                                  (cat) =>
+                              cat['parentCategory'] ==
+                                  parentCat['title'],
+                            )
+                                .map(
+                                  (subCat) => Padding(
+                                padding: EdgeInsets.only(left: 24),
+                                child: _categoryOption(
+                                  subCat['title'],
+                                  Icons.category_outlined,
+                                ),
+                              ),
+                            ),
+                          ],
+                        );
+                      }),
 
                       SizedBox(height: 80),
                     ],
@@ -266,7 +266,7 @@ class _ProductsListPageState extends State<ProductsListPage> {
       bool matchesCategory = selectedFilter == 'All';
       if (!matchesCategory) {
         final category = categories.firstWhere(
-          (cat) => cat['title'] == selectedFilter,
+              (cat) => cat['title'] == selectedFilter,
           orElse: () => {},
         );
         if (category.isNotEmpty) {
@@ -362,23 +362,29 @@ class _ProductsListPageState extends State<ProductsListPage> {
     return Scaffold(
       backgroundColor: AppColors.background,
       appBar: AppBar(
-        backgroundColor: AppColors.background,
+        backgroundColor: AppColors.accent, // ✅ Changed to Teal Green
         elevation: 0,
+        leading: IconButton(
+          icon: Icon(Icons.chevron_left, color: Colors.white), // ✅ White Icon
+          onPressed: () {
+            Navigator.pop(context);
+          },
+        ),
         title: Text(
           'Products',
           style: TextStyle(
-            color: AppColors.textPrimary,
+            color: Colors.white, // ✅ White Text
             fontFamily: 'IrishGrover',
             fontSize: 22,
           ),
         ),
         centerTitle: true,
-        iconTheme: IconThemeData(color: AppColors.textPrimary),
+        iconTheme: IconThemeData(color: Colors.white), // ✅ White Icons
         actions: [
           Stack(
             children: [
               IconButton(
-                icon: Icon(Icons.filter_list, color: AppColors.accent),
+                icon: Icon(Icons.filter_list, color: Colors.white), // ✅ White Filter Icon
                 onPressed: _showFilterOptions,
                 tooltip: 'Filter',
               ),
@@ -420,14 +426,14 @@ class _ProductsListPageState extends State<ProductsListPage> {
                 prefixIcon: Icon(Icons.search, color: AppColors.accent),
                 suffixIcon: searchQuery.isNotEmpty
                     ? IconButton(
-                        icon: Icon(Icons.clear, color: AppColors.textSecondary),
-                        onPressed: () {
-                          setState(() {
-                            searchQuery = '';
-                          });
-                          _filterProducts();
-                        },
-                      )
+                  icon: Icon(Icons.clear, color: AppColors.textSecondary),
+                  onPressed: () {
+                    setState(() {
+                      searchQuery = '';
+                    });
+                    _filterProducts();
+                  },
+                )
                     : null,
                 filled: true,
                 fillColor: AppColors.card,
@@ -537,89 +543,89 @@ class _ProductsListPageState extends State<ProductsListPage> {
           Expanded(
             child: isLoading
                 ? Center(
-                    child: CircularProgressIndicator(color: AppColors.accent),
-                  )
+              child: CircularProgressIndicator(color: AppColors.accent),
+            )
                 : filteredProducts.isEmpty
                 ? Center(
-                    child: SingleChildScrollView(
-                      padding: EdgeInsets.all(32),
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Icon(
-                            Icons.shopping_bag_outlined,
-                            size: 80,
-                            color: Colors.grey,
-                          ),
-                          SizedBox(height: 16),
-                          Text(
-                            'No products found',
-                            style: TextStyle(
-                              fontSize: 18,
-                              fontWeight: FontWeight.bold,
-                              color: AppColors.textPrimary,
-                              fontFamily: 'IrishGrover',
-                            ),
-                          ),
-                          SizedBox(height: 8),
-                          Text(
-                            searchQuery.isNotEmpty
-                                ? 'Try a different search term'
-                                : (selectedFilter != 'All' ||
-                                      selectedGender != 'All')
-                                ? 'Try adjusting your filters'
-                                : 'Products will appear here once added',
-                            style: TextStyle(
-                              color: Colors.grey,
-                              fontFamily: 'ADLaMDisplay',
-                              fontSize: 14,
-                            ),
-                            textAlign: TextAlign.center,
-                          ),
-                          if (selectedFilter != 'All' ||
-                              selectedGender != 'All' ||
-                              searchQuery.isNotEmpty)
-                            Padding(
-                              padding: EdgeInsets.only(top: 16),
-                              child: TextButton.icon(
-                                onPressed: () {
-                                  setState(() {
-                                    selectedFilter = 'All';
-                                    selectedGender = 'All';
-                                    searchQuery = '';
-                                  });
-                                  _filterProducts();
-                                },
-                                icon: Icon(Icons.clear_all),
-                                label: Text('Clear all filters'),
-                                style: TextButton.styleFrom(
-                                  foregroundColor: AppColors.accent,
-                                ),
-                              ),
-                            ),
-                        ],
+              child: SingleChildScrollView(
+                padding: EdgeInsets.all(32),
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Icon(
+                      Icons.shopping_bag_outlined,
+                      size: 80,
+                      color: Colors.grey,
+                    ),
+                    SizedBox(height: 16),
+                    Text(
+                      'No products found',
+                      style: TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                        color: AppColors.textPrimary,
+                        fontFamily: 'IrishGrover',
                       ),
                     ),
-                  )
-                : RefreshIndicator(
-                    onRefresh: _loadData,
-                    color: AppColors.accent,
-                    child: GridView.builder(
-                      padding: const EdgeInsets.all(16),
-                      itemCount: filteredProducts.length,
-                      gridDelegate:
-                          const SliverGridDelegateWithFixedCrossAxisCount(
-                            crossAxisCount: 2,
-                            crossAxisSpacing: 12,
-                            mainAxisSpacing: 12,
-                            childAspectRatio: 0.58,
-                          ),
-                      itemBuilder: (context, index) {
-                        final product = filteredProducts[index];
-                        return _buildProductCard(product);
-                      },
+                    SizedBox(height: 8),
+                    Text(
+                      searchQuery.isNotEmpty
+                          ? 'Try a different search term'
+                          : (selectedFilter != 'All' ||
+                          selectedGender != 'All')
+                          ? 'Try adjusting your filters'
+                          : 'Products will appear here once added',
+                      style: TextStyle(
+                        color: Colors.grey,
+                        fontFamily: 'ADLaMDisplay',
+                        fontSize: 14,
+                      ),
+                      textAlign: TextAlign.center,
                     ),
-                  ),
+                    if (selectedFilter != 'All' ||
+                        selectedGender != 'All' ||
+                        searchQuery.isNotEmpty)
+                      Padding(
+                        padding: EdgeInsets.only(top: 16),
+                        child: TextButton.icon(
+                          onPressed: () {
+                            setState(() {
+                              selectedFilter = 'All';
+                              selectedGender = 'All';
+                              searchQuery = '';
+                            });
+                            _filterProducts();
+                          },
+                          icon: Icon(Icons.clear_all),
+                          label: Text('Clear all filters'),
+                          style: TextButton.styleFrom(
+                            foregroundColor: AppColors.accent,
+                          ),
+                        ),
+                      ),
+                  ],
+                ),
+              ),
+            )
+                : RefreshIndicator(
+              onRefresh: _loadData,
+              color: AppColors.accent,
+              child: GridView.builder(
+                padding: const EdgeInsets.all(16),
+                itemCount: filteredProducts.length,
+                gridDelegate:
+                const SliverGridDelegateWithFixedCrossAxisCount(
+                  crossAxisCount: 2,
+                  crossAxisSpacing: 12,
+                  mainAxisSpacing: 12,
+                  childAspectRatio: 0.58,
+                ),
+                itemBuilder: (context, index) {
+                  final product = filteredProducts[index];
+                  return _buildProductCard(product);
+                },
+              ),
+            ),
           ),
         ],
       ),
@@ -654,24 +660,24 @@ class _ProductsListPageState extends State<ProductsListPage> {
                 height: 140,
                 decoration: BoxDecoration(color: AppColors.border),
                 child:
-                    product['imageUrl'] != null &&
-                        product['imageUrl'].isNotEmpty
+                product['imageUrl'] != null &&
+                    product['imageUrl'].isNotEmpty
                     ? Image.network(
-                        product['imageUrl'],
-                        fit: BoxFit.cover,
-                        errorBuilder: (context, error, stackTrace) {
-                          return Center(
-                            child: Icon(
-                              Icons.image,
-                              size: 50,
-                              color: Colors.grey,
-                            ),
-                          );
-                        },
-                      )
-                    : Center(
-                        child: Icon(Icons.image, size: 50, color: Colors.grey),
+                  product['imageUrl'],
+                  fit: BoxFit.cover,
+                  errorBuilder: (context, error, stackTrace) {
+                    return Center(
+                      child: Icon(
+                        Icons.image,
+                        size: 50,
+                        color: Colors.grey,
                       ),
+                    );
+                  },
+                )
+                    : Center(
+                  child: Icon(Icons.image, size: 50, color: Colors.grey),
+                ),
               ),
 
               // Product Details - Fixed layout

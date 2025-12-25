@@ -162,14 +162,14 @@ class _AdminPanelPageState extends State<AdminPanelPage>
       body: isLoading
           ? Center(child: CircularProgressIndicator(color: AppColors.accent))
           : TabBarView(
-              controller: _tabController,
-              children: [
-                _buildAnalyticsTab(),
-                _buildProductsTab(),
-                _buildOrdersTab(),
-                _buildCouponsTab(),
-              ],
-            ),
+        controller: _tabController,
+        children: [
+          _buildAnalyticsTab(),
+          _buildProductsTab(),
+          _buildOrdersTab(),
+          _buildCouponsTab(),
+        ],
+      ),
       floatingActionButton: AnimatedSwitcher(
         duration: Duration(milliseconds: 300),
         transitionBuilder: (Widget child, Animation<double> animation) {
@@ -177,36 +177,36 @@ class _AdminPanelPageState extends State<AdminPanelPage>
         },
         child: _tabController.index == 1
             ? FloatingActionButton.extended(
-                key: ValueKey('add_product_fab'),
-                onPressed: () => _showAddEditProductDialog(),
-                backgroundColor: AppColors.accent,
-                icon: Icon(Icons.add, color: Colors.white, size: 20),
-                label: Text(
-                  'Add Product',
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontWeight: FontWeight.bold,
-                    fontFamily: 'ADLaMDisplay',
-                    fontSize: 12,
-                  ),
-                ),
-              )
+          key: ValueKey('add_product_fab'),
+          onPressed: () => _showAddEditProductDialog(),
+          backgroundColor: AppColors.accent,
+          icon: Icon(Icons.add, color: Colors.white, size: 20),
+          label: Text(
+            'Add Product',
+            style: TextStyle(
+              color: Colors.white,
+              fontWeight: FontWeight.bold,
+              fontFamily: 'ADLaMDisplay',
+              fontSize: 12,
+            ),
+          ),
+        )
             : _tabController.index == 3
             ? FloatingActionButton.extended(
-                key: ValueKey('add_coupon_fab'),
-                onPressed: _showAddCouponDialog,
-                backgroundColor: AppColors.accent,
-                icon: Icon(Icons.add, color: Colors.white, size: 20),
-                label: Text(
-                  'Add Coupon',
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontWeight: FontWeight.bold,
-                    fontFamily: 'ADLaMDisplay',
-                    fontSize: 12,
-                  ),
-                ),
-              )
+          key: ValueKey('add_coupon_fab'),
+          onPressed: _showAddCouponDialog,
+          backgroundColor: AppColors.accent,
+          icon: Icon(Icons.add, color: Colors.white, size: 20),
+          label: Text(
+            'Add Coupon',
+            style: TextStyle(
+              color: Colors.white,
+              fontWeight: FontWeight.bold,
+              fontFamily: 'ADLaMDisplay',
+              fontSize: 12,
+            ),
+          ),
+        )
             : SizedBox.shrink(key: ValueKey('empty_fab')),
       ),
     );
@@ -475,32 +475,32 @@ class _AdminPanelPageState extends State<AdminPanelPage>
               Expanded(
                 child: users.isEmpty
                     ? Center(
-                        child: Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Icon(
-                              Icons.people_outline,
-                              size: 80,
-                              color: Colors.grey,
-                            ),
-                            SizedBox(height: 16),
-                            Text(
-                              'No users registered yet',
-                              style: TextStyle(
-                                fontSize: 18,
-                                color: AppColors.textPrimary,
-                                fontFamily: 'IrishGrover',
-                              ),
-                            ),
-                          ],
-                        ),
-                      )
-                    : ListView.builder(
-                        padding: EdgeInsets.all(16),
-                        itemCount: users.length,
-                        itemBuilder: (context, index) =>
-                            _buildUserCard(users[index]),
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Icon(
+                        Icons.people_outline,
+                        size: 80,
+                        color: Colors.grey,
                       ),
+                      SizedBox(height: 16),
+                      Text(
+                        'No users registered yet',
+                        style: TextStyle(
+                          fontSize: 18,
+                          color: AppColors.textPrimary,
+                          fontFamily: 'IrishGrover',
+                        ),
+                      ),
+                    ],
+                  ),
+                )
+                    : ListView.builder(
+                  padding: EdgeInsets.all(16),
+                  itemCount: users.length,
+                  itemBuilder: (context, index) =>
+                      _buildUserCard(users[index]),
+                ),
               ),
             ],
           ),
@@ -704,23 +704,23 @@ class _AdminPanelPageState extends State<AdminPanelPage>
           borderRadius: BorderRadius.circular(8),
           child: product['imageUrl'] != null && product['imageUrl'].isNotEmpty
               ? Image.network(
-                  product['imageUrl'],
-                  width: 60,
-                  height: 60,
-                  fit: BoxFit.cover,
-                  errorBuilder: (context, error, stackTrace) => Container(
-                    width: 60,
-                    height: 60,
-                    color: AppColors.border,
-                    child: Icon(Icons.image, color: Colors.grey, size: 30),
-                  ),
-                )
+            product['imageUrl'],
+            width: 60,
+            height: 60,
+            fit: BoxFit.cover,
+            errorBuilder: (context, error, stackTrace) => Container(
+              width: 60,
+              height: 60,
+              color: AppColors.border,
+              child: Icon(Icons.image, color: Colors.grey, size: 30),
+            ),
+          )
               : Container(
-                  width: 60,
-                  height: 60,
-                  color: AppColors.border,
-                  child: Icon(Icons.image, color: Colors.grey, size: 30),
-                ),
+            width: 60,
+            height: 60,
+            color: AppColors.border,
+            child: Icon(Icons.image, color: Colors.grey, size: 30),
+          ),
         ),
         title: Text(
           product['name'] ?? 'Product',
@@ -1065,8 +1065,8 @@ class _AdminPanelPageState extends State<AdminPanelPage>
                   fontSize: 13,
                   color: AppColors.textPrimary,
                   fontFamily: 'ADLaMDisplay',
+                  overflow: TextOverflow.ellipsis,
                 ),
-                overflow: TextOverflow.ellipsis,
                 maxLines: 2,
               ),
             ],
@@ -1396,33 +1396,22 @@ class _AdminPanelPageState extends State<AdminPanelPage>
                 ),
                 SizedBox(height: 8),
                 ...items.map(
-                  (item) => Padding(
+                      (item) => Padding(
                     padding: EdgeInsets.symmetric(vertical: 4),
                     child: Row(
                       children: [
                         ClipRRect(
                           borderRadius: BorderRadius.circular(4),
                           child:
-                              item['imageUrl'] != null &&
-                                  item['imageUrl'].isNotEmpty
+                          item['imageUrl'] != null &&
+                              item['imageUrl'].isNotEmpty
                               ? Image.network(
-                                  item['imageUrl'],
-                                  width: 40,
-                                  height: 40,
-                                  fit: BoxFit.cover,
-                                  errorBuilder: (context, error, stackTrace) =>
-                                      Container(
-                                        width: 40,
-                                        height: 40,
-                                        color: AppColors.border,
-                                        child: Icon(
-                                          Icons.image,
-                                          size: 20,
-                                          color: Colors.grey,
-                                        ),
-                                      ),
-                                )
-                              : Container(
+                            item['imageUrl'],
+                            width: 40,
+                            height: 40,
+                            fit: BoxFit.cover,
+                            errorBuilder: (context, error, stackTrace) =>
+                                Container(
                                   width: 40,
                                   height: 40,
                                   color: AppColors.border,
@@ -1432,6 +1421,17 @@ class _AdminPanelPageState extends State<AdminPanelPage>
                                     color: Colors.grey,
                                   ),
                                 ),
+                          )
+                              : Container(
+                            width: 40,
+                            height: 40,
+                            color: AppColors.border,
+                            child: Icon(
+                              Icons.image,
+                              size: 20,
+                              color: Colors.grey,
+                            ),
+                          ),
                         ),
                         SizedBox(width: 12),
                         Expanded(
@@ -1748,28 +1748,35 @@ class _AdminPanelPageState extends State<AdminPanelPage>
       text: product?['imageUrl'] ?? '',
     );
 
-    String? selectedGender = product?['gender'];
-    String? selectedCategoryId = product?['categoryId'];
+    // Get the previously saved parent category from the 'gender' field (mapped)
+    String? selectedParentCategory = product?['gender'];
+    String? selectedSubCategoryId = product?['categoryId'];
 
-    List<Map<String, dynamic>> availableCategories = [];
+    // Load available parent categories (Where parentCategory is null)
+    List<Map<String, dynamic>> parentCategories = categories
+        .where((cat) => cat['parentCategory'] == null)
+        .toList();
+
+    // List to hold sub-categories based on selection
+    List<Map<String, dynamic>> availableSubCategories = [];
+
+    // Pre-load logic for editing
+    if (selectedParentCategory != null) {
+      availableSubCategories = categories
+          .where((cat) => cat['parentCategory'] == selectedParentCategory)
+          .toList();
+
+      // Safety check: ensure the sub-category actually belongs to this parent
+      if (selectedSubCategoryId != null &&
+          !availableSubCategories.any((cat) => cat['id'] == selectedSubCategoryId)) {
+        selectedSubCategoryId = null;
+      }
+    }
 
     await showDialog(
       context: context,
       builder: (context) => StatefulBuilder(
         builder: (context, setDialogState) {
-          if (selectedGender != null) {
-            availableCategories = categories
-                .where((cat) => cat['parentCategory'] == selectedGender)
-                .toList();
-
-            if (selectedCategoryId != null &&
-                !availableCategories.any(
-                  (cat) => cat['id'] == selectedCategoryId,
-                )) {
-              selectedCategoryId = null;
-            }
-          }
-
           return AlertDialog(
             backgroundColor: AppColors.card,
             title: Text(
@@ -1871,16 +1878,19 @@ class _AdminPanelPageState extends State<AdminPanelPage>
                     ),
                   ),
                   SizedBox(height: 12),
+
+                  // 1. PARENT CATEGORY DROPDOWN
                   DropdownButtonFormField<String>(
-                    value: selectedGender,
+                    value: selectedParentCategory,
                     dropdownColor: AppColors.card,
+                    isExpanded: true,
                     style: TextStyle(
                       color: AppColors.textPrimary,
                       fontFamily: 'ADLaMDisplay',
                       fontSize: 14,
                     ),
                     decoration: InputDecoration(
-                      labelText: 'Gender *',
+                      labelText: 'Parent Category *',
                       labelStyle: TextStyle(
                         color: AppColors.textSecondary,
                         fontFamily: 'ADLaMDisplay',
@@ -1898,32 +1908,47 @@ class _AdminPanelPageState extends State<AdminPanelPage>
                         vertical: 12,
                       ),
                     ),
-                    items: ['Men', 'Women']
+                    items: parentCategories.isEmpty
+                        ? [
+                      DropdownMenuItem<String>(
+                        value: null,
+                        child: Text('No parent categories found'),
+                      )
+                    ]
+                        : parentCategories
                         .map(
-                          (g) => DropdownMenuItem<String>(
-                            value: g,
-                            child: Text(g),
-                          ),
-                        )
+                          (cat) => DropdownMenuItem<String>(
+                        value: cat['title'],
+                        child: Text(cat['title']),
+                      ),
+                    )
                         .toList(),
                     onChanged: (value) {
                       setDialogState(() {
-                        selectedGender = value;
-                        selectedCategoryId = null;
+                        selectedParentCategory = value;
+                        // Filter sub-categories based on selected parent
+                        availableSubCategories = categories
+                            .where((cat) => cat['parentCategory'] == value)
+                            .toList();
+                        // Reset sub-category selection
+                        selectedSubCategoryId = null;
                       });
                     },
                   ),
                   SizedBox(height: 12),
+
+                  // 2. SUB-CATEGORY DROPDOWN
                   DropdownButtonFormField<String>(
-                    value: selectedCategoryId,
+                    value: selectedSubCategoryId,
                     dropdownColor: AppColors.card,
+                    isExpanded: true,
                     style: TextStyle(
                       color: AppColors.textPrimary,
                       fontFamily: 'ADLaMDisplay',
                       fontSize: 14,
                     ),
                     decoration: InputDecoration(
-                      labelText: 'Category *',
+                      labelText: 'Sub-Category *',
                       labelStyle: TextStyle(
                         color: AppColors.textSecondary,
                         fontFamily: 'ADLaMDisplay',
@@ -1941,40 +1966,40 @@ class _AdminPanelPageState extends State<AdminPanelPage>
                         vertical: 12,
                       ),
                     ),
-                    items: selectedGender == null
+                    items: selectedParentCategory == null
                         ? [
-                            DropdownMenuItem<String>(
-                              value: null,
-                              child: Text(
-                                'Select Gender First',
-                                style: TextStyle(fontSize: 13),
-                              ),
-                            ),
-                          ]
-                        : availableCategories.isEmpty
+                      DropdownMenuItem<String>(
+                        value: null,
+                        child: Text(
+                          'Select Parent Category First',
+                          style: TextStyle(fontSize: 13, color: Colors.grey),
+                        ),
+                      ),
+                    ]
+                        : availableSubCategories.isEmpty
                         ? [
-                            DropdownMenuItem<String>(
-                              value: null,
-                              child: Text(
-                                'No categories for $selectedGender',
-                                style: TextStyle(fontSize: 13),
-                              ),
-                            ),
-                          ]
-                        : availableCategories
-                              .map(
-                                (cat) => DropdownMenuItem<String>(
-                                  value: cat['id'].toString(),
-                                  child: Text(
-                                    cat['title'],
-                                    style: TextStyle(fontSize: 13),
-                                  ),
-                                ),
-                              )
-                              .toList(),
+                      DropdownMenuItem<String>(
+                        value: null,
+                        child: Text(
+                          'No sub-categories in $selectedParentCategory',
+                          style: TextStyle(fontSize: 13, color: Colors.grey),
+                        ),
+                      ),
+                    ]
+                        : availableSubCategories
+                        .map(
+                          (cat) => DropdownMenuItem<String>(
+                        value: cat['id'].toString(),
+                        child: Text(
+                          cat['title'],
+                          style: TextStyle(fontSize: 13),
+                        ),
+                      ),
+                    )
+                        .toList(),
                     onChanged: (value) {
                       setDialogState(() {
-                        selectedCategoryId = value;
+                        selectedSubCategoryId = value;
                       });
                     },
                   ),
@@ -2059,11 +2084,11 @@ class _AdminPanelPageState extends State<AdminPanelPage>
                     return;
                   }
 
-                  if (selectedGender == null) {
+                  if (selectedParentCategory == null) {
                     ScaffoldMessenger.of(context).showSnackBar(
                       SnackBar(
                         content: Text(
-                          'Please select gender',
+                          'Please select a parent category',
                           style: TextStyle(fontFamily: 'ADLaMDisplay'),
                         ),
                         backgroundColor: AppColors.error,
@@ -2072,11 +2097,11 @@ class _AdminPanelPageState extends State<AdminPanelPage>
                     return;
                   }
 
-                  if (selectedCategoryId == null) {
+                  if (selectedSubCategoryId == null) {
                     ScaffoldMessenger.of(context).showSnackBar(
                       SnackBar(
                         content: Text(
-                          'Please select category',
+                          'Please select a sub-category',
                           style: TextStyle(fontFamily: 'ADLaMDisplay'),
                         ),
                         backgroundColor: AppColors.error,
@@ -2102,13 +2127,14 @@ class _AdminPanelPageState extends State<AdminPanelPage>
                   Navigator.pop(context);
 
                   bool success = false;
+                  // Note: We use the 'gender' field to store the Parent Category Name
                   if (isEdit) {
                     success = await DatabaseService.instance.updateProduct(
                       productId: product['id'],
                       name: nameController.text.trim(),
                       price: price,
-                      categoryId: selectedCategoryId!,
-                      gender: selectedGender!,
+                      categoryId: selectedSubCategoryId!,
+                      gender: selectedParentCategory!,
                       imageUrl: imageUrlController.text.trim(),
                       description: descriptionController.text.trim(),
                     );
@@ -2116,8 +2142,8 @@ class _AdminPanelPageState extends State<AdminPanelPage>
                     final productId = await DatabaseService.instance.addProduct(
                       name: nameController.text.trim(),
                       price: price,
-                      categoryId: selectedCategoryId!,
-                      gender: selectedGender!,
+                      categoryId: selectedSubCategoryId!,
+                      gender: selectedParentCategory!,
                       imageUrl: imageUrlController.text.trim(),
                       description: descriptionController.text.trim(),
                     );

@@ -18,7 +18,7 @@ import 'about_us.dart';
 import 'privacy_policy.dart';
 import 'carti_chatbot.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
-import 'customization.dart'; // ✅ NEW: Import customization page
+import 'customization.dart';
 import 'customize_page.dart';
 
 void main() async {
@@ -71,7 +71,7 @@ class MainApp extends StatelessWidget {
             return MaterialPageRoute(builder: (_) => CheckoutPage());
           case '/admin':
             return MaterialPageRoute(builder: (_) => AdminPanelPage());
-          case '/customization': // ✅ NEW: Route for customization page
+          case '/customization':
             return MaterialPageRoute(builder: (_) => CustomizationPage());
           case '/about_us':
             return MaterialPageRoute(builder: (_) => AboutUsPage());
@@ -178,13 +178,27 @@ class _HomeScreenState extends State<HomeScreen> {
     });
   }
 
-  void _navigateToCategory(String categoryTitle, String parentCategory) {
-    final category = categories.firstWhere(
-          (cat) =>
-      cat['title'] == categoryTitle &&
-          cat['parentCategory'] == parentCategory,
-      orElse: () => {},
-    );
+  // ✅ UPDATED: Added optional categoryId parameter
+  void _navigateToCategory(String categoryTitle, String parentCategory, {String? categoryId}) {
+    Map<String, dynamic> category = {};
+
+    // 1. If we have the ID directly (from Drawer), use it!
+    if (categoryId != null) {
+      category = {
+        'id': categoryId,
+        'title': categoryTitle,
+        'parentCategory': parentCategory
+      };
+    }
+    // 2. Otherwise try to find it in the list (for hardcoded cards)
+    else {
+      category = categories.firstWhere(
+            (cat) =>
+        cat['title'] == categoryTitle &&
+            cat['parentCategory'] == parentCategory,
+        orElse: () => {},
+      );
+    }
 
     if (category.isNotEmpty) {
       Navigator.pushNamed(
@@ -197,16 +211,17 @@ class _HomeScreenState extends State<HomeScreen> {
         },
       );
     } else {
+      // If it fails, try reloading categories for next time
+      _loadCategories();
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text('Category not found'),
+          content: Text('Category not found. Please refresh.'),
           backgroundColor: AppColors.error,
         ),
       );
     }
   }
 
-  // ✅ NEW: Helper method to get appropriate icon for category
   IconData _getCategoryIcon(String categoryName) {
     final name = categoryName.toLowerCase();
     if (name.contains('shirt')) return Icons.checkroom_outlined;
@@ -215,7 +230,7 @@ class _HomeScreenState extends State<HomeScreen> {
     if (name.contains('eyewear') || name.contains('glass')) return Icons.visibility_outlined;
     if (name.contains('accessories')) return Icons.watch_outlined;
     if (name.contains('footwear') || name.contains('shoe')) return Icons.directions_walk_outlined;
-    return Icons.category_outlined; // Default icon
+    return Icons.category_outlined;
   }
 
   @override
@@ -287,7 +302,6 @@ class _HomeScreenState extends State<HomeScreen> {
               },
             ),
 
-            // ✅ UPDATED: Dynamic categories from database
             ExpansionTile(
               leading: Icon(
                 Icons.dashboard_customize_outlined,
@@ -303,7 +317,6 @@ class _HomeScreenState extends State<HomeScreen> {
                 ),
               ),
               children: [
-                // ✅ NEW: Dynamic parent categories from database
                 FutureBuilder<List<Map<String, dynamic>>>(
                   future: DatabaseService.instance.getCategories(),
                   builder: (context, snapshot) {
@@ -334,7 +347,6 @@ class _HomeScreenState extends State<HomeScreen> {
                     }
 
                     final allCategories = snapshot.data!;
-                    // Get only parent categories (Men, Women, etc.)
                     final parentCategories = allCategories
                         .where((cat) => cat['parentCategory'] == null)
                         .toList();
@@ -342,7 +354,6 @@ class _HomeScreenState extends State<HomeScreen> {
                     return Column(
                       children: parentCategories.map((parentCat) {
                         final parentTitle = parentCat['title'];
-                        // Get subcategories for this parent
                         final subcategories = allCategories
                             .where((cat) => cat['parentCategory'] == parentTitle)
                             .toList();
@@ -351,7 +362,9 @@ class _HomeScreenState extends State<HomeScreen> {
                           leading: Icon(
                             parentTitle == 'Men'
                                 ? Icons.man_outlined
-                                : Icons.woman_outlined,
+                                : parentTitle == 'Women'
+                                ? Icons.woman_outlined
+                                : Icons.child_care, // Default/Kids icon
                             color: AppColors.accent,
                           ),
                           collapsedIconColor: AppColors.textPrimary,
@@ -369,6 +382,7 @@ class _HomeScreenState extends State<HomeScreen> {
                               subCat['title'],
                               _getCategoryIcon(subCat['title']),
                               parentTitle,
+                              subCat['id'], // ✅ FIXED: Passing the ID
                             );
                           }).toList(),
                         );
@@ -404,7 +418,6 @@ class _HomeScreenState extends State<HomeScreen> {
             ),
             Divider(),
 
-            // Carti AI Chatbot
             ListTile(
               leading: Container(
                 padding: EdgeInsets.all(6),
@@ -492,7 +505,6 @@ class _HomeScreenState extends State<HomeScreen> {
                 },
               ),
 
-            // ✅ NEW: Customize button (admin only)
             if (isAdmin)
               ListTile(
                 leading: Icon(
@@ -788,192 +800,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 ),
                 itemBuilder: (context, index) {
                   final product = filteredProducts[index];
-                  return GestureDetector(
-                    onTap: () {
-                      Navigator.pushNamed(
-                        context,
-                        '/product_detail',
-                        arguments: product,
-                      );
-                    },
-                    child: Container(
-                      decoration: BoxDecoration(
-                        color: AppColors.card,
-                        borderRadius: BorderRadius.circular(20),
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.black.withOpacity(0.06),
-                            blurRadius: 12,
-                            offset: const Offset(0, 4),
-                          ),
-                        ],
-                      ),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Expanded(
-                            flex: 5,
-                            child: Stack(
-                              children: [
-                                Container(
-                                  width: double.infinity,
-                                  decoration: BoxDecoration(
-                                    color: AppColors.border.withOpacity(0.2),
-                                    borderRadius: const BorderRadius.vertical(
-                                      top: Radius.circular(20),
-                                    ),
-                                  ),
-                                  child: ClipRRect(
-                                    borderRadius: const BorderRadius.vertical(
-                                      top: Radius.circular(20),
-                                    ),
-                                    child: product['imageUrl'] != null &&
-                                        product['imageUrl'].isNotEmpty
-                                        ? Image.network(
-                                      product['imageUrl'],
-                                      fit: BoxFit.cover,
-                                      errorBuilder: (context, error, stackTrace) =>
-                                      const Icon(Icons.broken_image, color: Colors.grey, size: 40),
-                                    )
-                                        : const Icon(Icons.image, size: 50, color: Colors.grey),
-                                  ),
-                                ),
-                                Positioned(
-                                  top: 10,
-                                  left: 10,
-                                  child: Container(
-                                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                                    decoration: BoxDecoration(
-                                      color: Colors.white.withOpacity(0.9),
-                                      borderRadius: BorderRadius.circular(10),
-                                    ),
-                                    child: Text(
-                                      'Rs. ${product['price'] ?? 0}',
-                                      style: const TextStyle(
-                                        color: Colors.green,
-                                        fontWeight: FontWeight.bold,
-                                        fontSize: 12,
-                                      ),
-                                    ),
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                          Expanded(
-                            flex: 5,
-                            child: Padding(
-                              padding: const EdgeInsets.all(10.0),
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                children: [
-                                  Column(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
-                                    children: [
-                                      Text(
-                                        product['name'] ?? 'Product',
-                                        maxLines: 1,
-                                        overflow: TextOverflow.ellipsis,
-                                        style: TextStyle(
-                                          fontWeight: FontWeight.bold,
-                                          fontSize: 14,
-                                          color: AppColors.textPrimary,
-                                          fontFamily: 'ADLaMDisplay',
-                                        ),
-                                      ),
-                                      const SizedBox(height: 2),
-                                      Text(
-                                        "Freshly Stocked",
-                                        style: TextStyle(
-                                          fontSize: 11,
-                                          color: AppColors.textSecondary.withOpacity(0.7),
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                  Column(
-                                    children: [
-                                      SizedBox(
-                                        width: double.infinity,
-                                        height: 32,
-                                        child: OutlinedButton(
-                                          onPressed: () async {
-                                            final user = FirebaseAuth.instance.currentUser;
-                                            if (user == null) {
-                                              ScaffoldMessenger.of(context).showSnackBar(
-                                                SnackBar(content: Text("Please login first")),
-                                              );
-                                              return;
-                                            }
-                                            final success = await DatabaseService.instance.addToCart(
-                                              userId: user.uid,
-                                              productId: product['id'],
-                                              quantity: 1,
-                                            );
-                                            if (success) {
-                                              ScaffoldMessenger.of(context).showSnackBar(
-                                                SnackBar(content: Text("Added to cart")),
-                                              );
-                                            }
-                                          },
-                                          style: OutlinedButton.styleFrom(
-                                            side: BorderSide(color: AppColors.accent, width: 1),
-                                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-                                            padding: EdgeInsets.zero,
-                                          ),
-                                          child: Text(
-                                            "Add to Cart",
-                                            style: TextStyle(
-                                              fontSize: 12,
-                                              color: AppColors.accent,
-                                              fontFamily: 'ADLaMDisplay',
-                                            ),
-                                          ),
-                                        ),
-                                      ),
-                                      const SizedBox(height: 6),
-                                      SizedBox(
-                                        width: double.infinity,
-                                        height: 32,
-                                        child: ElevatedButton(
-                                          onPressed: () async {
-                                            final user = FirebaseAuth.instance.currentUser;
-                                            if (user == null) return;
-                                            await DatabaseService.instance.addToCart(
-                                              userId: user.uid,
-                                              productId: product['id'],
-                                              quantity: 1,
-                                            );
-                                            Navigator.pushNamed(context, '/checkout');
-                                          },
-                                          style: ElevatedButton.styleFrom(
-                                            backgroundColor: AppColors.accent,
-                                            foregroundColor: Colors.white,
-                                            elevation: 0,
-                                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-                                            padding: EdgeInsets.zero,
-                                          ),
-                                          child: const Text(
-                                            "Buy Now",
-                                            style: TextStyle(
-                                              fontSize: 12,
-                                              fontWeight: FontWeight.bold,
-                                              fontFamily: 'ADLaMDisplay',
-                                            ),
-                                          ),
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                ],
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  );
+                  return _buildProductCard(product);
                 },
               ),
             ),
@@ -1047,11 +874,13 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
+  // ✅ UPDATED: Added categoryId parameter here too
   Widget _buildCategoryItem(
       BuildContext context,
       String title,
       IconData icon,
       String parentCategory,
+      String categoryId,
       ) {
     return ListTile(
       contentPadding: EdgeInsets.only(left: 40),
@@ -1066,8 +895,207 @@ class _HomeScreenState extends State<HomeScreen> {
       ),
       onTap: () {
         Navigator.pop(context);
-        _navigateToCategory(title, parentCategory);
+        // ✅ FIXED: Pass the specific ID so we don't rely on stale lookups
+        _navigateToCategory(title, parentCategory, categoryId: categoryId);
       },
+    );
+  }
+
+  Widget _buildProductCard(Map<String, dynamic> product) {
+    // ... existing product card code ...
+    // (This part doesn't need changing but included for context if needed)
+    return GestureDetector(
+      onTap: () {
+        Navigator.pushNamed(
+          context,
+          '/product_detail',
+          arguments: product,
+        );
+      },
+      child: Container(
+        decoration: BoxDecoration(
+          color: AppColors.card,
+          borderRadius: BorderRadius.circular(20),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.06),
+              blurRadius: 12,
+              offset: const Offset(0, 4),
+            ),
+          ],
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Expanded(
+              flex: 5,
+              child: Stack(
+                children: [
+                  Container(
+                    width: double.infinity,
+                    decoration: BoxDecoration(
+                      color: AppColors.border.withOpacity(0.2),
+                      borderRadius: const BorderRadius.vertical(
+                        top: Radius.circular(20),
+                      ),
+                    ),
+                    child: ClipRRect(
+                      borderRadius: const BorderRadius.vertical(
+                        top: Radius.circular(20),
+                      ),
+                      child: product['imageUrl'] != null &&
+                          product['imageUrl'].isNotEmpty
+                          ? Image.network(
+                        product['imageUrl'],
+                        fit: BoxFit.cover,
+                        errorBuilder: (context, error, stackTrace) =>
+                        const Icon(Icons.broken_image,
+                            color: Colors.grey, size: 40),
+                      )
+                          : const Icon(Icons.image,
+                          size: 50, color: Colors.grey),
+                    ),
+                  ),
+                  Positioned(
+                    top: 10,
+                    left: 10,
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 8, vertical: 4),
+                      decoration: BoxDecoration(
+                        color: Colors.white.withOpacity(0.9),
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                      child: Text(
+                        'Rs. ${product['price'] ?? 0}',
+                        style: const TextStyle(
+                          color: Colors.green,
+                          fontWeight: FontWeight.bold,
+                          fontSize: 12,
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            Expanded(
+              flex: 5,
+              child: Padding(
+                padding: const EdgeInsets.all(10.0),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          product['name'] ?? 'Product',
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: TextStyle(
+                            fontWeight: FontWeight.bold,
+                            fontSize: 14,
+                            color: AppColors.textPrimary,
+                            fontFamily: 'ADLaMDisplay',
+                          ),
+                        ),
+                        const SizedBox(height: 2),
+                        Text(
+                          "Freshly Stocked",
+                          style: TextStyle(
+                            fontSize: 11,
+                            color: AppColors.textSecondary.withOpacity(0.7),
+                          ),
+                        ),
+                      ],
+                    ),
+                    Column(
+                      children: [
+                        SizedBox(
+                          width: double.infinity,
+                          height: 32,
+                          child: OutlinedButton(
+                            onPressed: () async {
+                              final user = FirebaseAuth.instance.currentUser;
+                              if (user == null) {
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  SnackBar(content: Text("Please login first")),
+                                );
+                                return;
+                              }
+                              final success =
+                              await DatabaseService.instance.addToCart(
+                                userId: user.uid,
+                                productId: product['id'],
+                                quantity: 1,
+                              );
+                              if (success) {
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  SnackBar(content: Text("Added to cart")),
+                                );
+                              }
+                            },
+                            style: OutlinedButton.styleFrom(
+                              side: BorderSide(
+                                  color: AppColors.accent, width: 1),
+                              shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(8)),
+                              padding: EdgeInsets.zero,
+                            ),
+                            child: Text(
+                              "Add to Cart",
+                              style: TextStyle(
+                                fontSize: 12,
+                                color: AppColors.accent,
+                                fontFamily: 'ADLaMDisplay',
+                              ),
+                            ),
+                          ),
+                        ),
+                        const SizedBox(height: 6),
+                        SizedBox(
+                          width: double.infinity,
+                          height: 32,
+                          child: ElevatedButton(
+                            onPressed: () async {
+                              final user = FirebaseAuth.instance.currentUser;
+                              if (user == null) return;
+                              await DatabaseService.instance.addToCart(
+                                userId: user.uid,
+                                productId: product['id'],
+                                quantity: 1,
+                              );
+                              Navigator.pushNamed(context, '/checkout');
+                            },
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: AppColors.accent,
+                              foregroundColor: Colors.white,
+                              elevation: 0,
+                              shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(8)),
+                              padding: EdgeInsets.zero,
+                            ),
+                            child: const Text(
+                              "Buy Now",
+                              style: TextStyle(
+                                fontSize: 12,
+                                fontWeight: FontWeight.bold,
+                                fontFamily: 'ADLaMDisplay',
+                              ),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
     );
   }
 }
