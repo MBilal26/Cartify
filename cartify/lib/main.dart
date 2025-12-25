@@ -16,7 +16,7 @@ import 'admin_panel.dart';
 import 'database_functions.dart';
 import 'about_us.dart';
 import 'privacy_policy.dart';
-import 'carti_chatbot.dart'; // From File 2
+import 'carti_chatbot.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'customization.dart'; // ✅ NEW: Import customization page
 
@@ -76,7 +76,7 @@ class MainApp extends StatelessWidget {
             return MaterialPageRoute(builder: (_) => AboutUsPage());
           case '/privacy_policy':
             return MaterialPageRoute(builder: (_) => PrivacyPolicyPage());
-          case '/carti': // From File 2
+          case '/carti':
             return MaterialPageRoute(builder: (_) => CartiChatbotPage());
           case '/category_products':
             final args = settings.arguments as Map<String, dynamic>;
@@ -164,14 +164,14 @@ class _HomeScreenState extends State<HomeScreen> {
         filteredProducts = products
             .where(
               (product) =>
-                  product['name'].toString().toLowerCase().contains(
-                    query.toLowerCase(),
-                  ) ||
-                  (product['description'] ?? '')
-                      .toString()
-                      .toLowerCase()
-                      .contains(query.toLowerCase()),
-            )
+          product['name'].toString().toLowerCase().contains(
+            query.toLowerCase(),
+          ) ||
+              (product['description'] ?? '')
+                  .toString()
+                  .toLowerCase()
+                  .contains(query.toLowerCase()),
+        )
             .toList();
       }
     });
@@ -179,8 +179,8 @@ class _HomeScreenState extends State<HomeScreen> {
 
   void _navigateToCategory(String categoryTitle, String parentCategory) {
     final category = categories.firstWhere(
-      (cat) =>
-          cat['title'] == categoryTitle &&
+          (cat) =>
+      cat['title'] == categoryTitle &&
           cat['parentCategory'] == parentCategory,
       orElse: () => {},
     );
@@ -203,6 +203,18 @@ class _HomeScreenState extends State<HomeScreen> {
         ),
       );
     }
+  }
+
+  // ✅ NEW: Helper method to get appropriate icon for category
+  IconData _getCategoryIcon(String categoryName) {
+    final name = categoryName.toLowerCase();
+    if (name.contains('shirt')) return Icons.checkroom_outlined;
+    if (name.contains('jean') || name.contains('pant')) return Icons.line_style_outlined;
+    if (name.contains('dress')) return Icons.dry_cleaning_outlined;
+    if (name.contains('eyewear') || name.contains('glass')) return Icons.visibility_outlined;
+    if (name.contains('accessories')) return Icons.watch_outlined;
+    if (name.contains('footwear') || name.contains('shoe')) return Icons.directions_walk_outlined;
+    return Icons.category_outlined; // Default icon
   }
 
   @override
@@ -274,6 +286,7 @@ class _HomeScreenState extends State<HomeScreen> {
               },
             ),
 
+            // ✅ UPDATED: Dynamic categories from database
             ExpansionTile(
               leading: Icon(
                 Icons.dashboard_customize_outlined,
@@ -289,93 +302,78 @@ class _HomeScreenState extends State<HomeScreen> {
                 ),
               ),
               children: [
-                ExpansionTile(
-                  leading: Icon(Icons.man_outlined, color: AppColors.accent),
-                  collapsedIconColor: AppColors.textPrimary,
-                  title: Text(
-                    'Men',
-                    style: TextStyle(
-                      fontFamily: 'ADLaMDisplay',
-                      fontSize: 15,
-                      color: AppColors.textPrimary,
-                    ),
-                  ),
-                  children: [
-                    _buildCategoryItem(
-                      context,
-                      'Shirts',
-                      Icons.checkroom_outlined,
-                      'Men',
-                    ),
-                    _buildCategoryItem(
-                      context,
-                      'Jeans',
-                      Icons.line_style_outlined,
-                      'Men',
-                    ),
-                    _buildCategoryItem(
-                      context,
-                      'Eyewear',
-                      Icons.visibility_outlined,
-                      'Men',
-                    ),
-                    _buildCategoryItem(
-                      context,
-                      'Accessories',
-                      Icons.watch_outlined,
-                      'Men',
-                    ),
-                    _buildCategoryItem(
-                      context,
-                      'Footwear',
-                      Icons.directions_walk_outlined,
-                      'Men',
-                    ),
-                  ],
-                ),
-                ExpansionTile(
-                  leading: Icon(Icons.woman_outlined, color: AppColors.accent),
-                  collapsedIconColor: AppColors.textPrimary,
-                  title: Text(
-                    'Women',
-                    style: TextStyle(
-                      fontFamily: 'ADLaMDisplay',
-                      fontSize: 15,
-                      color: AppColors.textPrimary,
-                    ),
-                  ),
-                  children: [
-                    _buildCategoryItem(
-                      context,
-                      'Dresses',
-                      Icons.dry_cleaning_outlined,
-                      'Women',
-                    ),
-                    _buildCategoryItem(
-                      context,
-                      'Jeans',
-                      Icons.line_weight_outlined,
-                      'Women',
-                    ),
-                    _buildCategoryItem(
-                      context,
-                      'Eyewear',
-                      Icons.face_retouching_natural_outlined,
-                      'Women',
-                    ),
-                    _buildCategoryItem(
-                      context,
-                      'Accessories',
-                      Icons.shopping_basket_outlined,
-                      'Women',
-                    ),
-                    _buildCategoryItem(
-                      context,
-                      'Footwear',
-                      Icons.directions_walk_outlined,
-                      'Women',
-                    ),
-                  ],
+                // ✅ NEW: Dynamic parent categories from database
+                FutureBuilder<List<Map<String, dynamic>>>(
+                  future: DatabaseService.instance.getCategories(),
+                  builder: (context, snapshot) {
+                    if (snapshot.connectionState == ConnectionState.waiting) {
+                      return Padding(
+                        padding: EdgeInsets.all(16),
+                        child: Center(
+                          child: CircularProgressIndicator(
+                            color: AppColors.accent,
+                            strokeWidth: 2,
+                          ),
+                        ),
+                      );
+                    }
+
+                    if (!snapshot.hasData || snapshot.data!.isEmpty) {
+                      return ListTile(
+                        leading: Icon(Icons.info_outline, color: Colors.grey, size: 20),
+                        title: Text(
+                          'No categories yet',
+                          style: TextStyle(
+                            fontFamily: 'ADLaMDisplay',
+                            fontSize: 14,
+                            color: AppColors.textSecondary,
+                          ),
+                        ),
+                      );
+                    }
+
+                    final allCategories = snapshot.data!;
+                    // Get only parent categories (Men, Women, etc.)
+                    final parentCategories = allCategories
+                        .where((cat) => cat['parentCategory'] == null)
+                        .toList();
+
+                    return Column(
+                      children: parentCategories.map((parentCat) {
+                        final parentTitle = parentCat['title'];
+                        // Get subcategories for this parent
+                        final subcategories = allCategories
+                            .where((cat) => cat['parentCategory'] == parentTitle)
+                            .toList();
+
+                        return ExpansionTile(
+                          leading: Icon(
+                            parentTitle == 'Men'
+                                ? Icons.man_outlined
+                                : Icons.woman_outlined,
+                            color: AppColors.accent,
+                          ),
+                          collapsedIconColor: AppColors.textPrimary,
+                          title: Text(
+                            parentTitle,
+                            style: TextStyle(
+                              fontFamily: 'ADLaMDisplay',
+                              fontSize: 15,
+                              color: AppColors.textPrimary,
+                            ),
+                          ),
+                          children: subcategories.map((subCat) {
+                            return _buildCategoryItem(
+                              context,
+                              subCat['title'],
+                              _getCategoryIcon(subCat['title']),
+                              parentTitle,
+                            );
+                          }).toList(),
+                        );
+                      }).toList(),
+                    );
+                  },
                 ),
               ],
             ),
@@ -404,7 +402,8 @@ class _HomeScreenState extends State<HomeScreen> {
               ),
             ),
             Divider(),
-            //Carti AI Chatbot from File 2
+
+            // Carti AI Chatbot
             ListTile(
               leading: Container(
                 padding: EdgeInsets.all(6),
@@ -491,11 +490,12 @@ class _HomeScreenState extends State<HomeScreen> {
                   Navigator.pushNamed(context, '/admin');
                 },
               ),
+
             // ✅ NEW: Customize button (admin only)
             if (isAdmin)
               ListTile(
                 leading: Icon(
-                  Icons.palette, // Palette icon for customization
+                  Icons.palette,
                   color: AppColors.accent,
                 ),
                 title: Text(
@@ -661,17 +661,14 @@ class _HomeScreenState extends State<HomeScreen> {
                       image: 'assets/icons/categories_icon/shoes_icon.png',
                       onTap: () => _navigateToCategory('Footwear', 'Men'),
                     ),
-
                     CategoryCard(
                       title: 'Shirts',
                       image: 'assets/icons/categories_icon/shirts_icon.png',
                       onTap: () => _navigateToCategory('Shirts', 'Men'),
                     ),
-
                     CategoryCard(
                       title: 'Accessories',
-                      image:
-                          'assets/icons/categories_icon/accessories_icon.png',
+                      image: 'assets/icons/categories_icon/accessories_icon.png',
                       onTap: () => _navigateToCategory('Accessories', 'Women'),
                     ),
                   ],
@@ -682,7 +679,6 @@ class _HomeScreenState extends State<HomeScreen> {
 
               Container(
                 height: 150,
-
                 decoration: BoxDecoration(
                   image: DecorationImage(
                     image: AssetImage('assets/images/CARTIFY-banner.png'),
@@ -714,353 +710,271 @@ class _HomeScreenState extends State<HomeScreen> {
               padding: const EdgeInsets.all(16.0),
               child: isLoadingProducts
                   ? Center(
-                      child: Column(
-                        children: [
-                          SizedBox(height: 40),
-                          CircularProgressIndicator(color: AppColors.accent),
-                          SizedBox(height: 16),
-                          Text(
-                            'Loading products...',
-                            style: TextStyle(
-                              color: AppColors.textSecondary,
-                              fontFamily: 'ADLaMDisplay',
-                            ),
-                          ),
-                        ],
+                child: Column(
+                  children: [
+                    SizedBox(height: 40),
+                    CircularProgressIndicator(color: AppColors.accent),
+                    SizedBox(height: 16),
+                    Text(
+                      'Loading products...',
+                      style: TextStyle(
+                        color: AppColors.textSecondary,
+                        fontFamily: 'ADLaMDisplay',
                       ),
-                    )
+                    ),
+                  ],
+                ),
+              )
                   : filteredProducts.isEmpty
                   ? Center(
-                      child: Column(
-                        children: [
-                          SizedBox(height: 40),
-                          Icon(Icons.search_off, size: 80, color: Colors.grey),
-                          SizedBox(height: 16),
-                          Text(
-                            isSearching
-                                ? 'No products found'
-                                : 'No products available',
-                            style: TextStyle(
-                              fontSize: 16,
-                              color: AppColors.textPrimary,
-                              fontFamily: 'IrishGrover',
-                            ),
+                child: Column(
+                  children: [
+                    SizedBox(height: 40),
+                    Icon(Icons.search_off, size: 80, color: Colors.grey),
+                    SizedBox(height: 16),
+                    Text(
+                      isSearching
+                          ? 'No products found'
+                          : 'No products available',
+                      style: TextStyle(
+                        fontSize: 16,
+                        color: AppColors.textPrimary,
+                        fontFamily: 'IrishGrover',
+                      ),
+                    ),
+                    SizedBox(height: 8),
+                    Text(
+                      isSearching
+                          ? 'Try different keywords'
+                          : 'Products will appear here once added',
+                      style: TextStyle(
+                        color: Colors.grey,
+                        fontFamily: 'ADLaMDisplay',
+                      ),
+                    ),
+                    if (isSearching) ...[
+                      SizedBox(height: 16),
+                      ElevatedButton(
+                        onPressed: () {
+                          _searchController.clear();
+                          _searchProducts('');
+                        },
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: AppColors.accent,
+                        ),
+                        child: Text(
+                          'Clear Search',
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontFamily: 'ADLaMDisplay',
                           ),
-                          SizedBox(height: 8),
-                          Text(
-                            isSearching
-                                ? 'Try different keywords'
-                                : 'Products will appear here once added',
-                            style: TextStyle(
-                              color: Colors.grey,
-                              fontFamily: 'ADLaMDisplay',
-                            ),
+                        ),
+                      ),
+                    ],
+                  ],
+                ),
+              )
+                  : GridView.builder(
+                shrinkWrap: true,
+                physics: const NeverScrollableScrollPhysics(),
+                itemCount: filteredProducts.length,
+                gridDelegate:
+                const SliverGridDelegateWithFixedCrossAxisCount(
+                  crossAxisCount: 2,
+                  crossAxisSpacing: 14,
+                  mainAxisSpacing: 20,
+                  childAspectRatio: 0.51,
+                ),
+                itemBuilder: (context, index) {
+                  final product = filteredProducts[index];
+                  return GestureDetector(
+                    onTap: () {
+                      Navigator.pushNamed(
+                        context,
+                        '/product_detail',
+                        arguments: product,
+                      );
+                    },
+                    child: Container(
+                      decoration: BoxDecoration(
+                        color: AppColors.card,
+                        borderRadius: BorderRadius.circular(20),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withOpacity(0.06),
+                            blurRadius: 12,
+                            offset: const Offset(0, 4),
                           ),
-                          if (isSearching) ...[
-                            SizedBox(height: 16),
-                            ElevatedButton(
-                              onPressed: () {
-                                _searchController.clear();
-                                _searchProducts('');
-                              },
-                              style: ElevatedButton.styleFrom(
-                                backgroundColor: AppColors.accent,
-                              ),
-                              child: Text(
-                                'Clear Search',
-                                style: TextStyle(
-                                  color: Colors.white,
-                                  fontFamily: 'ADLaMDisplay',
-                                ),
-                              ),
-                            ),
-                          ],
                         ],
                       ),
-                    )
-                  : GridView.builder(
-                      shrinkWrap: true,
-                      physics: const NeverScrollableScrollPhysics(),
-                      itemCount: filteredProducts.length,
-                      gridDelegate:
-                          const SliverGridDelegateWithFixedCrossAxisCount(
-                            crossAxisCount: 2,
-                            crossAxisSpacing: 14,
-                            mainAxisSpacing: 20,
-                            childAspectRatio:
-                                0.51, // Increased height to fit buttons
-                          ),
-                      itemBuilder: (context, index) {
-                        final product = filteredProducts[index];
-                        return GestureDetector(
-                          onTap: () {
-                            Navigator.pushNamed(
-                              context,
-                              '/product_detail',
-                              arguments: product,
-                            );
-                          },
-                          child: Container(
-                            decoration: BoxDecoration(
-                              color: AppColors.card,
-                              borderRadius: BorderRadius.circular(20),
-                              boxShadow: [
-                                BoxShadow(
-                                  color: Colors.black.withOpacity(0.06),
-                                  blurRadius: 12,
-                                  offset: const Offset(0, 4),
-                                ),
-                              ],
-                            ),
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Expanded(
+                            flex: 5,
+                            child: Stack(
                               children: [
-                                // --- Image Section ---
-                                Expanded(
-                                  flex: 5,
-                                  child: Stack(
-                                    children: [
-                                      Container(
-                                        width: double.infinity,
-                                        decoration: BoxDecoration(
-                                          color: AppColors.border.withOpacity(
-                                            0.2,
-                                          ),
-                                          borderRadius:
-                                              const BorderRadius.vertical(
-                                                top: Radius.circular(20),
-                                              ),
-                                        ),
-                                        child: ClipRRect(
-                                          borderRadius:
-                                              const BorderRadius.vertical(
-                                                top: Radius.circular(20),
-                                              ),
-                                          child:
-                                              product['imageUrl'] != null &&
-                                                  product['imageUrl'].isNotEmpty
-                                              ? Image.network(
-                                                  product['imageUrl'],
-                                                  fit: BoxFit.cover,
-                                                  errorBuilder:
-                                                      (
-                                                        context,
-                                                        error,
-                                                        stackTrace,
-                                                      ) => const Icon(
-                                                        Icons.broken_image,
-                                                        color: Colors.grey,
-                                                        size: 40,
-                                                      ),
-                                                )
-                                              : const Icon(
-                                                  Icons.image,
-                                                  size: 50,
-                                                  color: Colors.grey,
-                                                ),
-                                        ),
-                                      ),
-                                      // Price Tag Overlay
-                                      Positioned(
-                                        top: 10,
-                                        left: 10,
-                                        child: Container(
-                                          padding: const EdgeInsets.symmetric(
-                                            horizontal: 8,
-                                            vertical: 4,
-                                          ),
-                                          decoration: BoxDecoration(
-                                            color: Colors.white.withOpacity(
-                                              0.9,
-                                            ),
-                                            borderRadius: BorderRadius.circular(
-                                              10,
-                                            ),
-                                          ),
-                                          child: Text(
-                                            'Rs. ${product['price'] ?? 0}',
-                                            style: const TextStyle(
-                                              color: Colors.green,
-                                              fontWeight: FontWeight.bold,
-                                              fontSize: 12,
-                                            ),
-                                          ),
-                                        ),
-                                      ),
-                                    ],
+                                Container(
+                                  width: double.infinity,
+                                  decoration: BoxDecoration(
+                                    color: AppColors.border.withOpacity(0.2),
+                                    borderRadius: const BorderRadius.vertical(
+                                      top: Radius.circular(20),
+                                    ),
+                                  ),
+                                  child: ClipRRect(
+                                    borderRadius: const BorderRadius.vertical(
+                                      top: Radius.circular(20),
+                                    ),
+                                    child: product['imageUrl'] != null &&
+                                        product['imageUrl'].isNotEmpty
+                                        ? Image.network(
+                                      product['imageUrl'],
+                                      fit: BoxFit.cover,
+                                      errorBuilder: (context, error, stackTrace) =>
+                                      const Icon(Icons.broken_image, color: Colors.grey, size: 40),
+                                    )
+                                        : const Icon(Icons.image, size: 50, color: Colors.grey),
                                   ),
                                 ),
-
-                                // --- Details Section ---
-                                Expanded(
-                                  flex: 5,
-                                  child: Padding(
-                                    padding: const EdgeInsets.all(10.0),
-                                    child: Column(
-                                      crossAxisAlignment:
-                                          CrossAxisAlignment.start,
-                                      mainAxisAlignment:
-                                          MainAxisAlignment.spaceBetween,
-                                      children: [
-                                        Column(
-                                          crossAxisAlignment:
-                                              CrossAxisAlignment.start,
-                                          children: [
-                                            Text(
-                                              product['name'] ?? 'Product',
-                                              maxLines: 1,
-                                              overflow: TextOverflow.ellipsis,
-                                              style: TextStyle(
-                                                fontWeight: FontWeight.bold,
-                                                fontSize: 14,
-                                                color: AppColors.textPrimary,
-                                                fontFamily: 'ADLaMDisplay',
-                                              ),
-                                            ),
-                                            const SizedBox(height: 2),
-                                            Text(
-                                              "Freshly Stocked", // Subtle sub-label
-                                              style: TextStyle(
-                                                fontSize: 11,
-                                                color: AppColors.textSecondary
-                                                    .withOpacity(0.7),
-                                              ),
-                                            ),
-                                          ],
-                                        ),
-
-                                        // --- Action Buttons ---
-                                        Column(
-                                          children: [
-                                            // Add to Cart Button (Outlined style)
-                                            SizedBox(
-                                              width: double.infinity,
-                                              height: 32,
-                                              child: OutlinedButton(
-                                                onPressed: () async {
-                                                  final user = FirebaseAuth
-                                                      .instance
-                                                      .currentUser;
-
-                                                  if (user == null) {
-                                                    ScaffoldMessenger.of(
-                                                      context,
-                                                    ).showSnackBar(
-                                                      SnackBar(
-                                                        content: Text(
-                                                          "Please login first",
-                                                        ),
-                                                      ),
-                                                    );
-                                                    return;
-                                                  }
-
-                                                  final success =
-                                                      await DatabaseService
-                                                          .instance
-                                                          .addToCart(
-                                                            userId: user.uid,
-                                                            productId:
-                                                                product['id'],
-                                                            quantity: 1,
-                                                          );
-
-                                                  if (success) {
-                                                    ScaffoldMessenger.of(
-                                                      context,
-                                                    ).showSnackBar(
-                                                      SnackBar(
-                                                        content: Text(
-                                                          "Added to cart",
-                                                        ),
-                                                      ),
-                                                    );
-                                                  }
-                                                },
-                                                style: OutlinedButton.styleFrom(
-                                                  side: BorderSide(
-                                                    color: AppColors.accent,
-                                                    width: 1,
-                                                  ),
-                                                  shape: RoundedRectangleBorder(
-                                                    borderRadius:
-                                                        BorderRadius.circular(
-                                                          8,
-                                                        ),
-                                                  ),
-                                                  padding: EdgeInsets.zero,
-                                                ),
-                                                child: Text(
-                                                  "Add to Cart",
-                                                  style: TextStyle(
-                                                    fontSize: 12,
-                                                    color: AppColors.accent,
-                                                    fontFamily: 'ADLaMDisplay',
-                                                  ),
-                                                ),
-                                              ),
-                                            ),
-                                            const SizedBox(height: 6),
-                                            // Buy Now Button (Solid style)
-                                            SizedBox(
-                                              width: double.infinity,
-                                              height: 32,
-                                              child: ElevatedButton(
-                                                onPressed: () async {
-                                                  final user = FirebaseAuth
-                                                      .instance
-                                                      .currentUser;
-
-                                                  if (user == null) return;
-
-                                                  await DatabaseService.instance
-                                                      .addToCart(
-                                                        userId: user.uid,
-                                                        productId:
-                                                            product['id'],
-                                                        quantity: 1,
-                                                      );
-
-                                                  Navigator.pushNamed(
-                                                    context,
-                                                    '/checkout',
-                                                  );
-                                                },
-                                                style: ElevatedButton.styleFrom(
-                                                  backgroundColor:
-                                                      AppColors.accent,
-                                                  foregroundColor: Colors.white,
-                                                  elevation: 0,
-                                                  shape: RoundedRectangleBorder(
-                                                    borderRadius:
-                                                        BorderRadius.circular(
-                                                          8,
-                                                        ),
-                                                  ),
-                                                  padding: EdgeInsets.zero,
-                                                ),
-                                                child: const Text(
-                                                  "Buy Now",
-                                                  style: TextStyle(
-                                                    fontSize: 12,
-                                                    fontWeight: FontWeight.bold,
-                                                    fontFamily: 'ADLaMDisplay',
-                                                  ),
-                                                ),
-                                              ),
-                                            ),
-                                          ],
-                                        ),
-                                      ],
+                                Positioned(
+                                  top: 10,
+                                  left: 10,
+                                  child: Container(
+                                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                                    decoration: BoxDecoration(
+                                      color: Colors.white.withOpacity(0.9),
+                                      borderRadius: BorderRadius.circular(10),
+                                    ),
+                                    child: Text(
+                                      'Rs. ${product['price'] ?? 0}',
+                                      style: const TextStyle(
+                                        color: Colors.green,
+                                        fontWeight: FontWeight.bold,
+                                        fontSize: 12,
+                                      ),
                                     ),
                                   ),
                                 ),
                               ],
                             ),
                           ),
-                        );
-                      },
+                          Expanded(
+                            flex: 5,
+                            child: Padding(
+                              padding: const EdgeInsets.all(10.0),
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                children: [
+                                  Column(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: [
+                                      Text(
+                                        product['name'] ?? 'Product',
+                                        maxLines: 1,
+                                        overflow: TextOverflow.ellipsis,
+                                        style: TextStyle(
+                                          fontWeight: FontWeight.bold,
+                                          fontSize: 14,
+                                          color: AppColors.textPrimary,
+                                          fontFamily: 'ADLaMDisplay',
+                                        ),
+                                      ),
+                                      const SizedBox(height: 2),
+                                      Text(
+                                        "Freshly Stocked",
+                                        style: TextStyle(
+                                          fontSize: 11,
+                                          color: AppColors.textSecondary.withOpacity(0.7),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                  Column(
+                                    children: [
+                                      SizedBox(
+                                        width: double.infinity,
+                                        height: 32,
+                                        child: OutlinedButton(
+                                          onPressed: () async {
+                                            final user = FirebaseAuth.instance.currentUser;
+                                            if (user == null) {
+                                              ScaffoldMessenger.of(context).showSnackBar(
+                                                SnackBar(content: Text("Please login first")),
+                                              );
+                                              return;
+                                            }
+                                            final success = await DatabaseService.instance.addToCart(
+                                              userId: user.uid,
+                                              productId: product['id'],
+                                              quantity: 1,
+                                            );
+                                            if (success) {
+                                              ScaffoldMessenger.of(context).showSnackBar(
+                                                SnackBar(content: Text("Added to cart")),
+                                              );
+                                            }
+                                          },
+                                          style: OutlinedButton.styleFrom(
+                                            side: BorderSide(color: AppColors.accent, width: 1),
+                                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                                            padding: EdgeInsets.zero,
+                                          ),
+                                          child: Text(
+                                            "Add to Cart",
+                                            style: TextStyle(
+                                              fontSize: 12,
+                                              color: AppColors.accent,
+                                              fontFamily: 'ADLaMDisplay',
+                                            ),
+                                          ),
+                                        ),
+                                      ),
+                                      const SizedBox(height: 6),
+                                      SizedBox(
+                                        width: double.infinity,
+                                        height: 32,
+                                        child: ElevatedButton(
+                                          onPressed: () async {
+                                            final user = FirebaseAuth.instance.currentUser;
+                                            if (user == null) return;
+                                            await DatabaseService.instance.addToCart(
+                                              userId: user.uid,
+                                              productId: product['id'],
+                                              quantity: 1,
+                                            );
+                                            Navigator.pushNamed(context, '/checkout');
+                                          },
+                                          style: ElevatedButton.styleFrom(
+                                            backgroundColor: AppColors.accent,
+                                            foregroundColor: Colors.white,
+                                            elevation: 0,
+                                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                                            padding: EdgeInsets.zero,
+                                          ),
+                                          child: const Text(
+                                            "Buy Now",
+                                            style: TextStyle(
+                                              fontSize: 12,
+                                              fontWeight: FontWeight.bold,
+                                              fontFamily: 'ADLaMDisplay',
+                                            ),
+                                          ),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
                     ),
+                  );
+                },
+              ),
             ),
 
             if (isSearching && filteredProducts.isNotEmpty)
@@ -1122,18 +1036,9 @@ class _HomeScreenState extends State<HomeScreen> {
             },
             items: [
               BottomNavigationBarItem(icon: Icon(Icons.home), label: "Home"),
-              BottomNavigationBarItem(
-                icon: Icon(Icons.grid_view),
-                label: "Categories",
-              ),
-              BottomNavigationBarItem(
-                icon: Icon(Icons.shopping_cart),
-                label: "Cart",
-              ),
-              BottomNavigationBarItem(
-                icon: Icon(Icons.redeem),
-                label: "Rewards",
-              ),
+              BottomNavigationBarItem(icon: Icon(Icons.grid_view), label: "Categories"),
+              BottomNavigationBarItem(icon: Icon(Icons.shopping_cart), label: "Cart"),
+              BottomNavigationBarItem(icon: Icon(Icons.redeem), label: "Rewards"),
             ],
           ),
         ),
@@ -1142,11 +1047,11 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Widget _buildCategoryItem(
-    BuildContext context,
-    String title,
-    IconData icon,
-    String parentCategory,
-  ) {
+      BuildContext context,
+      String title,
+      IconData icon,
+      String parentCategory,
+      ) {
     return ListTile(
       contentPadding: EdgeInsets.only(left: 40),
       leading: Icon(icon, color: AppColors.accent, size: 20),
@@ -1222,7 +1127,6 @@ class _AutoBannerState extends State<AutoBanner> {
   @override
   void initState() {
     super.initState();
-    // viewportFraction: 0.85 makes the previous/next images slightly visible
     _controller = PageController(initialPage: 0, viewportFraction: 0.85);
     _startTimer();
   }
@@ -1258,7 +1162,7 @@ class _AutoBannerState extends State<AutoBanner> {
   @override
   Widget build(BuildContext context) {
     return SizedBox(
-      height: 160, // Kept exactly as requested
+      height: 160,
       width: double.infinity,
       child: Stack(
         alignment: Alignment.bottomCenter,
@@ -1269,16 +1173,11 @@ class _AutoBannerState extends State<AutoBanner> {
             onPageChanged: (v) => setState(() => _currentPage = v),
             itemCount: _images.length,
             itemBuilder: (context, i) {
-              // Active item scaling logic
               double scale = _currentPage == i ? 1.0 : 0.9;
-
               return AnimatedTransform(
                 scale: scale,
                 child: Padding(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 0,
-                    vertical: 6,
-                  ),
+                  padding: const EdgeInsets.symmetric(horizontal: 0, vertical: 6),
                   child: PhysicalModel(
                     color: Colors.transparent,
                     borderRadius: BorderRadius.circular(12),
@@ -1312,14 +1211,12 @@ class _AutoBannerState extends State<AutoBanner> {
           return AnimatedContainer(
             duration: const Duration(milliseconds: 300),
             margin: const EdgeInsets.symmetric(horizontal: 4),
-            width: isActive ? 24 : 8, // Modern elongated active dot
-            height: 4, // Slimmer profile
+            width: isActive ? 24 : 8,
+            height: 4,
             decoration: BoxDecoration(
               color: isActive ? Colors.white : Colors.white.withOpacity(0.5),
               borderRadius: BorderRadius.circular(2),
-              boxShadow: isActive
-                  ? [BoxShadow(color: Colors.black26, blurRadius: 4)]
-                  : [],
+              boxShadow: isActive ? [BoxShadow(color: Colors.black26, blurRadius: 4)] : [],
             ),
           );
         }),
@@ -1328,15 +1225,10 @@ class _AutoBannerState extends State<AutoBanner> {
   }
 }
 
-// Helper widget for smooth scaling transitions
 class AnimatedTransform extends StatelessWidget {
   final double scale;
   final Widget child;
-  const AnimatedTransform({
-    super.key,
-    required this.scale,
-    required this.child,
-  });
+  const AnimatedTransform({super.key, required this.scale, required this.child});
 
   @override
   Widget build(BuildContext context) {

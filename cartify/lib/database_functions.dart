@@ -62,70 +62,70 @@ class DatabaseService {
   }
 
   Future<Map<String, dynamic>?> validateCoupon(String code) async {
-  final doc = await FirebaseFirestore.instance
-      .collection('coupons')
-      .doc(code)
-      .get();
+    final doc = await FirebaseFirestore.instance
+        .collection('coupons')
+        .doc(code)
+        .get();
 
-  if (!doc.exists) return null;
+    if (!doc.exists) return null;
 
-  final data = doc.data()!;
+    final data = doc.data()!;
 
-  // 🔒 Check if already used
-  if (data['used'] == true) return null;
+    // 🔒 Check if already used
+    if (data['used'] == true) return null;
 
-  // ⏰ Check expiry (if exists)
-  if (data.containsKey('expiresAt')) {
-    final expiry = (data['expiresAt'] as Timestamp).toDate();
-    if (DateTime.now().isAfter(expiry)) return null;
+    // ⏰ Check expiry (if exists)
+    if (data.containsKey('expiresAt')) {
+      final expiry = (data['expiresAt'] as Timestamp).toDate();
+      if (DateTime.now().isAfter(expiry)) return null;
+    }
+
+    return {
+      'code': doc.id,
+      'discountPercent': data['discountPercent'],
+    };
   }
-
-  return {
-    'code': doc.id,
-    'discountPercent': data['discountPercent'],
-  };
-}
 
 
 //WALLET
-Future<double> getWalletBalance(String uid) async {
-  final doc = await FirebaseFirestore.instance
-      .collection('users')
-      .doc(uid)
-      .get();
+  Future<double> getWalletBalance(String uid) async {
+    final doc = await FirebaseFirestore.instance
+        .collection('users')
+        .doc(uid)
+        .get();
 
-  if (!doc.exists) return 0.0;
+    if (!doc.exists) return 0.0;
 
-  return (doc.data()?['walletBalance'] ?? 0).toDouble();
-}
+    return (doc.data()?['walletBalance'] ?? 0).toDouble();
+  }
 
-Future<void> updateWalletBalance({
-  required String uid,
-  required double newBalance,
-}) async {
-  await FirebaseFirestore.instance
-      .collection('users')
-      .doc(uid)
-      .update({
-    'walletBalance': newBalance,
-  });
-}
-
-Future<void> addToWallet({
-  required String uid,
-  required double amount,
-}) async {
-  final ref =
-      FirebaseFirestore.instance.collection('users').doc(uid);
-
-  await FirebaseFirestore.instance.runTransaction((tx) async {
-    final snapshot = await tx.get(ref);
-    final current = (snapshot.data()?['walletBalance'] ?? 0).toDouble();
-    tx.update(ref, {
-      'walletBalance': current + amount,
+  Future<void> updateWalletBalance({
+    required String uid,
+    required double newBalance,
+  }) async {
+    await FirebaseFirestore.instance
+        .collection('users')
+        .doc(uid)
+        .update({
+      'walletBalance': newBalance,
     });
-  });
-}
+  }
+
+  Future<void> addToWallet({
+    required String uid,
+    required double amount,
+  }) async {
+    final ref =
+    FirebaseFirestore.instance.collection('users').doc(uid);
+
+    await FirebaseFirestore.instance.runTransaction((tx) async {
+      final snapshot = await tx.get(ref);
+      final current = (snapshot.data()?['walletBalance'] ?? 0).toDouble();
+      tx.update(ref, {
+        'walletBalance': current + amount,
+      });
+    });
+  }
 
 
   // ============================================================================
@@ -268,6 +268,18 @@ Future<void> addToWallet({
   // CATEGORIES COLLECTION
   // ============================================================================
 
+  /// Get categories as a LIVE Stream (Updates automatically)
+  Stream<List<Map<String, dynamic>>> getCategoriesStream() {
+    return _db.collection(_categoriesCollection)
+        .orderBy('createdAt', descending: true) // Optional: keeps newest on top
+        .snapshots()
+        .map((snapshot) => snapshot.docs.map((doc) {
+      final data = doc.data();
+      data['id'] = doc.id;
+      return data;
+    }).toList());
+  }
+
   /// Add a new category
   /// Example: await DatabaseService.instance.addCategory('Men', parentCategory: null);
   Future<String?> addCategory({
@@ -284,6 +296,50 @@ Future<void> addToWallet({
     } catch (e) {
       print('Error adding category: $e');
       return null;
+    }
+  }
+
+  /// Delete category (Single Subcategory)
+  /// Example: await DatabaseService.instance.deleteCategory('cat_123');
+  Future<bool> deleteCategory(String categoryId) async {
+    try {
+      await _db.collection(_categoriesCollection).doc(categoryId).delete();
+      return true;
+    } catch (e) {
+      print('Error deleting category: $e');
+      return false;
+    }
+  }
+
+  /// ✅ NEW FUNCTION: Delete Parent Category AND its Subcategories
+  Future<bool> deleteParentCategory({
+    required String parentId,
+    required String parentTitle,
+  }) async {
+    try {
+      final batch = _db.batch();
+
+      // 1. Delete the Parent Category Document
+      final parentRef = _db.collection(_categoriesCollection).doc(parentId);
+      batch.delete(parentRef);
+
+      // 2. Find and Delete all Subcategories linked to this parent
+      // We look for categories where 'parentCategory' matches the title of the parent
+      final subCategoriesSnapshot = await _db
+          .collection(_categoriesCollection)
+          .where('parentCategory', isEqualTo: parentTitle)
+          .get();
+
+      for (var doc in subCategoriesSnapshot.docs) {
+        batch.delete(doc.reference);
+      }
+
+      // 3. Commit the batch (All or nothing)
+      await batch.commit();
+      return true;
+    } catch (e) {
+      print('Error deleting parent category and subcategories: $e');
+      return false;
     }
   }
 
@@ -306,8 +362,8 @@ Future<void> addToWallet({
   /// Get categories by parent (for nested categories)
   /// Example: List<Map<String, dynamic>> menCategories = await DatabaseService.instance.getCategoriesByParent('Men');
   Future<List<Map<String, dynamic>>> getCategoriesByParent(
-    String? parentCategory,
-  ) async {
+      String? parentCategory,
+      ) async {
     try {
       final snapshot = await _db
           .collection(_categoriesCollection)
@@ -404,8 +460,8 @@ Future<void> addToWallet({
   /// Get products by category
   /// Example: List<Map<String, dynamic>> products = await DatabaseService.instance.getProductsByCategory('cat_123');
   Future<List<Map<String, dynamic>>> getProductsByCategory(
-    String categoryId,
-  ) async {
+      String categoryId,
+      ) async {
     try {
       final snapshot = await _db
           .collection(_productsCollection)
@@ -512,11 +568,11 @@ Future<void> addToWallet({
         .snapshots()
         .map(
           (snapshot) => snapshot.docs.map((doc) {
-            final data = doc.data();
-            data['id'] = doc.id;
-            return data;
-          }).toList(),
-        );
+        final data = doc.data();
+        data['id'] = doc.id;
+        return data;
+      }).toList(),
+    );
   }
 
   /// Update cart item quantity
