@@ -19,6 +19,7 @@ import 'privacy_policy.dart';
 import 'carti_chatbot.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'customization.dart'; // ✅ NEW: Import customization page
+import 'customize_page.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();

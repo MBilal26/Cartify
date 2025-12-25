@@ -42,7 +42,7 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
     if (widget.product['categoryId'] != null) {
       final categories = await DatabaseService.instance.getCategories();
       final category = categories.firstWhere(
-        (cat) => cat['id'] == widget.product['categoryId'],
+            (cat) => cat['id'] == widget.product['categoryId'],
         orElse: () => {},
       );
 
@@ -205,49 +205,49 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
       body: isLoading
           ? Center(child: CircularProgressIndicator(color: AppColors.accent))
           : CustomScrollView(
-              physics: const BouncingScrollPhysics(),
-              slivers: [
-                _buildSliverAppBar(product),
-                SliverToBoxAdapter(
-                  child: Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 20,
-                      vertical: 24,
-                    ),
-                    decoration: BoxDecoration(
-                      color: AppColors.background,
-                      borderRadius: const BorderRadius.only(
-                        topLeft: Radius.circular(30),
-                        topRight: Radius.circular(30),
-                      ),
-                    ),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        _buildHeader(product),
-                        const SizedBox(height: 24),
-                        const Divider(),
-                        _buildSectionTitle('About this product'),
-                        const SizedBox(height: 8),
-                        _buildDescription(product),
-                        const SizedBox(height: 24),
-                        _buildSectionTitle('Select Quantity'),
-                        const SizedBox(height: 12),
-                        _buildQuantitySelector(),
-                        const SizedBox(height: 32),
-                        const Divider(),
-                        _buildSectionTitle('Ratings & Reviews'),
-                        const SizedBox(height: 16),
-                        _buildReviewStream(),
-                        const SizedBox(height: 12),
-                        _buildAddReviewButton(),
-                        const SizedBox(height: 40),
-                      ],
-                    ),
-                  ),
+        physics: const BouncingScrollPhysics(),
+        slivers: [
+          _buildSliverAppBar(product),
+          SliverToBoxAdapter(
+            child: Container(
+              padding: const EdgeInsets.symmetric(
+                horizontal: 20,
+                vertical: 24,
+              ),
+              decoration: BoxDecoration(
+                color: AppColors.background,
+                borderRadius: const BorderRadius.only(
+                  topLeft: Radius.circular(30),
+                  topRight: Radius.circular(30),
                 ),
-              ],
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  _buildHeader(product),
+                  const SizedBox(height: 24),
+                  const Divider(),
+                  _buildSectionTitle('About this product'),
+                  const SizedBox(height: 8),
+                  _buildDescription(product),
+                  const SizedBox(height: 24),
+                  _buildSectionTitle('Select Quantity'),
+                  const SizedBox(height: 12),
+                  _buildQuantitySelector(),
+                  const SizedBox(height: 32),
+                  const Divider(),
+                  _buildSectionTitle('Ratings & Reviews'),
+                  const SizedBox(height: 16),
+                  _buildReviewStream(),
+                  const SizedBox(height: 12),
+                  _buildAddReviewButton(),
+                  const SizedBox(height: 40),
+                ],
+              ),
             ),
+          ),
+        ],
+      ),
     );
   }
 
@@ -272,9 +272,9 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
           child: product['imageUrl'] != null && product['imageUrl'].isNotEmpty
               ? Image.network(product['imageUrl'], fit: BoxFit.cover)
               : Container(
-                  color: AppColors.border,
-                  child: const Icon(Icons.image, size: 80),
-                ),
+            color: AppColors.border,
+            child: const Icon(Icons.image, size: 80),
+          ),
         ),
       ),
     );
@@ -380,7 +380,7 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
             onPressed: () => setState(() {
               if (quantity > 1) quantity--;
             }),
-            icon: const Icon(
+            icon: Icon(
               Icons.remove_circle_outline,
               color: AppColors.accent,
               size: 20,
@@ -397,7 +397,7 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
           ),
           IconButton(
             onPressed: () => setState(() => quantity++),
-            icon: const Icon(
+            icon: Icon(
               Icons.add_circle_outline,
               color: AppColors.accent,
               size: 20,
@@ -417,9 +417,9 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
           .snapshots(),
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting) {
-          return const Center(
+          return Center(
             child: Padding(
-              padding: EdgeInsets.all(20.0),
+              padding: const EdgeInsets.all(20.0),
               child: CircularProgressIndicator(color: AppColors.accent),
             ),
           );
@@ -565,13 +565,13 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
 
         if (difference.inDays > 0) {
           dateStr =
-              '${difference.inDays} day${difference.inDays > 1 ? 's' : ''} ago';
+          '${difference.inDays} day${difference.inDays > 1 ? 's' : ''} ago';
         } else if (difference.inHours > 0) {
           dateStr =
-              '${difference.inHours} hour${difference.inHours > 1 ? 's' : ''} ago';
+          '${difference.inHours} hour${difference.inHours > 1 ? 's' : ''} ago';
         } else if (difference.inMinutes > 0) {
           dateStr =
-              '${difference.inMinutes} minute${difference.inMinutes > 1 ? 's' : ''} ago';
+          '${difference.inMinutes} minute${difference.inMinutes > 1 ? 's' : ''} ago';
         }
       } catch (e) {
         print('Error parsing timestamp: $e');
@@ -640,7 +640,7 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
               Row(
                 children: List.generate(
                   5,
-                  (i) => Icon(
+                      (i) => Icon(
                     Icons.star,
                     size: 16,
                     color: i < (data['rating'] ?? 0)
@@ -703,7 +703,8 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
               ),
               Text(
                 'Rs. ${(product['price'] ?? 0) * quantity}',
-                style: const TextStyle(
+                // ✅ FIXED: Removed 'const' here
+                style: TextStyle(
                   fontSize: 18,
                   fontWeight: FontWeight.bold,
                   color: AppColors.accent,
@@ -803,7 +804,7 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
       width: double.infinity,
       child: TextButton.icon(
         onPressed: _showReviewDialog,
-        icon: const Icon(Icons.rate_review, size: 18, color: AppColors.accent),
+        icon: Icon(Icons.rate_review, size: 18, color: AppColors.accent),
         label: Text(
           "Write a Review",
           style: TextStyle(
@@ -857,7 +858,7 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: List.generate(
                   5,
-                  (i) => IconButton(
+                      (i) => IconButton(
                     icon: Icon(
                       Icons.star,
                       color: i < rating ? Colors.orange : Colors.grey,

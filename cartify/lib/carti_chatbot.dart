@@ -230,7 +230,7 @@ class _CartiChatbotPageState extends State<CartiChatbotPage> {
             Container(
               padding: const EdgeInsets.all(8),
               decoration: const BoxDecoration(color: Colors.white, shape: BoxShape.circle),
-              child: const Icon(Icons.smart_toy, color: AppColors.accent, size: 24),
+              child:  Icon(Icons.smart_toy, color: AppColors.accent, size: 24),
             ),
             const SizedBox(width: 12),
             const Column(
@@ -345,7 +345,7 @@ class _CartiChatbotPageState extends State<CartiChatbotPage> {
             ),
             const SizedBox(width: 8),
             Container(
-              decoration: const BoxDecoration(color: AppColors.accent, shape: BoxShape.circle),
+              decoration:  BoxDecoration(color: AppColors.accent, shape: BoxShape.circle),
               child: IconButton(
                 icon: const Icon(Icons.send, color: Colors.white),
                 onPressed: () => _sendMessage(_messageController.text),

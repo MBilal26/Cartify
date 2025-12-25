@@ -24,6 +24,7 @@ dependencies:
   google_generative_ai: ^0.4.0
   flutter_spinkit: ^5.2.1
   flutter_dotenv: ^5.1.0
+  flutter_colorpicker: ^1.0.3
 
 dependency_overrides:
   firebase_auth_web: ^5.13.2
