@@ -12,103 +12,104 @@ class ChangeColorsPage extends StatefulWidget {
 }
 
 class _ChangeColorsPageState extends State<ChangeColorsPage> {
-  // Get page-specific color options
+  late PageColors pageColors;
+
+  @override
+  void initState() {
+    super.initState();
+    // Load current page colors
+    pageColors = AppColors.getPageColors(widget.pageName);
+  }
+
   List<Map<String, dynamic>> _getColorOptions() {
     List<Map<String, dynamic>> options = [
       {
         'title': 'AppBar Color',
-        'currentColor': AppColors.accent,
+        'currentColor': pageColors.accent ?? Color(0xFF008080),
         'onColorChanged': (Color color) {
           setState(() {
-            AppColors.customAccent = color;
+            pageColors.accent = color;
+            AppColors.notifyListeners();
           });
         },
       },
       {
         'title': 'Background Color',
-        'currentColor': AppColors.background,
+        'currentColor': pageColors.background ??
+            (AppColors.isDarkMode
+                ? Color.fromARGB(255, 28, 28, 28)
+                : Colors.white),
         'onColorChanged': (Color color) {
           setState(() {
-            AppColors.customBackground = color;
+            pageColors.background = color;
+            AppColors.notifyListeners();
           });
         },
       },
       {
         'title': 'Text Color (Primary)',
-        'currentColor': AppColors.textPrimary,
+        'currentColor': pageColors.textPrimary ??
+            (AppColors.isDarkMode ? Colors.white : Colors.black),
         'onColorChanged': (Color color) {
           setState(() {
-            AppColors.customTextPrimary = color;
+            pageColors.textPrimary = color;
+            AppColors.notifyListeners();
           });
         },
       },
       {
         'title': 'Text Color (Secondary)',
-        'currentColor': AppColors.textSecondary,
+        'currentColor': pageColors.textSecondary ??
+            (AppColors.isDarkMode
+                ? Color.fromARGB(255, 180, 180, 180)
+                : Color.fromARGB(255, 100, 100, 100)),
         'onColorChanged': (Color color) {
           setState(() {
-            AppColors.customTextSecondary = color;
+            pageColors.textSecondary = color;
+            AppColors.notifyListeners();
           });
         },
       },
       {
         'title': 'Card Color',
-        'currentColor': AppColors.card,
+        'currentColor': pageColors.card ??
+            (AppColors.isDarkMode
+                ? Color.fromARGB(255, 40, 40, 40)
+                : Color(0xFFFFFFFF)),
         'onColorChanged': (Color color) {
           setState(() {
-            AppColors.customCard = color;
+            pageColors.card = color;
+            AppColors.notifyListeners();
           });
         },
       },
       {
         'title': 'Border Color',
-        'currentColor': AppColors.border,
+        'currentColor': pageColors.border ??
+            (AppColors.isDarkMode
+                ? Color.fromARGB(255, 60, 60, 60)
+                : Color(0xFFE0E0E0)),
         'onColorChanged': (Color color) {
           setState(() {
-            AppColors.customBorder = color;
-          });
-        },
-      },
-      {
-        'title': 'Icon Color',
-        'currentColor': AppColors.accent,
-        'onColorChanged': (Color color) {
-          setState(() {
-            AppColors.customAccent = color;
+            pageColors.border = color;
+            AppColors.notifyListeners();
           });
         },
       },
     ];
 
-    // Add page-specific options
+    // Page-specific additional options
     if (widget.pageName == 'HOME') {
       options.add({
-        'title': 'Drawer Background Color',
-        'currentColor': AppColors.background,
-        'onColorChanged': (Color color) {
-          setState(() {
-            AppColors.customBackground = color;
-          });
-        },
-      });
-      options.add({
         'title': 'Bottom Nav Bar Color',
-        'currentColor': AppColors.accentBG,
+        'currentColor': pageColors.accentBG ??
+            (AppColors.isDarkMode
+                ? Color(0xFF008080)
+                : Color.fromARGB(255, 255, 255, 255)),
         'onColorChanged': (Color color) {
           setState(() {
-            AppColors.customAccentBG = color;
-          });
-        },
-      });
-    }
-
-    if (widget.pageName == 'CART' || widget.pageName == 'CHECKOUT') {
-      options.add({
-        'title': 'Button Color',
-        'currentColor': AppColors.accent,
-        'onColorChanged': (Color color) {
-          setState(() {
-            AppColors.customAccent = color;
+            pageColors.accentBG = color;
+            AppColors.notifyListeners();
           });
         },
       });
@@ -117,19 +118,38 @@ class _ChangeColorsPageState extends State<ChangeColorsPage> {
     if (widget.pageName == 'PROFILE') {
       options.add({
         'title': 'Gradient Start Color',
-        'currentColor': Color(0xFF008080),
+        'currentColor': pageColors.gradientStart ?? Color(0xFF008080),
         'onColorChanged': (Color color) {
           setState(() {
-            AppColors.customGradientStart = color;
+            pageColors.gradientStart = color;
+            AppColors.notifyListeners();
           });
         },
       });
       options.add({
         'title': 'Gradient End Color',
-        'currentColor': AppColors.background,
+        'currentColor': pageColors.gradientEnd ??
+            (AppColors.isDarkMode
+                ? Color.fromARGB(255, 28, 28, 28)
+                : Colors.white),
         'onColorChanged': (Color color) {
           setState(() {
-            AppColors.customGradientEnd = color;
+            pageColors.gradientEnd = color;
+            AppColors.notifyListeners();
+          });
+        },
+      });
+    }
+
+    // ✅ ADDED: Specific option for Admin Tabs
+    if (widget.pageName == 'ADMIN') {
+      options.add({
+        'title': 'Tab Indicator/Text Color',
+        'currentColor': pageColors.accentBG ?? Colors.white,
+        'onColorChanged': (Color color) {
+          setState(() {
+            pageColors.accentBG = color;
+            AppColors.notifyListeners();
           });
         },
       });
@@ -150,14 +170,14 @@ class _ChangeColorsPageState extends State<ChangeColorsPage> {
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
-          backgroundColor: AppColors.card,
+          backgroundColor: AppColors.getCardForPage(widget.pageName),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(20),
           ),
           title: Text(
             'Pick $title',
             style: TextStyle(
-              color: AppColors.textPrimary,
+              color: AppColors.getTextPrimaryForPage(widget.pageName),
               fontFamily: 'IrishGrover',
               fontSize: 20,
             ),
@@ -166,7 +186,6 @@ class _ChangeColorsPageState extends State<ChangeColorsPage> {
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                // Color Wheel Picker
                 ColorPicker(
                   pickerColor: pickerColor,
                   onColorChanged: (Color color) {
@@ -178,14 +197,16 @@ class _ChangeColorsPageState extends State<ChangeColorsPage> {
                   labelTypes: [],
                 ),
                 SizedBox(height: 16),
-                // Color preview
                 Container(
                   width: double.infinity,
                   height: 50,
                   decoration: BoxDecoration(
                     color: pickerColor,
                     borderRadius: BorderRadius.circular(12),
-                    border: Border.all(color: AppColors.border, width: 2),
+                    border: Border.all(
+                      color: AppColors.getBorderForPage(widget.pageName),
+                      width: 2,
+                    ),
                   ),
                   child: Center(
                     child: Text(
@@ -209,7 +230,7 @@ class _ChangeColorsPageState extends State<ChangeColorsPage> {
               child: Text(
                 'Cancel',
                 style: TextStyle(
-                  color: AppColors.textPrimary,
+                  color: AppColors.getTextPrimaryForPage(widget.pageName),
                   fontFamily: 'ADLaMDisplay',
                   fontSize: 16,
                 ),
@@ -217,7 +238,7 @@ class _ChangeColorsPageState extends State<ChangeColorsPage> {
             ),
             ElevatedButton(
               style: ElevatedButton.styleFrom(
-                backgroundColor: AppColors.accent,
+                backgroundColor: AppColors.getAccentForPage(widget.pageName),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(12),
                 ),
@@ -248,17 +269,21 @@ class _ChangeColorsPageState extends State<ChangeColorsPage> {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        backgroundColor: AppColors.card,
+        backgroundColor: AppColors.getCardForPage(widget.pageName),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
         title: Row(
           children: [
-            Icon(Icons.restore, color: AppColors.accent, size: 28),
+            Icon(
+              Icons.restore,
+              color: AppColors.getAccentForPage(widget.pageName),
+              size: 28,
+            ),
             SizedBox(width: 12),
             Expanded(
               child: Text(
                 'Reset to Default',
                 style: TextStyle(
-                  color: AppColors.textPrimary,
+                  color: AppColors.getTextPrimaryForPage(widget.pageName),
                   fontFamily: 'IrishGrover',
                   fontSize: 18,
                 ),
@@ -267,9 +292,9 @@ class _ChangeColorsPageState extends State<ChangeColorsPage> {
           ],
         ),
         content: Text(
-          'Are you sure you want to reset all colors to their default values?',
+          'Reset all colors for ${widget.pageName} to their default values?',
           style: TextStyle(
-            color: AppColors.textSecondary,
+            color: AppColors.getTextSecondaryForPage(widget.pageName),
             fontFamily: 'ADLaMDisplay',
             fontSize: 14,
           ),
@@ -280,24 +305,26 @@ class _ChangeColorsPageState extends State<ChangeColorsPage> {
             child: Text(
               'Cancel',
               style: TextStyle(
-                color: AppColors.textPrimary,
+                color: AppColors.getTextPrimaryForPage(widget.pageName),
                 fontFamily: 'ADLaMDisplay',
               ),
             ),
           ),
           ElevatedButton(
             style: ElevatedButton.styleFrom(
-              backgroundColor: AppColors.accent,
+              backgroundColor: AppColors.getAccentForPage(widget.pageName),
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(12),
               ),
             ),
             onPressed: () {
               setState(() {
-                AppColors.resetToDefaults();
+                AppColors.resetPageColors(widget.pageName);
+                AppColors.notifyListeners();
+                pageColors = AppColors.getPageColors(widget.pageName);
               });
               Navigator.pop(context);
-              _showSuccessSnackBar('All colors reset to default!');
+              _showSuccessSnackBar('Colors reset to default for ${widget.pageName}!');
             },
             child: Text(
               'Reset',
@@ -343,9 +370,9 @@ class _ChangeColorsPageState extends State<ChangeColorsPage> {
     final colorOptions = _getColorOptions();
 
     return Scaffold(
-      backgroundColor: AppColors.background,
+      backgroundColor: AppColors.getBackgroundForPage(widget.pageName),
       appBar: AppBar(
-        backgroundColor: AppColors.accent,
+        backgroundColor: AppColors.getAccentForPage(widget.pageName),
         leading: IconButton(
           icon: Icon(Icons.arrow_back, color: Colors.white),
           onPressed: () => Navigator.pop(context),
@@ -367,16 +394,41 @@ class _ChangeColorsPageState extends State<ChangeColorsPage> {
           Container(
             width: double.infinity,
             padding: EdgeInsets.symmetric(vertical: 24),
-            color: AppColors.background,
+            color: AppColors.getBackgroundForPage(widget.pageName),
             child: Center(
-              child: Text(
-                widget.pageName,
-                style: TextStyle(
-                  fontSize: 32,
-                  fontWeight: FontWeight.bold,
-                  color: AppColors.textPrimary,
-                  fontFamily: 'IrishGrover',
-                ),
+              child: Column(
+                children: [
+                  Text(
+                    widget.pageName,
+                    style: TextStyle(
+                      fontSize: 32,
+                      fontWeight: FontWeight.bold,
+                      color: AppColors.getTextPrimaryForPage(widget.pageName),
+                      fontFamily: 'IrishGrover',
+                    ),
+                  ),
+                  SizedBox(height: 8),
+                  Container(
+                    padding: EdgeInsets.symmetric(horizontal: 16, vertical: 6),
+                    decoration: BoxDecoration(
+                      color: AppColors.getAccentForPage(widget.pageName)
+                          .withOpacity(0.1),
+                      borderRadius: BorderRadius.circular(20),
+                      border: Border.all(
+                        color: AppColors.getAccentForPage(widget.pageName),
+                      ),
+                    ),
+                    child: Text(
+                      'Colors for this page only',
+                      style: TextStyle(
+                        fontSize: 12,
+                        color: AppColors.getAccentForPage(widget.pageName),
+                        fontFamily: 'ADLaMDisplay',
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ),
+                ],
               ),
             ),
           ),
@@ -407,7 +459,10 @@ class _ChangeColorsPageState extends State<ChangeColorsPage> {
             padding: EdgeInsets.all(16),
             child: Column(
               children: [
-                Divider(color: AppColors.border, thickness: 1),
+                Divider(
+                  color: AppColors.getBorderForPage(widget.pageName),
+                  thickness: 1,
+                ),
                 SizedBox(height: 12),
                 SizedBox(
                   width: double.infinity,
@@ -435,9 +490,9 @@ class _ChangeColorsPageState extends State<ChangeColorsPage> {
                 ),
                 SizedBox(height: 8),
                 Text(
-                  'This will reset all colors to their original values',
+                  'Reset colors for ${widget.pageName} only',
                   style: TextStyle(
-                    color: AppColors.textSecondary,
+                    color: AppColors.getTextSecondaryForPage(widget.pageName),
                     fontSize: 12,
                     fontFamily: 'ADLaMDisplay',
                   ),
@@ -459,9 +514,9 @@ class _ChangeColorsPageState extends State<ChangeColorsPage> {
     return Container(
       margin: EdgeInsets.only(bottom: 12),
       decoration: BoxDecoration(
-        color: AppColors.card,
+        color: AppColors.getCardForPage(widget.pageName),
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: AppColors.border),
+        border: Border.all(color: AppColors.getBorderForPage(widget.pageName)),
         boxShadow: [
           BoxShadow(
             color: Colors.black.withOpacity(0.05),
@@ -478,7 +533,10 @@ class _ChangeColorsPageState extends State<ChangeColorsPage> {
           decoration: BoxDecoration(
             color: currentColor,
             borderRadius: BorderRadius.circular(8),
-            border: Border.all(color: AppColors.border, width: 2),
+            border: Border.all(
+              color: AppColors.getBorderForPage(widget.pageName),
+              width: 2,
+            ),
             boxShadow: [
               BoxShadow(
                 color: Colors.black.withOpacity(0.1),
@@ -493,7 +551,7 @@ class _ChangeColorsPageState extends State<ChangeColorsPage> {
           style: TextStyle(
             fontSize: 16,
             fontWeight: FontWeight.w600,
-            color: AppColors.textPrimary,
+            color: AppColors.getTextPrimaryForPage(widget.pageName),
             fontFamily: 'ADLaMDisplay',
           ),
         ),
@@ -501,13 +559,13 @@ class _ChangeColorsPageState extends State<ChangeColorsPage> {
           '#${currentColor.value.toRadixString(16).substring(2).toUpperCase()}',
           style: TextStyle(
             fontSize: 12,
-            color: AppColors.textSecondary,
+            color: AppColors.getTextSecondaryForPage(widget.pageName),
             fontFamily: 'ADLaMDisplay',
           ),
         ),
         trailing: Icon(
           Icons.color_lens,
-          color: AppColors.accent,
+          color: AppColors.getAccentForPage(widget.pageName),
         ),
       ),
     );

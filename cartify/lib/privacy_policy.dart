@@ -2,18 +2,21 @@ import 'package:flutter/material.dart';
 import 'colors.dart';
 
 class PrivacyPolicyPage extends StatelessWidget {
+  // ✅ CONSTANT: Page ID for Colors
+  final String pageId = 'PRIVACY POLICY';
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppColors.background,
+      backgroundColor: AppColors.getBackgroundForPage(pageId), // ✅ UPDATED
       appBar: AppBar(
         title: Text(
           'Privacy Policy',
-          style: TextStyle(color: AppColors.textPrimary),
+          style: TextStyle(color: Colors.white),
         ),
-        backgroundColor: AppColors.background,
+        backgroundColor: AppColors.getAccentForPage(pageId), // ✅ UPDATED
         elevation: 0,
-        iconTheme: IconThemeData(color: AppColors.textPrimary),
+        iconTheme: IconThemeData(color: Colors.white), // Kept white for contrast
       ),
       body: SingleChildScrollView(
         padding: EdgeInsets.all(24.0),
@@ -25,15 +28,15 @@ class PrivacyPolicyPage extends StatelessWidget {
               style: TextStyle(
                 fontSize: 24,
                 fontWeight: FontWeight.bold,
-                color: AppColors.textPrimary,
+                color: AppColors.getTextPrimaryForPage(pageId), // ✅ UPDATED
               ),
             ),
             SizedBox(height: 8),
             Text(
               'Effective Date: December 2023',
-              style: TextStyle(color: AppColors.textSecondary),
+              style: TextStyle(color: AppColors.getTextSecondaryForPage(pageId)), // ✅ UPDATED
             ),
-            Divider(height: 40, color: AppColors.border),
+            Divider(height: 40, color: AppColors.getBorderForPage(pageId)), // ✅ UPDATED
 
             _policySection(
               '1. Data Collection',
@@ -59,13 +62,13 @@ class PrivacyPolicyPage extends StatelessWidget {
             Container(
               padding: EdgeInsets.all(16),
               decoration: BoxDecoration(
-                color: AppColors.accent.withOpacity(0.05),
+                color: AppColors.getAccentForPage(pageId).withOpacity(0.05), // ✅ UPDATED
                 borderRadius: BorderRadius.circular(10),
               ),
               child: Text(
                 'Contact us at support@cartify.com if you have any questions regarding your data privacy.',
                 style: TextStyle(
-                  color: AppColors.textaccent,
+                  color: AppColors.getAccentForPage(pageId), // ✅ UPDATED
                   fontWeight: FontWeight.w500,
                 ),
               ),
@@ -88,7 +91,7 @@ class PrivacyPolicyPage extends StatelessWidget {
             style: TextStyle(
               fontSize: 18,
               fontWeight: FontWeight.bold,
-              color: AppColors.textaccent, // Using your Teal Accent
+              color: AppColors.getAccentForPage(pageId), // ✅ UPDATED
             ),
           ),
           SizedBox(height: 10),
@@ -96,7 +99,7 @@ class PrivacyPolicyPage extends StatelessWidget {
             body,
             style: TextStyle(
               fontSize: 15,
-              color: AppColors.textSecondary,
+              color: AppColors.getTextSecondaryForPage(pageId), // ✅ UPDATED
               height: 1.5,
             ),
           ),

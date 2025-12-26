@@ -32,63 +32,69 @@ class MainApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      debugShowCheckedModeBanner: false,
-      initialRoute: '/',
-      onGenerateRoute: (settings) {
-        switch (settings.name) {
-          case '/':
-            return MaterialPageRoute(builder: (_) => SplashScreen());
-          case '/home':
-            return PageRouteBuilder(
-              pageBuilder: (_, __, ___) => HomeScreen(),
-              transitionDuration: Duration(milliseconds: 900),
-              transitionsBuilder: (_, animation, __, child) {
-                return FadeTransition(opacity: animation, child: child);
-              },
-            );
-          case '/login':
-            return MaterialPageRoute(builder: (_) => LoginScreen());
-          case '/signup':
-            return MaterialPageRoute(builder: (_) => SignUpScreen());
-          case '/profile':
-            return MaterialPageRoute(builder: (_) => ProfilePage());
-          case '/category':
-            return MaterialPageRoute(builder: (_) => CategoriesPage());
-          case '/products':
-            return MaterialPageRoute(builder: (_) => ProductsListPage());
-          case '/product_detail':
-            final product = settings.arguments as Map<String, dynamic>;
-            return MaterialPageRoute(
-              builder: (_) => ProductDetailPage(product: product),
-            );
-          case '/cart':
-            return MaterialPageRoute(builder: (_) => CartPage());
-          case '/rewards':
-            return MaterialPageRoute(builder: (_) => RewardsPage());
-          case '/checkout':
-            return MaterialPageRoute(builder: (_) => CheckoutPage());
-          case '/admin':
-            return MaterialPageRoute(builder: (_) => AdminPanelPage());
-          case '/customization':
-            return MaterialPageRoute(builder: (_) => CustomizationPage());
-          case '/about_us':
-            return MaterialPageRoute(builder: (_) => AboutUsPage());
-          case '/privacy_policy':
-            return MaterialPageRoute(builder: (_) => PrivacyPolicyPage());
-          case '/carti':
-            return MaterialPageRoute(builder: (_) => CartiChatbotPage());
-          case '/category_products':
-            final args = settings.arguments as Map<String, dynamic>;
-            return MaterialPageRoute(
-              builder: (_) => CategoryProductsPage(
-                categoryId: args['categoryId'],
-                categoryName: args['categoryName'],
-                parentCategory: args['parentCategory'],
-              ),
-            );
-        }
-        return null;
+    // ✅ WRAPPED with ValueListenableBuilder for global color updates
+    return ValueListenableBuilder(
+      valueListenable: AppColors.colorNotifier,
+      builder: (context, value, child) {
+        return MaterialApp(
+          debugShowCheckedModeBanner: false,
+          initialRoute: '/',
+          onGenerateRoute: (settings) {
+            switch (settings.name) {
+              case '/':
+                return MaterialPageRoute(builder: (_) => SplashScreen());
+              case '/home':
+                return PageRouteBuilder(
+                  pageBuilder: (_, __, ___) => HomeScreen(),
+                  transitionDuration: Duration(milliseconds: 900),
+                  transitionsBuilder: (_, animation, __, child) {
+                    return FadeTransition(opacity: animation, child: child);
+                  },
+                );
+              case '/login':
+                return MaterialPageRoute(builder: (_) => LoginScreen());
+              case '/signup':
+                return MaterialPageRoute(builder: (_) => SignUpScreen());
+              case '/profile':
+                return MaterialPageRoute(builder: (_) => ProfilePage());
+              case '/category':
+                return MaterialPageRoute(builder: (_) => CategoriesPage());
+              case '/products':
+                return MaterialPageRoute(builder: (_) => ProductsListPage());
+              case '/product_detail':
+                final product = settings.arguments as Map<String, dynamic>;
+                return MaterialPageRoute(
+                  builder: (_) => ProductDetailPage(product: product),
+                );
+              case '/cart':
+                return MaterialPageRoute(builder: (_) => CartPage());
+              case '/rewards':
+                return MaterialPageRoute(builder: (_) => RewardsPage());
+              case '/checkout':
+                return MaterialPageRoute(builder: (_) => CheckoutPage());
+              case '/admin':
+                return MaterialPageRoute(builder: (_) => AdminPanelPage());
+              case '/customization':
+                return MaterialPageRoute(builder: (_) => CustomizationPage());
+              case '/about_us':
+                return MaterialPageRoute(builder: (_) => AboutUsPage());
+              case '/privacy_policy':
+                return MaterialPageRoute(builder: (_) => PrivacyPolicyPage());
+              case '/carti':
+                return MaterialPageRoute(builder: (_) => CartiChatbotPage());
+              case '/category_products':
+                final args = settings.arguments as Map<String, dynamic>;
+                return MaterialPageRoute(
+                  builder: (_) => CategoryProductsPage(
+                    categoryId: args['categoryId'],
+                    categoryName: args['categoryName'],
+                    parentCategory: args['parentCategory'],
+                  ),
+                );
+            }
+            return null;
+          },
+        );
       },
     );
   }
@@ -111,6 +117,9 @@ class _HomeScreenState extends State<HomeScreen> {
 
   final TextEditingController _searchController = TextEditingController();
   bool isSearching = false;
+
+  // ✅ PAGE ID for color lookups
+  final String pageId = 'HOME';
 
   @override
   void initState() {
@@ -235,14 +244,14 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppColors.background,
+      backgroundColor: AppColors.getBackgroundForPage(pageId), // ✅ UPDATED
       drawer: Drawer(
-        backgroundColor: AppColors.background,
+        backgroundColor: AppColors.getBackgroundForPage(pageId), // ✅ UPDATED
         child: ListView(
           padding: EdgeInsets.zero,
           children: [
             DrawerHeader(
-              decoration: BoxDecoration(color: AppColors.accent),
+              decoration: BoxDecoration(color: AppColors.getAccentForPage(pageId)), // ✅ UPDATED
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.center,
                 mainAxisAlignment: MainAxisAlignment.center,
@@ -285,14 +294,14 @@ class _HomeScreenState extends State<HomeScreen> {
             ListTile(
               leading: Icon(
                 Icons.shopping_bag_outlined,
-                color: AppColors.accent,
+                color: AppColors.getAccentForPage(pageId), // ✅ UPDATED
               ),
               title: Text(
                 'Products',
                 style: TextStyle(
                   fontFamily: 'ADLaMDisplay',
                   fontSize: 16,
-                  color: AppColors.textPrimary,
+                  color: AppColors.getTextPrimaryForPage(pageId), // ✅ UPDATED
                 ),
               ),
               onTap: () {
@@ -304,15 +313,15 @@ class _HomeScreenState extends State<HomeScreen> {
             ExpansionTile(
               leading: Icon(
                 Icons.dashboard_customize_outlined,
-                color: AppColors.accent,
+                color: AppColors.getAccentForPage(pageId), // ✅ UPDATED
               ),
-              collapsedIconColor: AppColors.textPrimary,
+              collapsedIconColor: AppColors.getTextPrimaryForPage(pageId), // ✅ UPDATED
               title: Text(
                 'Categories',
                 style: TextStyle(
                   fontFamily: 'ADLaMDisplay',
                   fontSize: 16,
-                  color: AppColors.textPrimary,
+                  color: AppColors.getTextPrimaryForPage(pageId), // ✅ UPDATED
                 ),
               ),
               children: [
@@ -324,7 +333,7 @@ class _HomeScreenState extends State<HomeScreen> {
                         padding: EdgeInsets.all(16),
                         child: Center(
                           child: CircularProgressIndicator(
-                            color: AppColors.accent,
+                            color: AppColors.getAccentForPage(pageId), // ✅ UPDATED
                             strokeWidth: 2,
                           ),
                         ),
@@ -339,7 +348,7 @@ class _HomeScreenState extends State<HomeScreen> {
                           style: TextStyle(
                             fontFamily: 'ADLaMDisplay',
                             fontSize: 14,
-                            color: AppColors.textSecondary,
+                            color: AppColors.getTextSecondaryForPage(pageId), // ✅ UPDATED
                           ),
                         ),
                       );
@@ -364,15 +373,15 @@ class _HomeScreenState extends State<HomeScreen> {
                                 : parentTitle == 'Women'
                                 ? Icons.woman_outlined
                                 : Icons.child_care, // Default/Kids icon
-                            color: AppColors.accent,
+                            color: AppColors.getAccentForPage(pageId), // ✅ UPDATED
                           ),
-                          collapsedIconColor: AppColors.textPrimary,
+                          collapsedIconColor: AppColors.getTextPrimaryForPage(pageId), // ✅ UPDATED
                           title: Text(
                             parentTitle,
                             style: TextStyle(
                               fontFamily: 'ADLaMDisplay',
                               fontSize: 15,
-                              color: AppColors.textPrimary,
+                              color: AppColors.getTextPrimaryForPage(pageId), // ✅ UPDATED
                             ),
                           ),
                           children: subcategories.map((subCat) {
@@ -395,14 +404,14 @@ class _HomeScreenState extends State<HomeScreen> {
             ListTile(
               leading: Icon(
                 AppColors.isDarkMode ? Icons.dark_mode : Icons.light_mode,
-                color: AppColors.accent,
+                color: AppColors.getAccentForPage(pageId), // ✅ UPDATED
               ),
               title: Text(
                 'Dark Mode',
                 style: TextStyle(
                   fontFamily: 'ADLaMDisplay',
                   fontSize: 16,
-                  color: AppColors.textPrimary,
+                  color: AppColors.getTextPrimaryForPage(pageId), // ✅ UPDATED
                 ),
               ),
               trailing: Switch(
@@ -412,7 +421,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     AppColors.toggleTheme();
                   });
                 },
-                activeColor: AppColors.accent,
+                activeColor: AppColors.getAccentForPage(pageId), // ✅ UPDATED
               ),
             ),
             Divider(),
@@ -421,17 +430,17 @@ class _HomeScreenState extends State<HomeScreen> {
               leading: Container(
                 padding: EdgeInsets.all(6),
                 decoration: BoxDecoration(
-                  color: AppColors.accent.withOpacity(0.1),
+                  color: AppColors.getAccentForPage(pageId).withOpacity(0.1), // ✅ UPDATED
                   borderRadius: BorderRadius.circular(8),
                 ),
-                child: Icon(Icons.smart_toy, color: AppColors.accent),
+                child: Icon(Icons.smart_toy, color: AppColors.getAccentForPage(pageId)), // ✅ UPDATED
               ),
               title: Text(
                 'Cartify AI Assistant',
                 style: TextStyle(
                   fontFamily: 'ADLaMDisplay',
                   fontSize: 16,
-                  color: AppColors.textPrimary,
+                  color: AppColors.getTextPrimaryForPage(pageId), // ✅ UPDATED
                   fontWeight: FontWeight.w600,
                 ),
               ),
@@ -440,7 +449,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 style: TextStyle(
                   fontFamily: 'ADLaMDisplay',
                   fontSize: 12,
-                  color: AppColors.textSecondary,
+                  color: AppColors.getTextSecondaryForPage(pageId), // ✅ UPDATED
                 ),
               ),
               onTap: () {
@@ -451,13 +460,13 @@ class _HomeScreenState extends State<HomeScreen> {
             Divider(),
 
             ListTile(
-              leading: Icon(Icons.storefront_outlined, color: AppColors.accent),
+              leading: Icon(Icons.storefront_outlined, color: AppColors.getAccentForPage(pageId)), // ✅ UPDATED
               title: Text(
                 'About Us',
                 style: TextStyle(
                   fontFamily: 'ADLaMDisplay',
                   fontSize: 16,
-                  color: AppColors.textPrimary,
+                  color: AppColors.getTextPrimaryForPage(pageId), // ✅ UPDATED
                 ),
               ),
               onTap: () {
@@ -467,13 +476,13 @@ class _HomeScreenState extends State<HomeScreen> {
             ),
 
             ListTile(
-              leading: Icon(Icons.gpp_maybe_outlined, color: AppColors.accent),
+              leading: Icon(Icons.gpp_maybe_outlined, color: AppColors.getAccentForPage(pageId)), // ✅ UPDATED
               title: Text(
                 'Privacy Policy',
                 style: TextStyle(
                   fontFamily: 'ADLaMDisplay',
                   fontSize: 16,
-                  color: AppColors.textPrimary,
+                  color: AppColors.getTextPrimaryForPage(pageId), // ✅ UPDATED
                 ),
               ),
               onTap: () {
@@ -487,14 +496,14 @@ class _HomeScreenState extends State<HomeScreen> {
               ListTile(
                 leading: Icon(
                   Icons.admin_panel_settings_outlined,
-                  color: AppColors.accent,
+                  color: AppColors.getAccentForPage(pageId), // ✅ UPDATED
                 ),
                 title: Text(
                   'Admin Panel',
                   style: TextStyle(
                     fontFamily: 'ADLaMDisplay',
                     fontSize: 16,
-                    color: AppColors.textPrimary,
+                    color: AppColors.getTextPrimaryForPage(pageId), // ✅ UPDATED
                     fontWeight: FontWeight.bold,
                   ),
                 ),
@@ -508,14 +517,14 @@ class _HomeScreenState extends State<HomeScreen> {
               ListTile(
                 leading: Icon(
                   Icons.palette,
-                  color: AppColors.accent,
+                  color: AppColors.getAccentForPage(pageId), // ✅ UPDATED
                 ),
                 title: Text(
                   'Customize',
                   style: TextStyle(
                     fontFamily: 'ADLaMDisplay',
                     fontSize: 16,
-                    color: AppColors.textPrimary,
+                    color: AppColors.getTextPrimaryForPage(pageId), // ✅ UPDATED
                     fontWeight: FontWeight.bold,
                   ),
                 ),
@@ -529,12 +538,11 @@ class _HomeScreenState extends State<HomeScreen> {
       ),
       appBar: AppBar(
         elevation: 2,
-        flexibleSpace: Container(
-          decoration: BoxDecoration(gradient: AppGradients.splashBackground),
-        ),
+        backgroundColor: AppColors.getAccentForPage(pageId), // ✅ UPDATED
+        // REMOVE the flexibleSpace gradient completely
         leading: Builder(
           builder: (context) => IconButton(
-            icon: Icon(Icons.menu, color: AppColors.secondary),
+            icon: Icon(Icons.menu, color: Colors.white), // CHANGED: White icon
             onPressed: () {
               Scaffold.of(context).openDrawer();
             },
@@ -546,7 +554,7 @@ class _HomeScreenState extends State<HomeScreen> {
             Image.asset(
               AppColors.isDarkMode
                   ? 'assets/images/white-logo.png'
-                  : 'assets/images/black-logo.png',
+                  : 'assets/images/white-logo.png', // CHANGED: Always white logo
               height: 40,
             ),
             Text(
@@ -555,7 +563,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 fontFamily: 'IrishGrover',
                 fontSize: 20,
                 fontWeight: FontWeight.bold,
-                color: AppColors.textPrimary,
+                color: Colors.white, // CHANGED: White text
               ),
             ),
           ],
@@ -565,7 +573,7 @@ class _HomeScreenState extends State<HomeScreen> {
           Padding(
             padding: const EdgeInsets.only(right: 10),
             child: IconButton(
-              icon: Icon(Icons.person_2_outlined, color: AppColors.secondary),
+              icon: Icon(Icons.person_2_outlined, color: Colors.white), // CHANGED: White icon
               onPressed: () {
                 final user = FirebaseAuth.instance.currentUser;
                 if (user == null) {
@@ -587,9 +595,9 @@ class _HomeScreenState extends State<HomeScreen> {
               child: Container(
                 padding: EdgeInsets.symmetric(horizontal: 16),
                 decoration: BoxDecoration(
-                  color: AppColors.card,
+                  color: AppColors.getCardForPage(pageId), // ✅ UPDATED
                   borderRadius: BorderRadius.circular(25),
-                  border: Border.all(color: AppColors.border),
+                  border: Border.all(color: AppColors.getBorderForPage(pageId)), // ✅ UPDATED
                 ),
                 child: Row(
                   children: [
@@ -600,26 +608,26 @@ class _HomeScreenState extends State<HomeScreen> {
                         decoration: InputDecoration(
                           hintText: "Search products...",
                           hintStyle: TextStyle(
-                            color: AppColors.textSecondary,
+                            color: AppColors.getTextSecondaryForPage(pageId), // ✅ UPDATED
                             fontFamily: 'ADLaMDisplay',
                           ),
                           border: InputBorder.none,
                         ),
                         style: TextStyle(
-                          color: AppColors.textPrimary,
+                          color: AppColors.getTextPrimaryForPage(pageId), // ✅ UPDATED
                           fontFamily: 'ADLaMDisplay',
                         ),
                       ),
                     ),
                     if (_searchController.text.isNotEmpty)
                       IconButton(
-                        icon: Icon(Icons.clear, color: AppColors.textSecondary),
+                        icon: Icon(Icons.clear, color: AppColors.getTextSecondaryForPage(pageId)), // ✅ UPDATED
                         onPressed: () {
                           _searchController.clear();
                           _searchProducts('');
                         },
                       ),
-                    Icon(Icons.search, color: AppColors.accent),
+                    Icon(Icons.search, color: AppColors.getAccentForPage(pageId)), // ✅ UPDATED
                   ],
                 ),
               ),
@@ -632,13 +640,13 @@ class _HomeScreenState extends State<HomeScreen> {
               Container(
                 width: double.infinity,
                 padding: EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-                color: AppColors.card,
+                color: AppColors.getCardForPage(pageId), // ✅ UPDATED
                 child: Text(
                   "Categories",
                   style: TextStyle(
                     fontWeight: FontWeight.bold,
                     fontSize: 16,
-                    color: AppColors.textPrimary,
+                    color: AppColors.getTextPrimaryForPage(pageId), // ✅ UPDATED
                     fontFamily: 'IrishGrover',
                   ),
                 ),
@@ -704,7 +712,7 @@ class _HomeScreenState extends State<HomeScreen> {
             Container(
               width: double.infinity,
               padding: EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-              color: AppColors.card,
+              color: AppColors.getCardForPage(pageId), // ✅ UPDATED
               child: Text(
                 isSearching
                     ? "Search Results (${filteredProducts.length})"
@@ -712,7 +720,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 style: TextStyle(
                   fontWeight: FontWeight.bold,
                   fontSize: 16,
-                  color: AppColors.textPrimary,
+                  color: AppColors.getTextPrimaryForPage(pageId), // ✅ UPDATED
                   fontFamily: 'IrishGrover',
                 ),
               ),
@@ -725,12 +733,12 @@ class _HomeScreenState extends State<HomeScreen> {
                 child: Column(
                   children: [
                     SizedBox(height: 40),
-                    CircularProgressIndicator(color: AppColors.accent),
+                    CircularProgressIndicator(color: AppColors.getAccentForPage(pageId)), // ✅ UPDATED
                     SizedBox(height: 16),
                     Text(
                       'Loading products...',
                       style: TextStyle(
-                        color: AppColors.textSecondary,
+                        color: AppColors.getTextSecondaryForPage(pageId), // ✅ UPDATED
                         fontFamily: 'ADLaMDisplay',
                       ),
                     ),
@@ -750,7 +758,7 @@ class _HomeScreenState extends State<HomeScreen> {
                           : 'No products available',
                       style: TextStyle(
                         fontSize: 16,
-                        color: AppColors.textPrimary,
+                        color: AppColors.getTextPrimaryForPage(pageId), // ✅ UPDATED
                         fontFamily: 'IrishGrover',
                       ),
                     ),
@@ -772,7 +780,7 @@ class _HomeScreenState extends State<HomeScreen> {
                           _searchProducts('');
                         },
                         style: ElevatedButton.styleFrom(
-                          backgroundColor: AppColors.accent,
+                          backgroundColor: AppColors.getAccentForPage(pageId), // ✅ UPDATED
                         ),
                         child: Text(
                           'Clear Search',
@@ -812,11 +820,11 @@ class _HomeScreenState extends State<HomeScreen> {
                     onPressed: () {
                       Navigator.pushNamed(context, '/products');
                     },
-                    icon: Icon(Icons.grid_view, color: AppColors.accent),
+                    icon: Icon(Icons.grid_view, color: AppColors.getAccentForPage(pageId)), // ✅ UPDATED
                     label: Text(
                       'View All Products',
                       style: TextStyle(
-                        color: AppColors.accent,
+                        color: AppColors.getAccentForPage(pageId), // ✅ UPDATED
                         fontFamily: 'ADLaMDisplay',
                         fontWeight: FontWeight.bold,
                       ),
@@ -829,7 +837,7 @@ class _HomeScreenState extends State<HomeScreen> {
       ),
       bottomNavigationBar: Container(
         decoration: BoxDecoration(
-          color: AppColors.accent,
+          color: AppColors.getAccentForPage(pageId), // ✅ UPDATED
           borderRadius: BorderRadius.vertical(top: Radius.circular(25)),
           boxShadow: [
             BoxShadow(color: Colors.black26, spreadRadius: 1, blurRadius: 10),
@@ -838,12 +846,12 @@ class _HomeScreenState extends State<HomeScreen> {
         child: ClipRRect(
           borderRadius: BorderRadius.vertical(top: Radius.circular(15)),
           child: BottomNavigationBar(
-            backgroundColor: AppColors.accentBG,
+            backgroundColor: AppColors.getAccentBGForPage(pageId), // ✅ UPDATED
             currentIndex: _currentIndex,
             showUnselectedLabels: false,
             showSelectedLabels: true,
-            selectedItemColor: AppColors.secondary,
-            unselectedItemColor: AppColors.textSecondary,
+            selectedItemColor: AppColors.getTextPrimaryForPage(pageId), // ✅ UPDATED
+            unselectedItemColor: AppColors.getTextSecondaryForPage(pageId), // ✅ UPDATED
             type: BottomNavigationBarType.fixed,
             selectedLabelStyle: TextStyle(fontFamily: 'ADLaMDisplay'),
             unselectedLabelStyle: TextStyle(fontFamily: 'ADLaMDisplay'),
@@ -883,12 +891,12 @@ class _HomeScreenState extends State<HomeScreen> {
       ) {
     return ListTile(
       contentPadding: EdgeInsets.only(left: 40),
-      leading: Icon(icon, color: AppColors.accent, size: 20),
+      leading: Icon(icon, color: AppColors.getAccentForPage(pageId), size: 20), // ✅ UPDATED
       title: Text(
         title,
         style: TextStyle(
           fontFamily: 'ADLaMDisplay',
-          color: AppColors.textPrimary,
+          color: AppColors.getTextPrimaryForPage(pageId), // ✅ UPDATED
           fontSize: 14,
         ),
       ),
@@ -913,7 +921,7 @@ class _HomeScreenState extends State<HomeScreen> {
       },
       child: Container(
         decoration: BoxDecoration(
-          color: AppColors.card,
+          color: AppColors.getCardForPage(pageId), // ✅ UPDATED
           borderRadius: BorderRadius.circular(20),
           boxShadow: [
             BoxShadow(
@@ -933,7 +941,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   Container(
                     width: double.infinity,
                     decoration: BoxDecoration(
-                      color: AppColors.border.withOpacity(0.2),
+                      color: AppColors.getBorderForPage(pageId).withOpacity(0.2), // ✅ UPDATED
                       borderRadius: const BorderRadius.vertical(
                         top: Radius.circular(20),
                       ),
@@ -996,7 +1004,7 @@ class _HomeScreenState extends State<HomeScreen> {
                           style: TextStyle(
                             fontWeight: FontWeight.bold,
                             fontSize: 14,
-                            color: AppColors.textPrimary,
+                            color: AppColors.getTextPrimaryForPage(pageId), // ✅ UPDATED
                             fontFamily: 'ADLaMDisplay',
                           ),
                         ),
@@ -1005,7 +1013,7 @@ class _HomeScreenState extends State<HomeScreen> {
                           "Freshly Stocked",
                           style: TextStyle(
                             fontSize: 11,
-                            color: AppColors.textSecondary.withOpacity(0.7),
+                            color: AppColors.getTextSecondaryForPage(pageId).withOpacity(0.7), // ✅ UPDATED
                           ),
                         ),
                       ],
@@ -1038,7 +1046,7 @@ class _HomeScreenState extends State<HomeScreen> {
                             },
                             style: OutlinedButton.styleFrom(
                               side: BorderSide(
-                                  color: AppColors.accent, width: 1),
+                                  color: AppColors.getAccentForPage(pageId), width: 1), // ✅ UPDATED
                               shape: RoundedRectangleBorder(
                                   borderRadius: BorderRadius.circular(8)),
                               padding: EdgeInsets.zero,
@@ -1047,7 +1055,7 @@ class _HomeScreenState extends State<HomeScreen> {
                               "Add to Cart",
                               style: TextStyle(
                                 fontSize: 12,
-                                color: AppColors.accent,
+                                color: AppColors.getAccentForPage(pageId), // ✅ UPDATED
                                 fontFamily: 'ADLaMDisplay',
                               ),
                             ),
@@ -1069,7 +1077,7 @@ class _HomeScreenState extends State<HomeScreen> {
                               Navigator.pushNamed(context, '/checkout');
                             },
                             style: ElevatedButton.styleFrom(
-                              backgroundColor: AppColors.accent,
+                              backgroundColor: AppColors.getAccentForPage(pageId), // ✅ UPDATED
                               foregroundColor: Colors.white,
                               elevation: 0,
                               shape: RoundedRectangleBorder(

@@ -13,6 +13,9 @@ class CategoriesPage extends StatefulWidget {
 class _CategoriesPageState extends State<CategoriesPage> {
   bool isAdmin = false;
 
+  // ✅ CONSTANT for this page colors
+  final String pageId = 'CATEGORIES';
+
   @override
   void initState() {
     super.initState();
@@ -22,9 +25,9 @@ class _CategoriesPageState extends State<CategoriesPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppColors.background,
+      backgroundColor: AppColors.getBackgroundForPage(pageId),
       appBar: AppBar(
-        backgroundColor: AppColors.accent,
+        backgroundColor: AppColors.getAccentForPage(pageId),
         title: Text(
           'Categories',
           style: TextStyle(
@@ -37,13 +40,13 @@ class _CategoriesPageState extends State<CategoriesPage> {
         iconTheme: IconThemeData(color: Colors.white),
       ),
 
-      // UPDATED: Changed FutureBuilder to StreamBuilder for live updates
       body: StreamBuilder<List<Map<String, dynamic>>>(
         stream: DatabaseService.instance.getCategoriesStream(),
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
             return Center(
-              child: CircularProgressIndicator(color: AppColors.accent),
+              child: CircularProgressIndicator(
+                  color: AppColors.getAccentForPage(pageId)),
             );
           }
 
@@ -51,7 +54,8 @@ class _CategoriesPageState extends State<CategoriesPage> {
             return Center(
               child: Text(
                 'Error loading categories: ${snapshot.error}',
-                style: TextStyle(color: AppColors.textPrimary),
+                style: TextStyle(
+                    color: AppColors.getTextPrimaryForPage(pageId)),
               ),
             );
           }
@@ -72,7 +76,8 @@ class _CategoriesPageState extends State<CategoriesPage> {
                   SizedBox(height: 16),
                   Text(
                     'No categories found',
-                    style: TextStyle(color: AppColors.textPrimary),
+                    style: TextStyle(
+                        color: AppColors.getTextPrimaryForPage(pageId)),
                   ),
                   SizedBox(height: 8),
                   Text(
@@ -111,7 +116,7 @@ class _CategoriesPageState extends State<CategoriesPage> {
       floatingActionButton: isAdmin
           ? FloatingActionButton.extended(
         onPressed: () => _showAddCategoryDialog(),
-        backgroundColor: AppColors.accent,
+        backgroundColor: AppColors.getAccentForPage(pageId),
         icon: Icon(Icons.add, color: Colors.white),
         label: Text(
           'Add Category',
@@ -147,7 +152,7 @@ class _CategoriesPageState extends State<CategoriesPage> {
               style: TextStyle(
                 fontSize: 20,
                 fontWeight: FontWeight.bold,
-                color: AppColors.textPrimary,
+                color: AppColors.getTextPrimaryForPage(pageId),
                 fontFamily: 'IrishGrover',
               ),
             ),
@@ -172,9 +177,10 @@ class _CategoriesPageState extends State<CategoriesPage> {
           child: Container(
             padding: EdgeInsets.all(16),
             decoration: BoxDecoration(
-              color: AppColors.card,
+              color: AppColors.getCardForPage(pageId),
               borderRadius: BorderRadius.circular(12),
-              border: Border.all(color: AppColors.border),
+              border: Border.all(
+                  color: AppColors.getBorderForPage(pageId)),
             ),
             child: Row(
               children: [
@@ -189,7 +195,7 @@ class _CategoriesPageState extends State<CategoriesPage> {
                 IconButton(
                   icon: Icon(
                     Icons.add_circle_outline,
-                    color: AppColors.accent,
+                    color: AppColors.getAccentForPage(pageId),
                   ),
                   onPressed: () =>
                       _showAddCategoryDialog(parentCategory: title),
@@ -227,7 +233,7 @@ class _CategoriesPageState extends State<CategoriesPage> {
               },
               child: Container(
                 decoration: BoxDecoration(
-                  color: AppColors.card,
+                  color: AppColors.getCardForPage(pageId),
                   borderRadius: BorderRadius.circular(12),
                   boxShadow: const [
                     BoxShadow(
@@ -244,7 +250,7 @@ class _CategoriesPageState extends State<CategoriesPage> {
                     Icon(
                       _getCategoryIcon(subcategory['title']),
                       size: 40,
-                      color: AppColors.accent,
+                      color: AppColors.getAccentForPage(pageId),
                     ),
                     SizedBox(height: 8),
                     Text(
@@ -253,7 +259,8 @@ class _CategoriesPageState extends State<CategoriesPage> {
                       style: TextStyle(
                         fontWeight: FontWeight.bold,
                         fontSize: 14,
-                        color: AppColors.textPrimary,
+                        color: AppColors.getTextPrimaryForPage(
+                            pageId),
                       ),
                     ),
                     if (isAdmin)
@@ -297,23 +304,29 @@ class _CategoriesPageState extends State<CategoriesPage> {
       context: context,
       builder: (context) => StatefulBuilder(
         builder: (context, setDialogState) => AlertDialog(
-          backgroundColor: AppColors.card,
+          backgroundColor: AppColors.getCardForPage(pageId),
           title: Text(
             'Add Category',
-            style: TextStyle(color: AppColors.textPrimary),
+            style: TextStyle(
+                color: AppColors.getTextPrimaryForPage(pageId)),
           ),
           content: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
               TextField(
                 controller: titleController,
-                style: TextStyle(color: AppColors.textPrimary),
+                style: TextStyle(
+                    color: AppColors.getTextPrimaryForPage(pageId)),
                 decoration: InputDecoration(
                   labelText: 'Category Name',
-                  labelStyle: TextStyle(color: AppColors.textSecondary),
+                  labelStyle: TextStyle(
+                      color: AppColors.getTextSecondaryForPage(
+                          pageId)),
                   border: OutlineInputBorder(),
                   hintText: 'e.g., Men, Shirts, etc.',
-                  hintStyle: TextStyle(color: AppColors.textSecondary),
+                  hintStyle: TextStyle(
+                      color: AppColors.getTextSecondaryForPage(
+                          pageId)),
                 ),
               ),
               SizedBox(height: 16),
@@ -327,19 +340,21 @@ class _CategoriesPageState extends State<CategoriesPage> {
                           isParent = value ?? true;
                         });
                       },
-                      activeColor: AppColors.accent,
+                      activeColor:
+                      AppColors.getAccentForPage(pageId),
                     ),
                     Expanded(
                       child: Text(
                         'This is a parent category (e.g., Men, Women)',
-                        style: TextStyle(color: AppColors.textPrimary),
+                        style: TextStyle(
+                            color: AppColors.getTextPrimaryForPage(
+                                pageId)),
                       ),
                     ),
                   ],
                 ),
                 if (!isParent) ...[
                   SizedBox(height: 12),
-                  // UPDATED: Used StreamBuilder for dropdown too so it's always fresh
                   StreamBuilder<List<Map<String, dynamic>>>(
                     stream: DatabaseService.instance.getCategoriesStream(),
                     builder: (context, snapshot) {
@@ -351,11 +366,16 @@ class _CategoriesPageState extends State<CategoriesPage> {
                       return DropdownButtonFormField<String>(
                         decoration: InputDecoration(
                           labelText: 'Parent Category',
-                          labelStyle: TextStyle(color: AppColors.textSecondary),
+                          labelStyle: TextStyle(
+                              color: AppColors.getTextSecondaryForPage(
+                                  pageId)),
                           border: OutlineInputBorder(),
                         ),
-                        dropdownColor: AppColors.card,
-                        style: TextStyle(color: AppColors.textPrimary),
+                        dropdownColor:
+                        AppColors.getCardForPage(pageId),
+                        style: TextStyle(
+                            color: AppColors.getTextPrimaryForPage(
+                                pageId)),
                         items: parents.map((cat) {
                           return DropdownMenuItem<String>(
                             value: cat['title'],
@@ -377,12 +397,14 @@ class _CategoriesPageState extends State<CategoriesPage> {
               onPressed: () => Navigator.pop(context),
               child: Text(
                 'Cancel',
-                style: TextStyle(color: AppColors.textPrimary),
+                style: TextStyle(
+                    color: AppColors.getTextPrimaryForPage(pageId)),
               ),
             ),
             ElevatedButton(
               style: ElevatedButton.styleFrom(
-                backgroundColor: AppColors.accent,
+                backgroundColor:
+                AppColors.getAccentForPage(pageId),
               ),
               onPressed: () async {
                 if (titleController.text.isNotEmpty) {
@@ -400,7 +422,6 @@ class _CategoriesPageState extends State<CategoriesPage> {
                         backgroundColor: AppColors.success,
                       ),
                     );
-                    // No need to setState - StreamBuilder updates automatically
                   } else {
                     ScaffoldMessenger.of(context).showSnackBar(
                       SnackBar(
@@ -430,7 +451,7 @@ class _CategoriesPageState extends State<CategoriesPage> {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        backgroundColor: AppColors.card,
+        backgroundColor: AppColors.getCardForPage(pageId),
         title: Row(
           children: [
             Icon(Icons.warning, color: Colors.red, size: 24),
@@ -438,7 +459,7 @@ class _CategoriesPageState extends State<CategoriesPage> {
             Text(
               'Delete Category',
               style: TextStyle(
-                color: AppColors.textPrimary,
+                color: AppColors.getTextPrimaryForPage(pageId),
                 fontFamily: 'IrishGrover',
               ),
             ),
@@ -447,7 +468,7 @@ class _CategoriesPageState extends State<CategoriesPage> {
         content: Text(
           'Are you sure you want to delete "$categoryTitle"? This action cannot be undone.',
           style: TextStyle(
-            color: AppColors.textPrimary,
+            color: AppColors.getTextPrimaryForPage(pageId),
             fontFamily: 'ADLaMDisplay',
           ),
         ),
@@ -456,7 +477,8 @@ class _CategoriesPageState extends State<CategoriesPage> {
             onPressed: () => Navigator.pop(context),
             child: Text(
               'Cancel',
-              style: TextStyle(color: AppColors.textPrimary),
+              style: TextStyle(
+                  color: AppColors.getTextPrimaryForPage(pageId)),
             ),
           ),
           ElevatedButton(
@@ -475,7 +497,6 @@ class _CategoriesPageState extends State<CategoriesPage> {
                   ),
                 );
               }
-              // No need to setState - StreamBuilder updates automatically
             },
             child: Text(
               'Delete',
@@ -492,7 +513,7 @@ class _CategoriesPageState extends State<CategoriesPage> {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        backgroundColor: AppColors.card,
+        backgroundColor: AppColors.getCardForPage(pageId),
         title: Row(
           children: [
             Icon(Icons.warning_amber_rounded, color: Colors.red, size: 28),
@@ -501,7 +522,7 @@ class _CategoriesPageState extends State<CategoriesPage> {
               child: Text(
                 'Delete "$parentTitle"?',
                 style: TextStyle(
-                  color: AppColors.textPrimary,
+                  color: AppColors.getTextPrimaryForPage(pageId),
                   fontFamily: 'IrishGrover',
                   fontSize: 18,
                 ),
@@ -515,13 +536,13 @@ class _CategoriesPageState extends State<CategoriesPage> {
           children: [
             Text(
               'This will delete the parent category and:',
-              style: TextStyle(color: AppColors.textPrimary),
+              style: TextStyle(
+                  color: AppColors.getTextPrimaryForPage(pageId)),
             ),
             SizedBox(height: 8),
             Text(
               '• ${subcategories.length} Subcategories inside it.',
-              style: TextStyle(
-                  color: Colors.red, fontWeight: FontWeight.bold),
+              style: TextStyle(color: Colors.red, fontWeight: FontWeight.bold),
             ),
             SizedBox(height: 8),
             Text(
@@ -535,7 +556,8 @@ class _CategoriesPageState extends State<CategoriesPage> {
             onPressed: () => Navigator.pop(context),
             child: Text(
               'Cancel',
-              style: TextStyle(color: AppColors.textPrimary),
+              style: TextStyle(
+                  color: AppColors.getTextPrimaryForPage(pageId)),
             ),
           ),
           ElevatedButton(
@@ -557,7 +579,6 @@ class _CategoriesPageState extends State<CategoriesPage> {
                   ),
                 );
               }
-              // No need to setState - StreamBuilder updates automatically
             },
             child: Text(
               'Delete All',
@@ -570,7 +591,6 @@ class _CategoriesPageState extends State<CategoriesPage> {
   }
 }
 
-// Keep your CategoryProductsPage exactly as it was
 class CategoryProductsPage extends StatefulWidget {
   final String categoryId;
   final String categoryName;
@@ -590,6 +610,9 @@ class CategoryProductsPage extends StatefulWidget {
 class _CategoryProductsPageState extends State<CategoryProductsPage> {
   List<Map<String, dynamic>> products = [];
   bool isLoading = true;
+
+  // ✅ CONSTANT: Use 'PRODUCTS' so it matches the Products page customization
+  final String pageId = 'PRODUCTS';
 
   @override
   void initState() {
@@ -616,30 +639,33 @@ class _CategoryProductsPageState extends State<CategoryProductsPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppColors.background,
+      backgroundColor: AppColors.getBackgroundForPage(pageId),
       appBar: AppBar(
-        backgroundColor: AppColors.background,
+        // ✅ FIXED: Changed to getAccentForPage so the AppBar color changes correctly
+        backgroundColor: AppColors.getAccentForPage(pageId),
         title: Column(
           children: [
             Text(
               widget.categoryName,
               style: TextStyle(
-                color: AppColors.textPrimary,
+                color: Colors.white, // Standard white text for colored AppBars
                 fontFamily: 'IrishGrover',
                 fontSize: 20,
               ),
             ),
             Text(
               widget.parentCategory,
-              style: TextStyle(color: AppColors.textSecondary, fontSize: 12),
+              style: TextStyle(color: Colors.white70, fontSize: 12),
             ),
           ],
         ),
         centerTitle: true,
-        iconTheme: IconThemeData(color: AppColors.textPrimary),
+        iconTheme: IconThemeData(color: Colors.white),
       ),
       body: isLoading
-          ? Center(child: CircularProgressIndicator(color: AppColors.accent))
+          ? Center(
+          child: CircularProgressIndicator(
+              color: AppColors.getAccentForPage(pageId)))
           : products.isEmpty
           ? Center(
         child: Column(
@@ -655,7 +681,8 @@ class _CategoryProductsPageState extends State<CategoryProductsPage> {
               'No products in this category',
               style: TextStyle(
                 fontSize: 16,
-                color: AppColors.textPrimary,
+                color: AppColors.getTextPrimaryForPage(
+                    pageId),
               ),
             ),
             SizedBox(height: 8),
@@ -690,7 +717,7 @@ class _CategoryProductsPageState extends State<CategoryProductsPage> {
       },
       child: Container(
         decoration: BoxDecoration(
-          color: AppColors.card,
+          color: AppColors.getCardForPage(pageId),
           borderRadius: BorderRadius.circular(12),
           boxShadow: const [
             BoxShadow(
@@ -707,7 +734,7 @@ class _CategoryProductsPageState extends State<CategoryProductsPage> {
               child: Container(
                 width: double.infinity,
                 decoration: BoxDecoration(
-                  color: AppColors.border,
+                  color: AppColors.getBorderForPage(pageId),
                   borderRadius: const BorderRadius.vertical(
                     top: Radius.circular(12),
                   ),
@@ -749,7 +776,8 @@ class _CategoryProductsPageState extends State<CategoryProductsPage> {
                     style: TextStyle(
                       fontWeight: FontWeight.bold,
                       fontSize: 14,
-                      color: AppColors.textPrimary,
+                      color: AppColors.getTextPrimaryForPage(
+                          pageId),
                     ),
                   ),
                   const SizedBox(height: 4),
@@ -767,7 +795,8 @@ class _CategoryProductsPageState extends State<CategoryProductsPage> {
                     height: 36,
                     child: ElevatedButton(
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: AppColors.accent,
+                        backgroundColor:
+                        AppColors.getAccentForPage(pageId),
                         padding: EdgeInsets.zero,
                       ),
                       onPressed: () async {

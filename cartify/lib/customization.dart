@@ -9,9 +9,9 @@ class CustomizationPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppColors.background,
+      backgroundColor: AppColors.getBackgroundForPage('HOME'),
       appBar: AppBar(
-        backgroundColor: AppColors.accent,
+        backgroundColor: AppColors.getAccentForPage('HOME'),
         title: Text(
           'Customization Panel',
           style: TextStyle(
@@ -34,6 +34,12 @@ class CustomizationPage extends StatelessWidget {
           ),
           _buildPageTile(
             context,
+            icon: Icons.shopping_bag,
+            title: 'PRODUCTS',
+            pageName: 'PRODUCTS',
+          ),
+          _buildPageTile(
+            context,
             icon: Icons.person,
             title: 'PROFILE',
             pageName: 'PROFILE',
@@ -52,15 +58,33 @@ class CustomizationPage extends StatelessWidget {
           ),
           _buildPageTile(
             context,
+            icon: Icons.smart_toy,
+            title: 'CHATBOT',
+            pageName: 'CHATBOT',
+          ),
+          _buildPageTile(
+            context,
             icon: Icons.card_giftcard,
             title: 'REWARDS',
             pageName: 'REWARDS',
           ),
           _buildPageTile(
             context,
-            icon: Icons.shopping_bag,
+            icon: Icons.credit_card,
             title: 'CHECKOUT',
             pageName: 'CHECKOUT',
+          ),
+          _buildPageTile(
+            context,
+            icon: Icons.admin_panel_settings,
+            title: 'ADMIN',
+            pageName: 'ADMIN',
+          ),
+          _buildPageTile(
+            context,
+            icon: Icons.login,
+            title: 'LOGIN / SIGNUP', // ✅ ADDED
+            pageName: 'LOGIN',
           ),
           _buildPageTile(
             context,
@@ -88,22 +112,23 @@ class CustomizationPage extends StatelessWidget {
     return Container(
       margin: EdgeInsets.only(bottom: 12),
       decoration: BoxDecoration(
-        color: AppColors.card,
+        color: AppColors.getCardForPage('HOME'),
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: AppColors.border),
+        border: Border.all(color: AppColors.getBorderForPage('HOME')),
       ),
       child: ListTile(
-        leading: Icon(icon, color: AppColors.accent),
+        leading: Icon(icon, color: AppColors.getAccentForPage('HOME')),
         title: Text(
           title,
           style: TextStyle(
             fontSize: 16,
             fontWeight: FontWeight.w600,
-            color: AppColors.textPrimary,
+            color: AppColors.getTextPrimaryForPage('HOME'),
             fontFamily: 'ADLaMDisplay',
           ),
         ),
-        trailing: Icon(Icons.chevron_right, color: AppColors.textSecondary),
+        trailing: Icon(Icons.chevron_right,
+            color: AppColors.getTextSecondaryForPage('HOME')),
         onTap: () {
           Navigator.push(
             context,

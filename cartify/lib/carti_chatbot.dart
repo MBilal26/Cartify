@@ -23,6 +23,9 @@ class _CartiChatbotPageState extends State<CartiChatbotPage> {
 
   final String apiKey = dotenv.env['GROQ_API_KEY'] ?? '';
 
+  // ✅ CONSTANT: Page ID for Colors
+  final String pageId = 'CHATBOT';
+
   @override
   void initState() {
     super.initState();
@@ -56,7 +59,8 @@ class _CartiChatbotPageState extends State<CartiChatbotPage> {
     if (mounted) {
       setState(() {
         _messages.add(ChatMessage(
-          text: "Hi $userName! 👋 I'm Carti, your shopping assistant. How can I help you today?",
+          text:
+          "Hi $userName! 👋 I'm Carti, your shopping assistant. How can I help you today?",
           isUser: false,
           timestamp: DateTime.now(),
         ));
@@ -71,18 +75,22 @@ class _CartiChatbotPageState extends State<CartiChatbotPage> {
       final products = await DatabaseService.instance.getAllProducts();
 
       // Build detailed context
-      String context = "You are Carti, a friendly shopping assistant for Cartify app.\n\n";
+      String context =
+          "You are Carti, a friendly shopping assistant for Cartify app.\n\n";
       context += "AVAILABLE CATEGORIES (${categories.length} total):\n";
 
       for (var category in categories) {
-        context += "- ${category['title']} (Parent: ${category['parentCategory'] ?? 'None'})\n";
+        context +=
+        "- ${category['title']} (Parent: ${category['parentCategory'] ?? 'None'})\n";
       }
 
       context += "\nAVAILABLE PRODUCTS (${products.length} total):\n";
 
-      for (var product in products.take(20)) { // Limit to first 20 to avoid token limits
+      for (var product in products.take(20)) {
+        // Limit to first 20 to avoid token limits
         context += "- ${product['name']} - Rs.${product['price']} ";
-        context += "(Category: ${product['categoryId']}, Gender: ${product['gender'] ?? 'N/A'})\n";
+        context +=
+        "(Category: ${product['categoryId']}, Gender: ${product['gender'] ?? 'N/A'})\n";
       }
 
       if (products.length > 20) {
@@ -130,7 +138,8 @@ class _CartiChatbotPageState extends State<CartiChatbotPage> {
           'Authorization': 'Bearer $apiKey',
         },
         body: jsonEncode({
-          'model': 'llama-3.3-70b-versatile', // Active Groq model (recommended)
+          'model':
+          'llama-3.3-70b-versatile', // Active Groq model (recommended)
           'messages': [
             {
               'role': 'system',
@@ -166,8 +175,10 @@ class _CartiChatbotPageState extends State<CartiChatbotPage> {
         String errorMsg = "API Error ${response.statusCode}\n\n";
         try {
           final errorData = jsonDecode(response.body);
-          errorMsg += "Error Type: ${errorData['error']?['type'] ?? 'Unknown'}\n";
-          errorMsg += "Message: ${errorData['error']?['message'] ?? response.body}\n";
+          errorMsg +=
+          "Error Type: ${errorData['error']?['type'] ?? 'Unknown'}\n";
+          errorMsg +=
+          "Message: ${errorData['error']?['message'] ?? response.body}\n";
           errorMsg += "Code: ${errorData['error']?['code'] ?? 'N/A'}";
         } catch (e) {
           errorMsg += "Raw Response: ${response.body}";
@@ -179,7 +190,8 @@ class _CartiChatbotPageState extends State<CartiChatbotPage> {
       if (mounted) {
         setState(() {
           _messages.add(ChatMessage(
-            text: "❌ ERROR DETAILS:\n\n$e\n\n💡 Possible fixes:\n• Check your Groq API key\n• Verify internet connection\n• Try again in a moment",
+            text:
+            "❌ ERROR DETAILS:\n\n$e\n\n💡 Possible fixes:\n• Check your Groq API key\n• Verify internet connection\n• Try again in a moment",
             isUser: false,
             timestamp: DateTime.now(),
           ));
@@ -206,12 +218,21 @@ class _CartiChatbotPageState extends State<CartiChatbotPage> {
       padding: const EdgeInsets.only(right: 8),
       child: OutlinedButton.icon(
         onPressed: () => _sendMessage(text),
-        icon: Icon(icon, size: 16, color: AppColors.accent),
-        label: Text(text, style: TextStyle(color: AppColors.accent, fontSize: 12, fontFamily: 'ADLaMDisplay')),
+        icon: Icon(icon, size: 16, color: AppColors.getAccentForPage(pageId)), // ✅ UPDATED
+        label: Text(
+          text,
+          style: TextStyle(
+            color: AppColors.getAccentForPage(pageId), // ✅ UPDATED
+            fontSize: 12,
+            fontFamily: 'ADLaMDisplay',
+          ),
+        ),
         style: OutlinedButton.styleFrom(
           padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-          side: BorderSide(color: AppColors.accent),
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+          side: BorderSide(color: AppColors.getAccentForPage(pageId)), // ✅ UPDATED
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(20),
+          ),
         ),
       ),
     );
@@ -220,22 +241,40 @@ class _CartiChatbotPageState extends State<CartiChatbotPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppColors.background,
+      backgroundColor: AppColors.getBackgroundForPage(pageId), // ✅ UPDATED
       appBar: AppBar(
-        backgroundColor: AppColors.accent,
+        backgroundColor: AppColors.getAccentForPage(pageId), // ✅ UPDATED
         title: Row(
           children: [
             Container(
               padding: const EdgeInsets.all(8),
-              decoration: const BoxDecoration(color: Colors.white, shape: BoxShape.circle),
-              child:  Icon(Icons.smart_toy, color: AppColors.accent, size: 24),
+              decoration: const BoxDecoration(
+                color: Colors.white,
+                shape: BoxShape.circle,
+              ),
+              child: Icon(Icons.smart_toy,
+                  color: AppColors.getAccentForPage(pageId), size: 24), // ✅ UPDATED
             ),
             const SizedBox(width: 12),
             const Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text('Carti AI', style: TextStyle(color: Colors.white, fontFamily: 'IrishGrover', fontSize: 20)),
-                Text('Your Shopping Assistant', style: TextStyle(color: Colors.white70, fontSize: 11, fontFamily: 'ADLaMDisplay')),
+                Text(
+                  'Carti AI',
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontFamily: 'IrishGrover',
+                    fontSize: 20,
+                  ),
+                ),
+                Text(
+                  'Your Shopping Assistant',
+                  style: TextStyle(
+                    color: Colors.white70,
+                    fontSize: 11,
+                    fontFamily: 'ADLaMDisplay',
+                  ),
+                ),
               ],
             ),
           ],
@@ -247,11 +286,21 @@ class _CartiChatbotPageState extends State<CartiChatbotPage> {
           if (_messages.length <= 1)
             Container(
               padding: const EdgeInsets.all(12),
-              decoration: BoxDecoration(color: AppColors.card, border: Border(bottom: BorderSide(color: AppColors.border))),
+              decoration: BoxDecoration(
+                color: AppColors.getCardForPage(pageId), // ✅ UPDATED
+                border: Border(bottom: BorderSide(color: AppColors.getBorderForPage(pageId))), // ✅ UPDATED
+              ),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Text('Quick questions:', style: TextStyle(fontSize: 12, color: Colors.grey, fontFamily: 'ADLaMDisplay')),
+                  Text(
+                    'Quick questions:',
+                    style: TextStyle(
+                      fontSize: 12,
+                      color: AppColors.getTextSecondaryForPage(pageId), // ✅ UPDATED
+                      fontFamily: 'ADLaMDisplay',
+                    ),
+                  ),
                   const SizedBox(height: 8),
                   SingleChildScrollView(
                     scrollDirection: Axis.horizontal,
@@ -271,7 +320,8 @@ class _CartiChatbotPageState extends State<CartiChatbotPage> {
               controller: _scrollController,
               padding: const EdgeInsets.all(16),
               itemCount: _messages.length,
-              itemBuilder: (context, index) => _buildMessageBubble(_messages[index]),
+              itemBuilder: (context, index) =>
+                  _buildMessageBubble(_messages[index]),
             ),
           ),
           if (_isTyping) _buildTypingIndicator(),
@@ -288,7 +338,10 @@ class _CartiChatbotPageState extends State<CartiChatbotPage> {
         children: [
           Container(
             padding: const EdgeInsets.all(12),
-            decoration: BoxDecoration(color: AppColors.card, borderRadius: BorderRadius.circular(20)),
+            decoration: BoxDecoration(
+              color: AppColors.getCardForPage(pageId), // ✅ UPDATED
+              borderRadius: BorderRadius.circular(20),
+            ),
             child: Row(
               mainAxisSize: MainAxisSize.min,
               children: List.generate(3, (i) => _buildTypingDot(i)),
@@ -305,19 +358,28 @@ class _CartiChatbotPageState extends State<CartiChatbotPage> {
       duration: const Duration(milliseconds: 600),
       builder: (context, value, child) {
         return Container(
-          width: 8, height: 8,
+          width: 8,
+          height: 8,
           margin: const EdgeInsets.symmetric(horizontal: 2),
-          decoration: BoxDecoration(color: AppColors.accent.withOpacity(0.3 + (0.7 * ((value + index * 0.3) % 1.0))), shape: BoxShape.circle),
+          decoration: BoxDecoration(
+            color: AppColors.getAccentForPage(pageId).withOpacity(0.3 + (0.7 * ((value + index * 0.3) % 1.0))), // ✅ UPDATED
+            shape: BoxShape.circle,
+          ),
         );
       },
-      onEnd: () { if (mounted) setState(() {}); },
+      onEnd: () {
+        if (mounted) setState(() {});
+      },
     );
   }
 
   Widget _buildMessageInputArea() {
     return Container(
       padding: const EdgeInsets.all(12),
-      decoration: BoxDecoration(color: AppColors.card, border: Border(top: BorderSide(color: AppColors.border))),
+      decoration: BoxDecoration(
+        color: AppColors.getCardForPage(pageId), // ✅ UPDATED
+        border: Border(top: BorderSide(color: AppColors.getBorderForPage(pageId))), // ✅ UPDATED
+      ),
       child: SafeArea(
         child: Row(
           children: [
@@ -325,16 +387,19 @@ class _CartiChatbotPageState extends State<CartiChatbotPage> {
               child: Container(
                 padding: const EdgeInsets.symmetric(horizontal: 16),
                 decoration: BoxDecoration(
-                  color: Colors.black, // Changed to black
+                  color: Colors.black, // Kept black per previous design choice
                   borderRadius: BorderRadius.circular(24),
-                  border: Border.all(color: AppColors.border),
+                  border: Border.all(color: AppColors.getBorderForPage(pageId)), // ✅ UPDATED
                 ),
                 child: TextField(
                   controller: _messageController,
-                  style: TextStyle(color: Colors.white, fontFamily: 'ADLaMDisplay'), // White text for visibility
+                  style: TextStyle(
+                    color: Colors.white, // Kept white per previous design choice
+                    fontFamily: 'ADLaMDisplay',
+                  ),
                   decoration: InputDecoration(
                     hintText: 'Ask Carti anything...',
-                    hintStyle: TextStyle(color: Colors.white.withOpacity(0.5)), // Semi-transparent white hint
+                    hintStyle: TextStyle(color: Colors.white.withOpacity(0.5)),
                     border: InputBorder.none,
                   ),
                   onSubmitted: _sendMessage,
@@ -343,7 +408,10 @@ class _CartiChatbotPageState extends State<CartiChatbotPage> {
             ),
             const SizedBox(width: 8),
             Container(
-              decoration:  BoxDecoration(color: AppColors.accent, shape: BoxShape.circle),
+              decoration: BoxDecoration(
+                color: AppColors.getAccentForPage(pageId), // ✅ UPDATED
+                shape: BoxShape.circle,
+              ),
               child: IconButton(
                 icon: const Icon(Icons.send, color: Colors.white),
                 onPressed: () => _sendMessage(_messageController.text),
@@ -361,20 +429,29 @@ class _CartiChatbotPageState extends State<CartiChatbotPage> {
       child: Container(
         margin: const EdgeInsets.only(bottom: 12),
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-        constraints: BoxConstraints(maxWidth: MediaQuery.of(context).size.width * 0.75),
+        constraints: BoxConstraints(
+            maxWidth: MediaQuery.of(context).size.width * 0.75),
         decoration: BoxDecoration(
-          color: message.isUser ? AppColors.accent : AppColors.card,
+          color: message.isUser
+              ? AppColors.getAccentForPage(pageId) // ✅ UPDATED
+              : AppColors.getCardForPage(pageId), // ✅ UPDATED
           borderRadius: BorderRadius.only(
             topLeft: const Radius.circular(20),
             topRight: const Radius.circular(20),
-            bottomLeft: message.isUser ? const Radius.circular(20) : const Radius.circular(4),
-            bottomRight: message.isUser ? const Radius.circular(4) : const Radius.circular(20),
+            bottomLeft: message.isUser
+                ? const Radius.circular(20)
+                : const Radius.circular(4),
+            bottomRight: message.isUser
+                ? const Radius.circular(4)
+                : const Radius.circular(20),
           ),
         ),
         child: Text(
           message.text,
           style: TextStyle(
-            color: message.isUser ? Colors.white : AppColors.textPrimary,
+            color: message.isUser
+                ? Colors.white
+                : AppColors.getTextPrimaryForPage(pageId), // ✅ UPDATED
             fontFamily: 'ADLaMDisplay',
           ),
         ),
@@ -387,5 +464,6 @@ class ChatMessage {
   final String text;
   final bool isUser;
   final DateTime timestamp;
-  ChatMessage({required this.text, required this.isUser, required this.timestamp});
+  ChatMessage(
+      {required this.text, required this.isUser, required this.timestamp});
 }

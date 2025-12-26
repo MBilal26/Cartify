@@ -24,6 +24,9 @@ class _ProductsListPageState extends State<ProductsListPage> {
   bool isLoading = true;
   String searchQuery = '';
 
+  // ✅ CONSTANT: Page ID for Colors
+  final String pageId = 'PRODUCTS';
+
   @override
   void initState() {
     super.initState();
@@ -73,20 +76,16 @@ class _ProductsListPageState extends State<ProductsListPage> {
       // Step 4: Sort products
       if (sortBy == 'A->Z') {
         tempProducts.sort((a, b) =>
-            (a['name'] ?? '').toString().compareTo((b['name'] ?? '').toString())
-        );
+            (a['name'] ?? '').toString().compareTo((b['name'] ?? '').toString()));
       } else if (sortBy == 'Z->A') {
         tempProducts.sort((a, b) =>
-            (b['name'] ?? '').toString().compareTo((a['name'] ?? '').toString())
-        );
+            (b['name'] ?? '').toString().compareTo((a['name'] ?? '').toString()));
       } else if (sortBy == 'Low to High') {
-        tempProducts.sort((a, b) =>
-            (a['price'] ?? 0).compareTo(b['price'] ?? 0)
-        );
+        tempProducts.sort(
+                (a, b) => (a['price'] ?? 0).compareTo(b['price'] ?? 0));
       } else if (sortBy == 'High to Low') {
-        tempProducts.sort((a, b) =>
-            (b['price'] ?? 0).compareTo(a['price'] ?? 0)
-        );
+        tempProducts.sort(
+                (a, b) => (b['price'] ?? 0).compareTo(a['price'] ?? 0));
       }
 
       filteredProducts = tempProducts;
@@ -96,7 +95,7 @@ class _ProductsListPageState extends State<ProductsListPage> {
   void _showFilterOptions() {
     showModalBottomSheet(
       context: context,
-      backgroundColor: AppColors.card,
+      backgroundColor: AppColors.getCardForPage(pageId), // ✅ UPDATED
       isScrollControlled: true,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
@@ -132,7 +131,7 @@ class _ProductsListPageState extends State<ProductsListPage> {
                         fontSize: 20,
                         fontWeight: FontWeight.bold,
                         fontFamily: 'IrishGrover',
-                        color: AppColors.textPrimary,
+                        color: AppColors.getTextPrimaryForPage(pageId), // ✅ UPDATED
                       ),
                     ),
                     Row(
@@ -149,21 +148,22 @@ class _ProductsListPageState extends State<ProductsListPage> {
                           child: Text(
                             'Clear All',
                             style: TextStyle(
-                              color: AppColors.accent,
+                              color: AppColors.getAccentForPage(pageId), // ✅ UPDATED
                               fontFamily: 'ADLaMDisplay',
                               fontSize: 13,
                             ),
                           ),
                         ),
                         IconButton(
-                          icon: Icon(Icons.close, color: AppColors.textPrimary),
+                          icon: Icon(Icons.close,
+                              color: AppColors.getTextPrimaryForPage(pageId)), // ✅ UPDATED
                           onPressed: () => Navigator.pop(context),
                         ),
                       ],
                     ),
                   ],
                 ),
-                Divider(color: AppColors.border),
+                Divider(color: AppColors.getBorderForPage(pageId)), // ✅ UPDATED
 
                 // Content
                 Expanded(
@@ -181,7 +181,7 @@ class _ProductsListPageState extends State<ProductsListPage> {
                             fontSize: 16,
                             fontWeight: FontWeight.bold,
                             fontFamily: 'IrishGrover',
-                            color: AppColors.textPrimary,
+                            color: AppColors.getTextPrimaryForPage(pageId), // ✅ UPDATED
                           ),
                         ),
                         SizedBox(height: 12),
@@ -206,12 +206,13 @@ class _ProductsListPageState extends State<ProductsListPage> {
                             fontSize: 16,
                             fontWeight: FontWeight.bold,
                             fontFamily: 'IrishGrover',
-                            color: AppColors.textPrimary,
+                            color: AppColors.getTextPrimaryForPage(pageId), // ✅ UPDATED
                           ),
                         ),
                         SizedBox(height: 12),
 
-                        _parentCategoryOption('All', Icons.grid_view, setModalState),
+                        _parentCategoryOption(
+                            'All', Icons.grid_view, setModalState),
 
                         ...categories
                             .where((cat) => cat['parentCategory'] == null)
@@ -236,7 +237,7 @@ class _ProductsListPageState extends State<ProductsListPage> {
                                   fontSize: 16,
                                   fontWeight: FontWeight.bold,
                                   fontFamily: 'IrishGrover',
-                                  color: AppColors.textPrimary,
+                                  color: AppColors.getTextPrimaryForPage(pageId), // ✅ UPDATED
                                 ),
                               ),
                               if (selectedSubCategories.isNotEmpty)
@@ -249,7 +250,7 @@ class _ProductsListPageState extends State<ProductsListPage> {
                                   child: Text(
                                     'Select All',
                                     style: TextStyle(
-                                      color: AppColors.accent,
+                                      color: AppColors.getAccentForPage(pageId), // ✅ UPDATED
                                       fontSize: 12,
                                     ),
                                   ),
@@ -281,15 +282,15 @@ class _ProductsListPageState extends State<ProductsListPage> {
                 Container(
                   padding: EdgeInsets.symmetric(vertical: 16),
                   decoration: BoxDecoration(
-                    color: AppColors.card,
-                    border: Border(top: BorderSide(color: AppColors.border)),
+                    color: AppColors.getCardForPage(pageId), // ✅ UPDATED
+                    border: Border(top: BorderSide(color: AppColors.getBorderForPage(pageId))), // ✅ UPDATED
                   ),
                   child: SizedBox(
                     width: double.infinity,
                     height: 48,
                     child: ElevatedButton(
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: AppColors.accent,
+                        backgroundColor: AppColors.getAccentForPage(pageId), // ✅ UPDATED
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(12),
                         ),
@@ -342,17 +343,19 @@ class _ProductsListPageState extends State<ProductsListPage> {
       label: Text(
         sortOption,
         style: TextStyle(
-          color: isSelected ? Colors.white : AppColors.textPrimary,
+          color: isSelected ? Colors.white : AppColors.getTextPrimaryForPage(pageId), // ✅ UPDATED
           fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
           fontFamily: 'ADLaMDisplay',
           fontSize: 13,
         ),
       ),
       selected: isSelected,
-      selectedColor: AppColors.accent,
-      backgroundColor: AppColors.background,
+      selectedColor: AppColors.getAccentForPage(pageId), // ✅ UPDATED
+      backgroundColor: AppColors.getBackgroundForPage(pageId), // ✅ UPDATED
       side: BorderSide(
-        color: isSelected ? AppColors.accent : AppColors.border,
+        color: isSelected
+            ? AppColors.getAccentForPage(pageId) // ✅ UPDATED
+            : AppColors.getBorderForPage(pageId), // ✅ UPDATED
         width: 1,
       ),
       onSelected: (selected) {
@@ -375,7 +378,8 @@ class _ProductsListPageState extends State<ProductsListPage> {
       onTap: () {
         setModalState(() {
           selectedParentCategory = title;
-          selectedSubCategories.clear(); // Clear sub-categories when parent changes
+          selectedSubCategories
+              .clear(); // Clear sub-categories when parent changes
         });
       },
       borderRadius: BorderRadius.circular(10),
@@ -384,11 +388,13 @@ class _ProductsListPageState extends State<ProductsListPage> {
         margin: EdgeInsets.only(bottom: 6),
         decoration: BoxDecoration(
           color: isSelected
-              ? AppColors.accent.withOpacity(0.1)
+              ? AppColors.getAccentForPage(pageId).withOpacity(0.1) // ✅ UPDATED
               : Colors.transparent,
           borderRadius: BorderRadius.circular(10),
           border: Border.all(
-            color: isSelected ? AppColors.accent : AppColors.border,
+            color: isSelected
+                ? AppColors.getAccentForPage(pageId) // ✅ UPDATED
+                : AppColors.getBorderForPage(pageId), // ✅ UPDATED
             width: isSelected ? 1.5 : 1,
           ),
         ),
@@ -396,7 +402,9 @@ class _ProductsListPageState extends State<ProductsListPage> {
           children: [
             Icon(
               icon,
-              color: isSelected ? AppColors.accent : AppColors.textSecondary,
+              color: isSelected
+                  ? AppColors.getAccentForPage(pageId) // ✅ UPDATED
+                  : AppColors.getTextSecondaryForPage(pageId), // ✅ UPDATED
               size: 20,
             ),
             SizedBox(width: 12),
@@ -406,14 +414,16 @@ class _ProductsListPageState extends State<ProductsListPage> {
                 style: TextStyle(
                   fontSize: 14,
                   fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
-                  color: isSelected ? AppColors.accent : AppColors.textPrimary,
+                  color: isSelected
+                      ? AppColors.getAccentForPage(pageId) // ✅ UPDATED
+                      : AppColors.getTextPrimaryForPage(pageId), // ✅ UPDATED
                   fontFamily: 'ADLaMDisplay',
                 ),
                 overflow: TextOverflow.ellipsis,
               ),
             ),
             if (isSelected)
-              Icon(Icons.check_circle, color: AppColors.accent, size: 20),
+              Icon(Icons.check_circle, color: AppColors.getAccentForPage(pageId), size: 20), // ✅ UPDATED
           ],
         ),
       ),
@@ -444,11 +454,13 @@ class _ProductsListPageState extends State<ProductsListPage> {
         margin: EdgeInsets.only(bottom: 6),
         decoration: BoxDecoration(
           color: isSelected
-              ? AppColors.accent.withOpacity(0.1)
+              ? AppColors.getAccentForPage(pageId).withOpacity(0.1) // ✅ UPDATED
               : Colors.transparent,
           borderRadius: BorderRadius.circular(10),
           border: Border.all(
-            color: isSelected ? AppColors.accent : AppColors.border,
+            color: isSelected
+                ? AppColors.getAccentForPage(pageId) // ✅ UPDATED
+                : AppColors.getBorderForPage(pageId), // ✅ UPDATED
             width: isSelected ? 1.5 : 1,
           ),
         ),
@@ -456,7 +468,9 @@ class _ProductsListPageState extends State<ProductsListPage> {
           children: [
             Icon(
               isSelected ? Icons.check_box : Icons.check_box_outline_blank,
-              color: isSelected ? AppColors.accent : AppColors.textSecondary,
+              color: isSelected
+                  ? AppColors.getAccentForPage(pageId) // ✅ UPDATED
+                  : AppColors.getTextSecondaryForPage(pageId), // ✅ UPDATED
               size: 20,
             ),
             SizedBox(width: 12),
@@ -466,7 +480,9 @@ class _ProductsListPageState extends State<ProductsListPage> {
                 style: TextStyle(
                   fontSize: 14,
                   fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
-                  color: isSelected ? AppColors.accent : AppColors.textPrimary,
+                  color: isSelected
+                      ? AppColors.getAccentForPage(pageId) // ✅ UPDATED
+                      : AppColors.getTextPrimaryForPage(pageId), // ✅ UPDATED
                   fontFamily: 'ADLaMDisplay',
                 ),
                 overflow: TextOverflow.ellipsis,
@@ -481,9 +497,9 @@ class _ProductsListPageState extends State<ProductsListPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppColors.background,
+      backgroundColor: AppColors.getBackgroundForPage(pageId), // ✅ UPDATED
       appBar: AppBar(
-        backgroundColor: AppColors.accent,
+        backgroundColor: AppColors.getAccentForPage(pageId), // ✅ UPDATED
         elevation: 0,
         leading: IconButton(
           icon: Icon(Icons.chevron_left, color: Colors.white),
@@ -536,21 +552,24 @@ class _ProductsListPageState extends State<ProductsListPage> {
             padding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
             child: TextField(
               style: TextStyle(
-                color: AppColors.textPrimary,
+                color: AppColors.getTextPrimaryForPage(pageId), // ✅ UPDATED
                 fontFamily: 'ADLaMDisplay',
                 fontSize: 14,
               ),
               decoration: InputDecoration(
                 hintText: 'Search products...',
                 hintStyle: TextStyle(
-                  color: AppColors.textSecondary,
+                  color: AppColors.getTextSecondaryForPage(pageId), // ✅ UPDATED
                   fontFamily: 'ADLaMDisplay',
                   fontSize: 14,
                 ),
-                prefixIcon: Icon(Icons.search, color: AppColors.accent),
+                prefixIcon: Icon(Icons.search,
+                    color: AppColors.getAccentForPage(pageId)), // ✅ UPDATED
                 suffixIcon: searchQuery.isNotEmpty
                     ? IconButton(
-                  icon: Icon(Icons.clear, color: AppColors.textSecondary),
+                  icon: Icon(Icons.clear,
+                      color: AppColors.getTextSecondaryForPage(
+                          pageId)), // ✅ UPDATED
                   onPressed: () {
                     setState(() {
                       searchQuery = '';
@@ -560,18 +579,22 @@ class _ProductsListPageState extends State<ProductsListPage> {
                 )
                     : null,
                 filled: true,
-                fillColor: AppColors.card,
+                fillColor: AppColors.getCardForPage(pageId), // ✅ UPDATED
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(12),
-                  borderSide: BorderSide(color: AppColors.border),
+                  borderSide: BorderSide(
+                      color: AppColors.getBorderForPage(pageId)), // ✅ UPDATED
                 ),
                 enabledBorder: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(12),
-                  borderSide: BorderSide(color: AppColors.border),
+                  borderSide: BorderSide(
+                      color: AppColors.getBorderForPage(pageId)), // ✅ UPDATED
                 ),
                 focusedBorder: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(12),
-                  borderSide: BorderSide(color: AppColors.accent, width: 2),
+                  borderSide: BorderSide(
+                      color: AppColors.getAccentForPage(pageId),
+                      width: 2), // ✅ UPDATED
                 ),
                 contentPadding: EdgeInsets.symmetric(
                   horizontal: 16,
@@ -602,12 +625,16 @@ class _ProductsListPageState extends State<ProductsListPage> {
                       Padding(
                         padding: EdgeInsets.only(right: 8),
                         child: Chip(
-                          backgroundColor: AppColors.accent.withOpacity(0.1),
-                          side: BorderSide(color: AppColors.accent),
+                          backgroundColor: AppColors.getAccentForPage(pageId)
+                              .withOpacity(0.1), // ✅ UPDATED
+                          side: BorderSide(
+                              color: AppColors.getAccentForPage(
+                                  pageId)), // ✅ UPDATED
                           label: Text(
                             'Sort: $sortBy',
                             style: TextStyle(
-                              color: AppColors.accent,
+                              color: AppColors.getAccentForPage(
+                                  pageId), // ✅ UPDATED
                               fontFamily: 'ADLaMDisplay',
                               fontSize: 11,
                               fontWeight: FontWeight.bold,
@@ -616,7 +643,8 @@ class _ProductsListPageState extends State<ProductsListPage> {
                           deleteIcon: Icon(
                             Icons.close,
                             size: 16,
-                            color: AppColors.accent,
+                            color: AppColors.getAccentForPage(
+                                pageId), // ✅ UPDATED
                           ),
                           onDeleted: () {
                             setState(() {
@@ -630,12 +658,16 @@ class _ProductsListPageState extends State<ProductsListPage> {
                       Padding(
                         padding: EdgeInsets.only(right: 8),
                         child: Chip(
-                          backgroundColor: AppColors.accent.withOpacity(0.1),
-                          side: BorderSide(color: AppColors.accent),
+                          backgroundColor: AppColors.getAccentForPage(pageId)
+                              .withOpacity(0.1), // ✅ UPDATED
+                          side: BorderSide(
+                              color: AppColors.getAccentForPage(
+                                  pageId)), // ✅ UPDATED
                           label: Text(
                             selectedParentCategory,
                             style: TextStyle(
-                              color: AppColors.accent,
+                              color: AppColors.getAccentForPage(
+                                  pageId), // ✅ UPDATED
                               fontFamily: 'ADLaMDisplay',
                               fontSize: 11,
                               fontWeight: FontWeight.bold,
@@ -644,7 +676,8 @@ class _ProductsListPageState extends State<ProductsListPage> {
                           deleteIcon: Icon(
                             Icons.close,
                             size: 16,
-                            color: AppColors.accent,
+                            color: AppColors.getAccentForPage(
+                                pageId), // ✅ UPDATED
                           ),
                           onDeleted: () {
                             setState(() {
@@ -659,12 +692,16 @@ class _ProductsListPageState extends State<ProductsListPage> {
                       Padding(
                         padding: EdgeInsets.only(right: 8),
                         child: Chip(
-                          backgroundColor: AppColors.accent.withOpacity(0.1),
-                          side: BorderSide(color: AppColors.accent),
+                          backgroundColor: AppColors.getAccentForPage(pageId)
+                              .withOpacity(0.1), // ✅ UPDATED
+                          side: BorderSide(
+                              color: AppColors.getAccentForPage(
+                                  pageId)), // ✅ UPDATED
                           label: Text(
                             '${selectedSubCategories.length} sub-categories',
                             style: TextStyle(
-                              color: AppColors.accent,
+                              color: AppColors.getAccentForPage(
+                                  pageId), // ✅ UPDATED
                               fontFamily: 'ADLaMDisplay',
                               fontSize: 11,
                               fontWeight: FontWeight.bold,
@@ -673,7 +710,8 @@ class _ProductsListPageState extends State<ProductsListPage> {
                           deleteIcon: Icon(
                             Icons.close,
                             size: 16,
-                            color: AppColors.accent,
+                            color: AppColors.getAccentForPage(
+                                pageId), // ✅ UPDATED
                           ),
                           onDeleted: () {
                             setState(() {
@@ -686,7 +724,8 @@ class _ProductsListPageState extends State<ProductsListPage> {
                     Text(
                       '${filteredProducts.length} products',
                       style: TextStyle(
-                        color: AppColors.textSecondary,
+                        color: AppColors.getTextSecondaryForPage(
+                            pageId), // ✅ UPDATED
                         fontSize: 13,
                         fontFamily: 'ADLaMDisplay',
                       ),
@@ -700,7 +739,8 @@ class _ProductsListPageState extends State<ProductsListPage> {
           Expanded(
             child: isLoading
                 ? Center(
-              child: CircularProgressIndicator(color: AppColors.accent),
+              child: CircularProgressIndicator(
+                  color: AppColors.getAccentForPage(pageId)), // ✅ UPDATED
             )
                 : filteredProducts.isEmpty
                 ? Center(
@@ -720,7 +760,8 @@ class _ProductsListPageState extends State<ProductsListPage> {
                       style: TextStyle(
                         fontSize: 18,
                         fontWeight: FontWeight.bold,
-                        color: AppColors.textPrimary,
+                        color: AppColors.getTextPrimaryForPage(
+                            pageId), // ✅ UPDATED
                         fontFamily: 'IrishGrover',
                       ),
                     ),
@@ -751,7 +792,8 @@ class _ProductsListPageState extends State<ProductsListPage> {
                         icon: Icon(Icons.clear_all),
                         label: Text('Clear all filters'),
                         style: TextButton.styleFrom(
-                          foregroundColor: AppColors.accent,
+                          foregroundColor:
+                          AppColors.getAccentForPage(pageId), // ✅ UPDATED
                         ),
                       ),
                     ),
@@ -761,7 +803,7 @@ class _ProductsListPageState extends State<ProductsListPage> {
             )
                 : RefreshIndicator(
               onRefresh: _loadData,
-              color: AppColors.accent,
+              color: AppColors.getAccentForPage(pageId), // ✅ UPDATED
               child: GridView.builder(
                 padding: const EdgeInsets.all(16),
                 itemCount: filteredProducts.length,
@@ -791,9 +833,10 @@ class _ProductsListPageState extends State<ProductsListPage> {
       },
       child: Container(
         decoration: BoxDecoration(
-          color: AppColors.card,
+          color: AppColors.getCardForPage(pageId), // ✅ UPDATED
           borderRadius: BorderRadius.circular(19),
-          border: Border.all(color: AppColors.border),
+          border: Border.all(
+              color: AppColors.getBorderForPage(pageId)), // ✅ UPDATED
           boxShadow: [
             BoxShadow(
               color: Colors.black.withOpacity(0.05),
@@ -809,7 +852,8 @@ class _ProductsListPageState extends State<ProductsListPage> {
             children: [
               Container(
                 height: 140,
-                decoration: BoxDecoration(color: AppColors.border),
+                decoration: BoxDecoration(
+                    color: AppColors.getBorderForPage(pageId)), // ✅ UPDATED
                 child: product['imageUrl'] != null &&
                     product['imageUrl'].isNotEmpty
                     ? Image.network(
@@ -842,7 +886,8 @@ class _ProductsListPageState extends State<ProductsListPage> {
                         style: TextStyle(
                           fontWeight: FontWeight.bold,
                           fontSize: 13,
-                          color: AppColors.textPrimary,
+                          color: AppColors.getTextPrimaryForPage(
+                              pageId), // ✅ UPDATED
                           fontFamily: 'ADLaMDisplay',
                           height: 1.2,
                         ),
@@ -850,7 +895,7 @@ class _ProductsListPageState extends State<ProductsListPage> {
                       SizedBox(height: 4),
                       Text(
                         'Rs. ${product['price'] ?? 0}',
-                        style: TextStyle(
+                        style: const TextStyle(
                           color: Colors.green,
                           fontWeight: FontWeight.bold,
                           fontSize: 15,
@@ -865,7 +910,8 @@ class _ProductsListPageState extends State<ProductsListPage> {
                         height: 32,
                         child: ElevatedButton(
                           style: ElevatedButton.styleFrom(
-                            backgroundColor: AppColors.accent,
+                            backgroundColor: AppColors.getAccentForPage(
+                                pageId), // ✅ UPDATED
                             padding: EdgeInsets.zero,
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(8),

@@ -23,6 +23,9 @@ class _SplashScreenState extends State<SplashScreen>
   late Animation<double> _fadeAnimation;
   late Animation<double> _scaleAnimation;
 
+  // ✅ CONSTANT: Page ID for Colors (Shared with Login)
+  final String pageId = 'LOGIN';
+
   @override
   void initState() {
     super.initState();
@@ -62,7 +65,9 @@ class _SplashScreenState extends State<SplashScreen>
       body: Container(
         width: double.infinity,
         height: double.infinity,
-        decoration: BoxDecoration(gradient: AppGradients.splashBackground),
+        decoration: BoxDecoration(
+            gradient: AppGradients.splashBackgroundForPage(
+                pageId)), // ✅ UPDATED
         child: FadeTransition(
           opacity: _fadeAnimation,
           child: ScaleTransition(
@@ -78,11 +83,13 @@ class _SplashScreenState extends State<SplashScreen>
                     fontSize: 35,
                     fontFamily: 'IrishGrover',
                     letterSpacing: 2,
-                    color: AppColors.accent,
+                    color: AppColors.getAccentForPage(pageId), // ✅ UPDATED
                   ),
                 ),
                 const SizedBox(height: 30),
-                SpinKitThreeBounce(color: AppColors.accent, size: 25.0),
+                SpinKitThreeBounce(
+                    color: AppColors.getAccentForPage(pageId),
+                    size: 25.0), // ✅ UPDATED
               ],
             ),
           ),
@@ -106,6 +113,9 @@ class _LoginScreenState extends State<LoginScreen> {
 
   final TextEditingController emailController = TextEditingController();
   final TextEditingController passwordController = TextEditingController();
+
+  // ✅ CONSTANT: Page ID for Colors
+  final String pageId = 'LOGIN';
 
   @override
   void dispose() {
@@ -131,11 +141,11 @@ class _LoginScreenState extends State<LoginScreen> {
     });
 
     try {
-      UserCredential userCredential = await FirebaseAuth.instance
-          .signInWithEmailAndPassword(
-            email: emailController.text.trim(),
-            password: passwordController.text.trim(),
-          );
+      UserCredential userCredential =
+      await FirebaseAuth.instance.signInWithEmailAndPassword(
+        email: emailController.text.trim(),
+        password: passwordController.text.trim(),
+      );
 
       // Check if email is verified in Firestore
       final userDoc = await FirebaseFirestore.instance
@@ -152,7 +162,6 @@ class _LoginScreenState extends State<LoginScreen> {
       if (!isEmailVerified) {
         // Email not verified, navigate to OTP screen
         if (mounted) {
-          // Inside login_and_signup.dart
           Navigator.pushAndRemoveUntil(
             context,
             MaterialPageRoute(
@@ -161,7 +170,7 @@ class _LoginScreenState extends State<LoginScreen> {
                 userId: userCredential.user!.uid,
               ),
             ),
-            (route) => false, // This clears the login screen from the history
+                (route) => false,
           );
         }
       } else {
@@ -195,13 +204,13 @@ class _LoginScreenState extends State<LoginScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppColors.background,
+      backgroundColor: AppColors.getBackgroundForPage(pageId), // ✅ UPDATED
       extendBodyBehindAppBar: true,
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         leading: IconButton(
           icon: const Icon(Icons.chevron_left, size: 42),
-          color: AppColors.secondary,
+          color: AppColors.getTextPrimaryForPage(pageId), // ✅ UPDATED
           onPressed: () {
             Navigator.pop(context);
           },
@@ -214,7 +223,8 @@ class _LoginScreenState extends State<LoginScreen> {
               height: 280,
               width: double.infinity,
               decoration: BoxDecoration(
-                gradient: AppGradients.splashBackground,
+                gradient: AppGradients.splashBackgroundForPage(
+                    pageId), // ✅ UPDATED
               ),
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
@@ -225,7 +235,8 @@ class _LoginScreenState extends State<LoginScreen> {
                       fontFamily: 'IrishGrover',
                       fontSize: 30,
                       fontWeight: FontWeight.bold,
-                      color: AppColors.secondary,
+                      color: AppColors.getTextPrimaryForPage(
+                          pageId), // ✅ UPDATED
                     ),
                   ),
                   SizedBox(height: 20),
@@ -244,7 +255,8 @@ class _LoginScreenState extends State<LoginScreen> {
                   Text(
                     " Enter your Email",
                     style: TextStyle(
-                      color: AppColors.textPrimary,
+                      color: AppColors.getTextPrimaryForPage(
+                          pageId), // ✅ UPDATED
                       fontFamily: 'ADLaMDisplay',
                     ),
                   ),
@@ -252,17 +264,23 @@ class _LoginScreenState extends State<LoginScreen> {
                   TextField(
                     controller: emailController,
                     keyboardType: TextInputType.emailAddress,
-                    style: TextStyle(color: AppColors.textPrimary),
+                    style: TextStyle(
+                        color: AppColors.getTextPrimaryForPage(
+                            pageId)), // ✅ UPDATED
                     decoration: InputDecoration(
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.all(Radius.circular(12)),
                       ),
                       enabledBorder: OutlineInputBorder(
                         borderRadius: BorderRadius.all(Radius.circular(12)),
-                        borderSide: BorderSide(color: AppColors.border),
+                        borderSide: BorderSide(
+                            color: AppColors.getBorderForPage(
+                                pageId)), // ✅ UPDATED
                       ),
                       labelText: 'Email',
-                      labelStyle: TextStyle(color: AppColors.textSecondary),
+                      labelStyle: TextStyle(
+                          color: AppColors.getTextSecondaryForPage(
+                              pageId)), // ✅ UPDATED
                     ),
                   ),
                 ],
@@ -279,7 +297,8 @@ class _LoginScreenState extends State<LoginScreen> {
                   Text(
                     " Enter your password",
                     style: TextStyle(
-                      color: AppColors.textPrimary,
+                      color: AppColors.getTextPrimaryForPage(
+                          pageId), // ✅ UPDATED
                       fontFamily: 'ADLaMDisplay',
                     ),
                   ),
@@ -287,23 +306,30 @@ class _LoginScreenState extends State<LoginScreen> {
                   TextField(
                     controller: passwordController,
                     obscureText: !_isPasswordVisible,
-                    style: TextStyle(color: AppColors.textPrimary),
+                    style: TextStyle(
+                        color: AppColors.getTextPrimaryForPage(
+                            pageId)), // ✅ UPDATED
                     decoration: InputDecoration(
                       labelText: 'Password',
-                      labelStyle: TextStyle(color: AppColors.textSecondary),
+                      labelStyle: TextStyle(
+                          color: AppColors.getTextSecondaryForPage(
+                              pageId)), // ✅ UPDATED
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.all(Radius.circular(12)),
                       ),
                       enabledBorder: OutlineInputBorder(
                         borderRadius: BorderRadius.all(Radius.circular(12)),
-                        borderSide: BorderSide(color: AppColors.border),
+                        borderSide: BorderSide(
+                            color: AppColors.getBorderForPage(
+                                pageId)), // ✅ UPDATED
                       ),
                       suffixIcon: IconButton(
                         icon: Icon(
                           _isPasswordVisible
                               ? Icons.visibility
                               : Icons.visibility_off,
-                          color: AppColors.textSecondary,
+                          color: AppColors.getTextSecondaryForPage(
+                              pageId), // ✅ UPDATED
                         ),
                         onPressed: () {
                           setState(() {
@@ -330,10 +356,11 @@ class _LoginScreenState extends State<LoginScreen> {
                       ),
                     );
                   },
-                  child: const Text(
+                  child: Text(
                     "forgot password?",
                     style: TextStyle(
-                      color: AppColors.textaccent,
+                      color:
+                      AppColors.getAccentForPage(pageId), // ✅ UPDATED
                       fontFamily: 'ADLaMDisplay',
                     ),
                   ),
@@ -350,7 +377,8 @@ class _LoginScreenState extends State<LoginScreen> {
                 height: 50,
                 child: ElevatedButton(
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: AppColors.accent,
+                    backgroundColor: AppColors.getAccentForPage(
+                        pageId), // ✅ UPDATED
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(16),
                     ),
@@ -359,13 +387,13 @@ class _LoginScreenState extends State<LoginScreen> {
                   child: _isLoading
                       ? CircularProgressIndicator(color: Colors.white)
                       : const Text(
-                          "Login",
-                          style: TextStyle(
-                            color: Colors.white,
-                            fontFamily: 'ADLaMDisplay',
-                            fontSize: 20,
-                          ),
-                        ),
+                    "Login",
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontFamily: 'ADLaMDisplay',
+                      fontSize: 20,
+                    ),
+                  ),
                 ),
               ),
             ),
@@ -377,7 +405,8 @@ class _LoginScreenState extends State<LoginScreen> {
                 Text(
                   "Don't have an account?",
                   style: TextStyle(
-                    color: AppColors.textPrimary,
+                    color: AppColors.getTextPrimaryForPage(
+                        pageId), // ✅ UPDATED
                     fontFamily: 'ADLaMDisplay',
                   ),
                 ),
@@ -389,7 +418,8 @@ class _LoginScreenState extends State<LoginScreen> {
                     "Sign Up",
                     style: TextStyle(
                       fontWeight: FontWeight.bold,
-                      color: AppColors.textPrimary,
+                      color: AppColors.getTextPrimaryForPage(
+                          pageId), // ✅ UPDATED
                       fontFamily: 'ADLaMDisplay',
                     ),
                   ),
@@ -420,7 +450,10 @@ class _SignUpScreenState extends State<SignUpScreen> {
   final TextEditingController emailController = TextEditingController();
   final TextEditingController passwordController = TextEditingController();
   final TextEditingController confirmPasswordController =
-      TextEditingController();
+  TextEditingController();
+
+  // ✅ CONSTANT: Page ID for Colors
+  final String pageId = 'LOGIN';
 
   @override
   void dispose() {
@@ -551,11 +584,11 @@ class _SignUpScreenState extends State<SignUpScreen> {
 
     try {
       // Create user with Firebase Auth
-      UserCredential userCredential = await FirebaseAuth.instance
-          .createUserWithEmailAndPassword(
-            email: emailController.text.trim(),
-            password: passwordController.text.trim(),
-          );
+      UserCredential userCredential =
+      await FirebaseAuth.instance.createUserWithEmailAndPassword(
+        email: emailController.text.trim(),
+        password: passwordController.text.trim(),
+      );
 
       // Create user document in Firestore
       await DatabaseService.instance.createUser(
@@ -577,7 +610,6 @@ class _SignUpScreenState extends State<SignUpScreen> {
 
       // Navigate to OTP verification screen
       if (mounted) {
-        // Inside login_and_signup.dart
         Navigator.pushAndRemoveUntil(
           context,
           MaterialPageRoute(
@@ -586,7 +618,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
               userId: userCredential.user!.uid,
             ),
           ),
-          (route) => false, // This clears the login screen from the history
+              (route) => false,
         );
       }
     } on FirebaseAuthException catch (e) {
@@ -623,14 +655,14 @@ class _SignUpScreenState extends State<SignUpScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppColors.background,
+      backgroundColor: AppColors.getBackgroundForPage(pageId), // ✅ UPDATED
       extendBodyBehindAppBar: true,
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
         leading: IconButton(
           icon: const Icon(Icons.chevron_left, size: 42),
-          color: AppColors.secondary,
+          color: AppColors.getTextPrimaryForPage(pageId), // ✅ UPDATED
           onPressed: () {
             Navigator.pop(context);
           },
@@ -643,7 +675,8 @@ class _SignUpScreenState extends State<SignUpScreen> {
               height: 250,
               width: double.infinity,
               decoration: BoxDecoration(
-                gradient: AppGradients.splashBackground,
+                gradient: AppGradients.splashBackgroundForPage(
+                    pageId), // ✅ UPDATED
               ),
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
@@ -654,7 +687,8 @@ class _SignUpScreenState extends State<SignUpScreen> {
                       fontFamily: 'IrishGrover',
                       fontSize: 30,
                       fontWeight: FontWeight.bold,
-                      color: AppColors.secondary,
+                      color: AppColors.getTextPrimaryForPage(
+                          pageId), // ✅ UPDATED
                     ),
                   ),
                   const SizedBox(height: 20),
@@ -673,23 +707,30 @@ class _SignUpScreenState extends State<SignUpScreen> {
                   Text(
                     " Enter Name",
                     style: TextStyle(
-                      color: AppColors.textPrimary,
+                      color: AppColors.getTextPrimaryForPage(
+                          pageId), // ✅ UPDATED
                       fontFamily: 'ADLaMDisplay',
                     ),
                   ),
                   SizedBox(height: 10),
                   TextField(
                     controller: nameController,
-                    style: TextStyle(color: AppColors.textPrimary),
+                    style: TextStyle(
+                        color: AppColors.getTextPrimaryForPage(
+                            pageId)), // ✅ UPDATED
                     decoration: InputDecoration(
                       labelText: "Name",
-                      labelStyle: TextStyle(color: AppColors.textSecondary),
+                      labelStyle: TextStyle(
+                          color: AppColors.getTextSecondaryForPage(
+                              pageId)), // ✅ UPDATED
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.all(Radius.circular(12)),
                       ),
                       enabledBorder: OutlineInputBorder(
                         borderRadius: BorderRadius.all(Radius.circular(12)),
-                        borderSide: BorderSide(color: AppColors.border),
+                        borderSide: BorderSide(
+                            color: AppColors.getBorderForPage(
+                                pageId)), // ✅ UPDATED
                       ),
                     ),
                   ),
@@ -707,7 +748,8 @@ class _SignUpScreenState extends State<SignUpScreen> {
                   Text(
                     " Enter Email",
                     style: TextStyle(
-                      color: AppColors.textPrimary,
+                      color: AppColors.getTextPrimaryForPage(
+                          pageId), // ✅ UPDATED
                       fontFamily: 'ADLaMDisplay',
                     ),
                   ),
@@ -715,13 +757,18 @@ class _SignUpScreenState extends State<SignUpScreen> {
                   TextField(
                     controller: emailController,
                     keyboardType: TextInputType.emailAddress,
-                    style: TextStyle(color: AppColors.textPrimary),
+                    style: TextStyle(
+                        color: AppColors.getTextPrimaryForPage(
+                            pageId)), // ✅ UPDATED
                     decoration: InputDecoration(
                       labelText: "Email",
-                      labelStyle: TextStyle(color: AppColors.textSecondary),
+                      labelStyle: TextStyle(
+                          color: AppColors.getTextSecondaryForPage(
+                              pageId)), // ✅ UPDATED
                       helperText: "Use a valid, permanent email address",
                       helperStyle: TextStyle(
-                        color: AppColors.textSecondary,
+                        color: AppColors.getTextSecondaryForPage(
+                            pageId), // ✅ UPDATED
                         fontSize: 12,
                       ),
                       border: OutlineInputBorder(
@@ -729,7 +776,9 @@ class _SignUpScreenState extends State<SignUpScreen> {
                       ),
                       enabledBorder: OutlineInputBorder(
                         borderRadius: BorderRadius.all(Radius.circular(12)),
-                        borderSide: BorderSide(color: AppColors.border),
+                        borderSide: BorderSide(
+                            color: AppColors.getBorderForPage(
+                                pageId)), // ✅ UPDATED
                       ),
                     ),
                   ),
@@ -747,7 +796,8 @@ class _SignUpScreenState extends State<SignUpScreen> {
                   Text(
                     " Enter Password",
                     style: TextStyle(
-                      color: AppColors.textPrimary,
+                      color: AppColors.getTextPrimaryForPage(
+                          pageId), // ✅ UPDATED
                       fontFamily: 'ADLaMDisplay',
                     ),
                   ),
@@ -756,13 +806,18 @@ class _SignUpScreenState extends State<SignUpScreen> {
                     controller: passwordController,
                     obscureText: !_isPasswordVisible,
                     maxLength: 11,
-                    style: TextStyle(color: AppColors.textPrimary),
+                    style: TextStyle(
+                        color: AppColors.getTextPrimaryForPage(
+                            pageId)), // ✅ UPDATED
                     decoration: InputDecoration(
                       labelText: "Password",
-                      labelStyle: TextStyle(color: AppColors.textSecondary),
+                      labelStyle: TextStyle(
+                          color: AppColors.getTextSecondaryForPage(
+                              pageId)), // ✅ UPDATED
                       helperText: "6-11 chars, 1 capital, 1 number",
                       helperStyle: TextStyle(
-                        color: AppColors.textSecondary,
+                        color: AppColors.getTextSecondaryForPage(
+                            pageId), // ✅ UPDATED
                         fontSize: 12,
                       ),
                       border: const OutlineInputBorder(
@@ -770,14 +825,17 @@ class _SignUpScreenState extends State<SignUpScreen> {
                       ),
                       enabledBorder: OutlineInputBorder(
                         borderRadius: BorderRadius.all(Radius.circular(12)),
-                        borderSide: BorderSide(color: AppColors.border),
+                        borderSide: BorderSide(
+                            color: AppColors.getBorderForPage(
+                                pageId)), // ✅ UPDATED
                       ),
                       suffixIcon: IconButton(
                         icon: Icon(
                           _isPasswordVisible
                               ? Icons.visibility
                               : Icons.visibility_off,
-                          color: AppColors.textSecondary,
+                          color: AppColors.getTextSecondaryForPage(
+                              pageId), // ✅ UPDATED
                         ),
                         onPressed: () {
                           setState(() {
@@ -801,7 +859,8 @@ class _SignUpScreenState extends State<SignUpScreen> {
                   Text(
                     " Confirm Password",
                     style: TextStyle(
-                      color: AppColors.textPrimary,
+                      color: AppColors.getTextPrimaryForPage(
+                          pageId), // ✅ UPDATED
                       fontFamily: 'ADLaMDisplay',
                     ),
                   ),
@@ -810,28 +869,35 @@ class _SignUpScreenState extends State<SignUpScreen> {
                     controller: confirmPasswordController,
                     obscureText: !_isConfirmPasswordVisible,
                     maxLength: 11,
-                    style: TextStyle(color: AppColors.textPrimary),
+                    style: TextStyle(
+                        color: AppColors.getTextPrimaryForPage(
+                            pageId)), // ✅ UPDATED
                     decoration: InputDecoration(
                       hintText: "Re-enter your password",
-                      hintStyle: TextStyle(color: AppColors.textSecondary),
+                      hintStyle: TextStyle(
+                          color: AppColors.getTextSecondaryForPage(
+                              pageId)), // ✅ UPDATED
                       border: const OutlineInputBorder(
                         borderRadius: BorderRadius.all(Radius.circular(12)),
                       ),
                       enabledBorder: OutlineInputBorder(
                         borderRadius: BorderRadius.all(Radius.circular(12)),
-                        borderSide: BorderSide(color: AppColors.border),
+                        borderSide: BorderSide(
+                            color: AppColors.getBorderForPage(
+                                pageId)), // ✅ UPDATED
                       ),
                       suffixIcon: IconButton(
                         icon: Icon(
                           _isConfirmPasswordVisible
                               ? Icons.visibility
                               : Icons.visibility_off,
-                          color: AppColors.textSecondary,
+                          color: AppColors.getTextSecondaryForPage(
+                              pageId), // ✅ UPDATED
                         ),
                         onPressed: () {
                           setState(() {
                             _isConfirmPasswordVisible =
-                                !_isConfirmPasswordVisible;
+                            !_isConfirmPasswordVisible;
                           });
                         },
                       ),
@@ -850,7 +916,8 @@ class _SignUpScreenState extends State<SignUpScreen> {
                 height: 50,
                 child: ElevatedButton(
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: AppColors.accent,
+                    backgroundColor: AppColors.getAccentForPage(
+                        pageId), // ✅ UPDATED
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(16),
                     ),
@@ -859,13 +926,13 @@ class _SignUpScreenState extends State<SignUpScreen> {
                   child: _isLoading
                       ? CircularProgressIndicator(color: Colors.white)
                       : const Text(
-                          "Sign Up",
-                          style: TextStyle(
-                            color: Colors.white,
-                            fontFamily: 'ADLaMDisplay',
-                            fontSize: 20,
-                          ),
-                        ),
+                    "Sign Up",
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontFamily: 'ADLaMDisplay',
+                      fontSize: 20,
+                    ),
+                  ),
                 ),
               ),
             ),
@@ -878,7 +945,8 @@ class _SignUpScreenState extends State<SignUpScreen> {
                 Text(
                   "Already have an account?",
                   style: TextStyle(
-                    color: AppColors.textPrimary,
+                    color: AppColors.getTextPrimaryForPage(
+                        pageId), // ✅ UPDATED
                     fontFamily: 'ADLaMDisplay',
                   ),
                 ),
@@ -890,7 +958,8 @@ class _SignUpScreenState extends State<SignUpScreen> {
                     "Log In",
                     style: TextStyle(
                       fontWeight: FontWeight.bold,
-                      color: AppColors.textPrimary,
+                      color: AppColors.getTextPrimaryForPage(
+                          pageId), // ✅ UPDATED
                       fontFamily: 'ADLaMDisplay',
                     ),
                   ),

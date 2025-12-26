@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'colors.dart';
 import 'change_colors.dart';
 
-// ✅ NEW FILE: Customize page for individual page customization
+// ✅ UPDATED: Customize page logic to hide options for ADMIN and LOGIN
 class CustomizePage extends StatelessWidget {
   final String pageName;
 
@@ -11,9 +11,9 @@ class CustomizePage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppColors.background,
+      backgroundColor: AppColors.getBackgroundForPage('HOME'),
       appBar: AppBar(
-        backgroundColor: AppColors.accent,
+        backgroundColor: AppColors.getAccentForPage('HOME'),
         leading: IconButton(
           icon: Icon(Icons.arrow_back, color: Colors.white),
           onPressed: () => Navigator.pop(context),
@@ -35,14 +35,14 @@ class CustomizePage extends StatelessWidget {
           Container(
             width: double.infinity,
             padding: EdgeInsets.symmetric(vertical: 32),
-            color: AppColors.background,
+            color: AppColors.getBackgroundForPage('HOME'),
             child: Center(
               child: Text(
                 pageName,
                 style: TextStyle(
                   fontSize: 36,
                   fontWeight: FontWeight.bold,
-                  color: AppColors.textPrimary,
+                  color: AppColors.getTextPrimaryForPage('HOME'),
                   fontFamily: 'IrishGrover',
                 ),
               ),
@@ -62,29 +62,34 @@ class CustomizePage extends StatelessWidget {
                     Navigator.push(
                       context,
                       MaterialPageRoute(
-                        builder: (context) => ChangeColorsPage(pageName: pageName),
+                        builder: (context) =>
+                            ChangeColorsPage(pageName: pageName),
                       ),
                     );
                   },
                 ),
-                SizedBox(height: 12),
-                _buildCustomizationOption(
-                  context,
-                  icon: Icons.text_fields,
-                  title: 'Change Text',
-                  onTap: () {
-                    _showComingSoonDialog(context, 'Change Text');
-                  },
-                ),
-                SizedBox(height: 12),
-                _buildCustomizationOption(
-                  context,
-                  icon: Icons.format_align_left,
-                  title: 'Change Alignment/Orientation',
-                  onTap: () {
-                    _showComingSoonDialog(context, 'Change Alignment/Orientation');
-                  },
-                ),
+                // ✅ HIDDEN for ADMIN and LOGIN pages
+                if (pageName != 'ADMIN' && pageName != 'LOGIN') ...[
+                  SizedBox(height: 12),
+                  _buildCustomizationOption(
+                    context,
+                    icon: Icons.text_fields,
+                    title: 'Change Text',
+                    onTap: () {
+                      _showComingSoonDialog(context, 'Change Text');
+                    },
+                  ),
+                  SizedBox(height: 12),
+                  _buildCustomizationOption(
+                    context,
+                    icon: Icons.format_align_left,
+                    title: 'Change Alignment/Orientation',
+                    onTap: () {
+                      _showComingSoonDialog(
+                          context, 'Change Alignment/Orientation');
+                    },
+                  ),
+                ],
               ],
             ),
           ),
@@ -102,9 +107,9 @@ class CustomizePage extends StatelessWidget {
     return Container(
       margin: EdgeInsets.only(bottom: 12),
       decoration: BoxDecoration(
-        color: AppColors.card,
+        color: AppColors.getCardForPage('HOME'),
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: AppColors.border),
+        border: Border.all(color: AppColors.getBorderForPage('HOME')),
         boxShadow: [
           BoxShadow(
             color: Colors.black.withOpacity(0.05),
@@ -114,17 +119,18 @@ class CustomizePage extends StatelessWidget {
         ],
       ),
       child: ListTile(
-        leading: Icon(icon, color: AppColors.accent, size: 24),
+        leading: Icon(icon, color: AppColors.getAccentForPage('HOME'), size: 24),
         title: Text(
           title,
           style: TextStyle(
             fontSize: 16,
             fontWeight: FontWeight.w600,
-            color: AppColors.textPrimary,
+            color: AppColors.getTextPrimaryForPage('HOME'),
             fontFamily: 'ADLaMDisplay',
           ),
         ),
-        trailing: Icon(Icons.chevron_right, color: AppColors.textSecondary),
+        trailing: Icon(Icons.chevron_right,
+            color: AppColors.getTextSecondaryForPage('HOME')),
         onTap: onTap,
       ),
     );
@@ -135,18 +141,19 @@ class CustomizePage extends StatelessWidget {
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
-          backgroundColor: AppColors.card,
+          backgroundColor: AppColors.getCardForPage('HOME'),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(16),
           ),
           title: Row(
             children: [
-              Icon(Icons.construction, color: AppColors.accent),
+              Icon(Icons.construction,
+                  color: AppColors.getAccentForPage('HOME')),
               SizedBox(width: 12),
               Text(
                 'Coming Soon',
                 style: TextStyle(
-                  color: AppColors.textPrimary,
+                  color: AppColors.getTextPrimaryForPage('HOME'),
                   fontFamily: 'IrishGrover',
                 ),
               ),
@@ -155,7 +162,7 @@ class CustomizePage extends StatelessWidget {
           content: Text(
             '$feature feature is under development and will be available soon!',
             style: TextStyle(
-              color: AppColors.textSecondary,
+              color: AppColors.getTextSecondaryForPage('HOME'),
               fontFamily: 'ADLaMDisplay',
             ),
           ),
@@ -165,7 +172,7 @@ class CustomizePage extends StatelessWidget {
               child: Text(
                 'OK',
                 style: TextStyle(
-                  color: AppColors.accent,
+                  color: AppColors.getAccentForPage('HOME'),
                   fontFamily: 'ADLaMDisplay',
                   fontWeight: FontWeight.bold,
                 ),
