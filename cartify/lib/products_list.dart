@@ -12,8 +12,12 @@ class ProductsListPage extends StatefulWidget {
 
 class _ProductsListPageState extends State<ProductsListPage> {
   String? userId;
-  String selectedFilter = 'All';
-  String selectedGender = 'All';
+
+  // NEW FILTER SYSTEM
+  String selectedParentCategory = 'All'; // All, Men, Women, Kids
+  List<String> selectedSubCategories = []; // Multiple sub-categories
+  String sortBy = 'All'; // All, A->Z, Z->A, Low to High, High to Low
+
   List<Map<String, dynamic>> allProducts = [];
   List<Map<String, dynamic>> filteredProducts = [];
   List<Map<String, dynamic>> categories = [];
@@ -41,31 +45,51 @@ class _ProductsListPageState extends State<ProductsListPage> {
     });
   }
 
-  void _filterProducts() {
+  void _filterAndSortProducts() {
     setState(() {
-      filteredProducts = allProducts.where((product) {
-        final matchesSearch =
-            searchQuery.isEmpty ||
-                product['name'].toString().toLowerCase().contains(
-                  searchQuery.toLowerCase(),
-                );
-
-        final matchesGender =
-            selectedGender == 'All' || product['gender'] == selectedGender;
-
-        bool matchesCategory = selectedFilter == 'All';
-        if (!matchesCategory) {
-          final category = categories.firstWhere(
-                (cat) => cat['title'] == selectedFilter,
-            orElse: () => {},
-          );
-          if (category.isNotEmpty) {
-            matchesCategory = product['categoryId'] == category['id'];
-          }
-        }
-
-        return matchesSearch && matchesGender && matchesCategory;
+      // Step 1: Filter by search query
+      var tempProducts = allProducts.where((product) {
+        final matchesSearch = searchQuery.isEmpty ||
+            product['name'].toString().toLowerCase().contains(
+              searchQuery.toLowerCase(),
+            );
+        return matchesSearch;
       }).toList();
+
+      // Step 2: Filter by parent category
+      if (selectedParentCategory != 'All') {
+        tempProducts = tempProducts.where((product) {
+          return product['gender'] == selectedParentCategory;
+        }).toList();
+      }
+
+      // Step 3: Filter by sub-categories (if any selected)
+      if (selectedSubCategories.isNotEmpty) {
+        tempProducts = tempProducts.where((product) {
+          return selectedSubCategories.contains(product['categoryId']);
+        }).toList();
+      }
+
+      // Step 4: Sort products
+      if (sortBy == 'A->Z') {
+        tempProducts.sort((a, b) =>
+            (a['name'] ?? '').toString().compareTo((b['name'] ?? '').toString())
+        );
+      } else if (sortBy == 'Z->A') {
+        tempProducts.sort((a, b) =>
+            (b['name'] ?? '').toString().compareTo((a['name'] ?? '').toString())
+        );
+      } else if (sortBy == 'Low to High') {
+        tempProducts.sort((a, b) =>
+            (a['price'] ?? 0).compareTo(b['price'] ?? 0)
+        );
+      } else if (sortBy == 'High to Low') {
+        tempProducts.sort((a, b) =>
+            (b['price'] ?? 0).compareTo(a['price'] ?? 0)
+        );
+      }
+
+      filteredProducts = tempProducts;
     });
   }
 
@@ -77,181 +101,217 @@ class _ProductsListPageState extends State<ProductsListPage> {
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
       ),
-      builder: (context) => DraggableScrollableSheet(
-        initialChildSize: 0.7,
-        minChildSize: 0.5,
-        maxChildSize: 0.95,
-        expand: false,
-        builder: (context, scrollController) => Container(
-          padding: EdgeInsets.symmetric(horizontal: 20, vertical: 16),
-          child: Column(
-            children: [
-              Container(
-                width: 40,
-                height: 4,
-                margin: EdgeInsets.only(bottom: 16),
-                decoration: BoxDecoration(
-                  color: Colors.grey[300],
-                  borderRadius: BorderRadius.circular(2),
-                ),
-              ),
-
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Text(
-                    'Filter Products',
-                    style: TextStyle(
-                      fontSize: 20,
-                      fontWeight: FontWeight.bold,
-                      fontFamily: 'IrishGrover',
-                      color: AppColors.textPrimary,
-                    ),
+      builder: (context) => StatefulBuilder(
+        builder: (context, setModalState) => DraggableScrollableSheet(
+          initialChildSize: 0.75,
+          minChildSize: 0.5,
+          maxChildSize: 0.95,
+          expand: false,
+          builder: (context, scrollController) => Container(
+            padding: EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+            child: Column(
+              children: [
+                // Drag Handle
+                Container(
+                  width: 40,
+                  height: 4,
+                  margin: EdgeInsets.only(bottom: 16),
+                  decoration: BoxDecoration(
+                    color: Colors.grey[300],
+                    borderRadius: BorderRadius.circular(2),
                   ),
-                  Row(
-                    children: [
-                      TextButton(
-                        onPressed: () {
-                          setState(() {
-                            selectedFilter = 'All';
-                            selectedGender = 'All';
-                            searchQuery = '';
-                          });
-                          _filterProducts();
-                          Navigator.pop(context);
-                        },
-                        child: Text(
-                          'Clear All',
-                          style: TextStyle(
-                            color: AppColors.accent,
-                            fontFamily: 'ADLaMDisplay',
-                            fontSize: 13,
+                ),
+
+                // Header
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text(
+                      'Filter & Sort',
+                      style: TextStyle(
+                        fontSize: 20,
+                        fontWeight: FontWeight.bold,
+                        fontFamily: 'IrishGrover',
+                        color: AppColors.textPrimary,
+                      ),
+                    ),
+                    Row(
+                      children: [
+                        TextButton(
+                          onPressed: () {
+                            setModalState(() {
+                              selectedParentCategory = 'All';
+                              selectedSubCategories.clear();
+                              sortBy = 'All';
+                              searchQuery = '';
+                            });
+                          },
+                          child: Text(
+                            'Clear All',
+                            style: TextStyle(
+                              color: AppColors.accent,
+                              fontFamily: 'ADLaMDisplay',
+                              fontSize: 13,
+                            ),
                           ),
                         ),
-                      ),
-                      IconButton(
-                        icon: Icon(Icons.close, color: AppColors.textPrimary),
-                        onPressed: () => Navigator.pop(context),
-                      ),
-                    ],
-                  ),
-                ],
-              ),
-              Divider(color: AppColors.border),
-
-              Expanded(
-                child: SingleChildScrollView(
-                  controller: scrollController,
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      SizedBox(height: 16),
-
-                      Text(
-                        'Gender',
-                        style: TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.bold,
-                          fontFamily: 'IrishGrover',
-                          color: AppColors.textPrimary,
+                        IconButton(
+                          icon: Icon(Icons.close, color: AppColors.textPrimary),
+                          onPressed: () => Navigator.pop(context),
                         ),
-                      ),
-                      SizedBox(height: 12),
-                      Wrap(
-                        spacing: 8,
-                        runSpacing: 8,
-                        children: [
-                          _genderChip('All'),
-                          _genderChip('Men'),
-                          _genderChip('Women'),
-                        ],
-                      ),
+                      ],
+                    ),
+                  ],
+                ),
+                Divider(color: AppColors.border),
 
-                      SizedBox(height: 24),
+                // Content
+                Expanded(
+                  child: SingleChildScrollView(
+                    controller: scrollController,
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        SizedBox(height: 16),
 
-                      Text(
-                        'Category',
-                        style: TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.bold,
-                          fontFamily: 'IrishGrover',
-                          color: AppColors.textPrimary,
+                        // SORT BY SECTION
+                        Text(
+                          'Sort By',
+                          style: TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold,
+                            fontFamily: 'IrishGrover',
+                            color: AppColors.textPrimary,
+                          ),
                         ),
-                      ),
-                      SizedBox(height: 12),
-
-                      _categoryOption('All', Icons.grid_view),
-
-                      ...categories
-                          .where((cat) => cat['parentCategory'] == null)
-                          .map((parentCat) {
-                        return Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
+                        SizedBox(height: 12),
+                        Wrap(
+                          spacing: 8,
+                          runSpacing: 8,
                           children: [
-                            SizedBox(height: 8),
-                            _categoryOption(
-                              parentCat['title'],
-                              Icons.person,
-                            ),
+                            _sortChip('All', setModalState),
+                            _sortChip('A->Z', setModalState),
+                            _sortChip('Z->A', setModalState),
+                            _sortChip('Low to High', setModalState),
+                            _sortChip('High to Low', setModalState),
+                          ],
+                        ),
 
-                            ...categories
-                                .where(
-                                  (cat) =>
-                              cat['parentCategory'] ==
-                                  parentCat['title'],
-                            )
-                                .map(
-                                  (subCat) => Padding(
-                                padding: EdgeInsets.only(left: 24),
-                                child: _categoryOption(
-                                  subCat['title'],
-                                  Icons.category_outlined,
+                        SizedBox(height: 24),
+
+                        // PARENT CATEGORY SECTION
+                        Text(
+                          'Parent Category',
+                          style: TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold,
+                            fontFamily: 'IrishGrover',
+                            color: AppColors.textPrimary,
+                          ),
+                        ),
+                        SizedBox(height: 12),
+
+                        _parentCategoryOption('All', Icons.grid_view, setModalState),
+
+                        ...categories
+                            .where((cat) => cat['parentCategory'] == null)
+                            .map((parentCat) {
+                          return _parentCategoryOption(
+                            parentCat['title'],
+                            Icons.person,
+                            setModalState,
+                          );
+                        }),
+
+                        SizedBox(height: 24),
+
+                        // SUB-CATEGORIES SECTION (Only if parent selected)
+                        if (selectedParentCategory != 'All') ...[
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Text(
+                                'Sub-Categories',
+                                style: TextStyle(
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.bold,
+                                  fontFamily: 'IrishGrover',
+                                  color: AppColors.textPrimary,
                                 ),
                               ),
-                            ),
-                          ],
-                        );
-                      }),
+                              if (selectedSubCategories.isNotEmpty)
+                                TextButton(
+                                  onPressed: () {
+                                    setModalState(() {
+                                      selectedSubCategories.clear();
+                                    });
+                                  },
+                                  child: Text(
+                                    'Select All',
+                                    style: TextStyle(
+                                      color: AppColors.accent,
+                                      fontSize: 12,
+                                    ),
+                                  ),
+                                ),
+                            ],
+                          ),
+                          SizedBox(height: 12),
 
-                      SizedBox(height: 80),
-                    ],
-                  ),
-                ),
-              ),
+                          ...categories
+                              .where((cat) =>
+                          cat['parentCategory'] == selectedParentCategory)
+                              .map((subCat) {
+                            return _subCategoryOption(
+                              subCat['title'],
+                              subCat['id'],
+                              Icons.category_outlined,
+                              setModalState,
+                            );
+                          }),
+                        ],
 
-              Container(
-                padding: EdgeInsets.symmetric(vertical: 16),
-                decoration: BoxDecoration(
-                  color: AppColors.card,
-                  border: Border(top: BorderSide(color: AppColors.border)),
-                ),
-                child: SizedBox(
-                  width: double.infinity,
-                  height: 48,
-                  child: ElevatedButton(
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: AppColors.accent,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                    ),
-                    onPressed: () {
-                      _filterProducts();
-                      Navigator.pop(context);
-                    },
-                    child: Text(
-                      'Apply Filters (${_getFilteredCount()} products)',
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontSize: 16,
-                        fontWeight: FontWeight.bold,
-                        fontFamily: 'ADLaMDisplay',
-                      ),
+                        SizedBox(height: 80),
+                      ],
                     ),
                   ),
                 ),
-              ),
-            ],
+
+                // Apply Button
+                Container(
+                  padding: EdgeInsets.symmetric(vertical: 16),
+                  decoration: BoxDecoration(
+                    color: AppColors.card,
+                    border: Border(top: BorderSide(color: AppColors.border)),
+                  ),
+                  child: SizedBox(
+                    width: double.infinity,
+                    height: 48,
+                    child: ElevatedButton(
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: AppColors.accent,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                      ),
+                      onPressed: () {
+                        _filterAndSortProducts();
+                        Navigator.pop(context);
+                      },
+                      child: Text(
+                        'Apply Filters (${_getFilteredCount()} products)',
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                          fontFamily: 'ADLaMDisplay',
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
           ),
         ),
       ),
@@ -259,30 +319,28 @@ class _ProductsListPageState extends State<ProductsListPage> {
   }
 
   int _getFilteredCount() {
-    return allProducts.where((product) {
-      final matchesGender =
-          selectedGender == 'All' || product['gender'] == selectedGender;
+    var tempProducts = allProducts;
 
-      bool matchesCategory = selectedFilter == 'All';
-      if (!matchesCategory) {
-        final category = categories.firstWhere(
-              (cat) => cat['title'] == selectedFilter,
-          orElse: () => {},
-        );
-        if (category.isNotEmpty) {
-          matchesCategory = product['categoryId'] == category['id'];
-        }
-      }
+    if (selectedParentCategory != 'All') {
+      tempProducts = tempProducts.where((product) {
+        return product['gender'] == selectedParentCategory;
+      }).toList();
+    }
 
-      return matchesGender && matchesCategory;
-    }).length;
+    if (selectedSubCategories.isNotEmpty) {
+      tempProducts = tempProducts.where((product) {
+        return selectedSubCategories.contains(product['categoryId']);
+      }).toList();
+    }
+
+    return tempProducts.length;
   }
 
-  Widget _genderChip(String gender) {
-    final isSelected = selectedGender == gender;
+  Widget _sortChip(String sortOption, StateSetter setModalState) {
+    final isSelected = sortBy == sortOption;
     return ChoiceChip(
       label: Text(
-        gender,
+        sortOption,
         style: TextStyle(
           color: isSelected ? Colors.white : AppColors.textPrimary,
           fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
@@ -298,21 +356,26 @@ class _ProductsListPageState extends State<ProductsListPage> {
         width: 1,
       ),
       onSelected: (selected) {
-        setState(() {
-          selectedGender = gender;
+        setModalState(() {
+          sortBy = sortOption;
         });
       },
       padding: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
     );
   }
 
-  Widget _categoryOption(String title, IconData icon) {
-    final isSelected = selectedFilter == title;
+  Widget _parentCategoryOption(
+      String title,
+      IconData icon,
+      StateSetter setModalState,
+      ) {
+    final isSelected = selectedParentCategory == title;
 
     return InkWell(
       onTap: () {
-        setState(() {
-          selectedFilter = title;
+        setModalState(() {
+          selectedParentCategory = title;
+          selectedSubCategories.clear(); // Clear sub-categories when parent changes
         });
       },
       borderRadius: BorderRadius.circular(10),
@@ -357,15 +420,73 @@ class _ProductsListPageState extends State<ProductsListPage> {
     );
   }
 
+  Widget _subCategoryOption(
+      String title,
+      String categoryId,
+      IconData icon,
+      StateSetter setModalState,
+      ) {
+    final isSelected = selectedSubCategories.contains(categoryId);
+
+    return InkWell(
+      onTap: () {
+        setModalState(() {
+          if (isSelected) {
+            selectedSubCategories.remove(categoryId);
+          } else {
+            selectedSubCategories.add(categoryId);
+          }
+        });
+      },
+      borderRadius: BorderRadius.circular(10),
+      child: Container(
+        padding: EdgeInsets.symmetric(vertical: 12, horizontal: 12),
+        margin: EdgeInsets.only(bottom: 6),
+        decoration: BoxDecoration(
+          color: isSelected
+              ? AppColors.accent.withOpacity(0.1)
+              : Colors.transparent,
+          borderRadius: BorderRadius.circular(10),
+          border: Border.all(
+            color: isSelected ? AppColors.accent : AppColors.border,
+            width: isSelected ? 1.5 : 1,
+          ),
+        ),
+        child: Row(
+          children: [
+            Icon(
+              isSelected ? Icons.check_box : Icons.check_box_outline_blank,
+              color: isSelected ? AppColors.accent : AppColors.textSecondary,
+              size: 20,
+            ),
+            SizedBox(width: 12),
+            Expanded(
+              child: Text(
+                title,
+                style: TextStyle(
+                  fontSize: 14,
+                  fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+                  color: isSelected ? AppColors.accent : AppColors.textPrimary,
+                  fontFamily: 'ADLaMDisplay',
+                ),
+                overflow: TextOverflow.ellipsis,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppColors.background,
       appBar: AppBar(
-        backgroundColor: AppColors.accent, // ✅ Changed to Teal Green
+        backgroundColor: AppColors.accent,
         elevation: 0,
         leading: IconButton(
-          icon: Icon(Icons.chevron_left, color: Colors.white), // ✅ White Icon
+          icon: Icon(Icons.chevron_left, color: Colors.white),
           onPressed: () {
             Navigator.pop(context);
           },
@@ -373,22 +494,24 @@ class _ProductsListPageState extends State<ProductsListPage> {
         title: Text(
           'Products',
           style: TextStyle(
-            color: Colors.white, // ✅ White Text
+            color: Colors.white,
             fontFamily: 'IrishGrover',
             fontSize: 22,
           ),
         ),
         centerTitle: true,
-        iconTheme: IconThemeData(color: Colors.white), // ✅ White Icons
+        iconTheme: IconThemeData(color: Colors.white),
         actions: [
           Stack(
             children: [
               IconButton(
-                icon: Icon(Icons.filter_list, color: Colors.white), // ✅ White Filter Icon
+                icon: Icon(Icons.filter_list, color: Colors.white),
                 onPressed: _showFilterOptions,
                 tooltip: 'Filter',
               ),
-              if (selectedFilter != 'All' || selectedGender != 'All')
+              if (selectedParentCategory != 'All' ||
+                  selectedSubCategories.isNotEmpty ||
+                  sortBy != 'All')
                 Positioned(
                   right: 8,
                   top: 8,
@@ -408,6 +531,7 @@ class _ProductsListPageState extends State<ProductsListPage> {
       ),
       body: Column(
         children: [
+          // Search Bar
           Padding(
             padding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
             child: TextField(
@@ -431,7 +555,7 @@ class _ProductsListPageState extends State<ProductsListPage> {
                     setState(() {
                       searchQuery = '';
                     });
-                    _filterProducts();
+                    _filterAndSortProducts();
                   },
                 )
                     : null,
@@ -458,12 +582,15 @@ class _ProductsListPageState extends State<ProductsListPage> {
                 setState(() {
                   searchQuery = value;
                 });
-                _filterProducts();
+                _filterAndSortProducts();
               },
             ),
           ),
 
-          if (selectedFilter != 'All' || selectedGender != 'All')
+          // Active Filters Display
+          if (selectedParentCategory != 'All' ||
+              selectedSubCategories.isNotEmpty ||
+              sortBy != 'All')
             Container(
               height: 44,
               padding: EdgeInsets.symmetric(horizontal: 16, vertical: 4),
@@ -471,18 +598,18 @@ class _ProductsListPageState extends State<ProductsListPage> {
                 scrollDirection: Axis.horizontal,
                 child: Row(
                   children: [
-                    if (selectedGender != 'All')
+                    if (sortBy != 'All')
                       Padding(
                         padding: EdgeInsets.only(right: 8),
                         child: Chip(
                           backgroundColor: AppColors.accent.withOpacity(0.1),
                           side: BorderSide(color: AppColors.accent),
                           label: Text(
-                            selectedGender,
+                            'Sort: $sortBy',
                             style: TextStyle(
                               color: AppColors.accent,
                               fontFamily: 'ADLaMDisplay',
-                              fontSize: 12,
+                              fontSize: 11,
                               fontWeight: FontWeight.bold,
                             ),
                           ),
@@ -493,24 +620,24 @@ class _ProductsListPageState extends State<ProductsListPage> {
                           ),
                           onDeleted: () {
                             setState(() {
-                              selectedGender = 'All';
+                              sortBy = 'All';
                             });
-                            _filterProducts();
+                            _filterAndSortProducts();
                           },
                         ),
                       ),
-                    if (selectedFilter != 'All')
+                    if (selectedParentCategory != 'All')
                       Padding(
                         padding: EdgeInsets.only(right: 8),
                         child: Chip(
                           backgroundColor: AppColors.accent.withOpacity(0.1),
                           side: BorderSide(color: AppColors.accent),
                           label: Text(
-                            selectedFilter,
+                            selectedParentCategory,
                             style: TextStyle(
                               color: AppColors.accent,
                               fontFamily: 'ADLaMDisplay',
-                              fontSize: 12,
+                              fontSize: 11,
                               fontWeight: FontWeight.bold,
                             ),
                           ),
@@ -521,9 +648,38 @@ class _ProductsListPageState extends State<ProductsListPage> {
                           ),
                           onDeleted: () {
                             setState(() {
-                              selectedFilter = 'All';
+                              selectedParentCategory = 'All';
+                              selectedSubCategories.clear();
                             });
-                            _filterProducts();
+                            _filterAndSortProducts();
+                          },
+                        ),
+                      ),
+                    if (selectedSubCategories.isNotEmpty)
+                      Padding(
+                        padding: EdgeInsets.only(right: 8),
+                        child: Chip(
+                          backgroundColor: AppColors.accent.withOpacity(0.1),
+                          side: BorderSide(color: AppColors.accent),
+                          label: Text(
+                            '${selectedSubCategories.length} sub-categories',
+                            style: TextStyle(
+                              color: AppColors.accent,
+                              fontFamily: 'ADLaMDisplay',
+                              fontSize: 11,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                          deleteIcon: Icon(
+                            Icons.close,
+                            size: 16,
+                            color: AppColors.accent,
+                          ),
+                          onDeleted: () {
+                            setState(() {
+                              selectedSubCategories.clear();
+                            });
+                            _filterAndSortProducts();
                           },
                         ),
                       ),
@@ -540,6 +696,7 @@ class _ProductsListPageState extends State<ProductsListPage> {
               ),
             ),
 
+          // Products Grid
           Expanded(
             child: isLoading
                 ? Center(
@@ -571,10 +728,7 @@ class _ProductsListPageState extends State<ProductsListPage> {
                     Text(
                       searchQuery.isNotEmpty
                           ? 'Try a different search term'
-                          : (selectedFilter != 'All' ||
-                          selectedGender != 'All')
-                          ? 'Try adjusting your filters'
-                          : 'Products will appear here once added',
+                          : 'Try adjusting your filters',
                       style: TextStyle(
                         color: Colors.grey,
                         fontFamily: 'ADLaMDisplay',
@@ -582,27 +736,25 @@ class _ProductsListPageState extends State<ProductsListPage> {
                       ),
                       textAlign: TextAlign.center,
                     ),
-                    if (selectedFilter != 'All' ||
-                        selectedGender != 'All' ||
-                        searchQuery.isNotEmpty)
-                      Padding(
-                        padding: EdgeInsets.only(top: 16),
-                        child: TextButton.icon(
-                          onPressed: () {
-                            setState(() {
-                              selectedFilter = 'All';
-                              selectedGender = 'All';
-                              searchQuery = '';
-                            });
-                            _filterProducts();
-                          },
-                          icon: Icon(Icons.clear_all),
-                          label: Text('Clear all filters'),
-                          style: TextButton.styleFrom(
-                            foregroundColor: AppColors.accent,
-                          ),
+                    Padding(
+                      padding: EdgeInsets.only(top: 16),
+                      child: TextButton.icon(
+                        onPressed: () {
+                          setState(() {
+                            selectedParentCategory = 'All';
+                            selectedSubCategories.clear();
+                            sortBy = 'All';
+                            searchQuery = '';
+                          });
+                          _filterAndSortProducts();
+                        },
+                        icon: Icon(Icons.clear_all),
+                        label: Text('Clear all filters'),
+                        style: TextButton.styleFrom(
+                          foregroundColor: AppColors.accent,
                         ),
                       ),
+                    ),
                   ],
                 ),
               ),
@@ -655,12 +807,10 @@ class _ProductsListPageState extends State<ProductsListPage> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              // Product Image - Fixed height
               Container(
                 height: 140,
                 decoration: BoxDecoration(color: AppColors.border),
-                child:
-                product['imageUrl'] != null &&
+                child: product['imageUrl'] != null &&
                     product['imageUrl'].isNotEmpty
                     ? Image.network(
                   product['imageUrl'],
@@ -679,15 +829,12 @@ class _ProductsListPageState extends State<ProductsListPage> {
                   child: Icon(Icons.image, size: 50, color: Colors.grey),
                 ),
               ),
-
-              // Product Details - Fixed layout
               Expanded(
                 child: Padding(
                   padding: const EdgeInsets.all(8),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      // Product Name - Fixed 2 lines
                       Text(
                         product['name'] ?? 'Product',
                         maxLines: 2,
@@ -701,8 +848,6 @@ class _ProductsListPageState extends State<ProductsListPage> {
                         ),
                       ),
                       SizedBox(height: 4),
-
-                      // Product Price
                       Text(
                         'Rs. ${product['price'] ?? 0}',
                         style: TextStyle(
@@ -714,10 +859,7 @@ class _ProductsListPageState extends State<ProductsListPage> {
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
                       ),
-
                       Spacer(),
-
-                      // Add to Cart Button
                       SizedBox(
                         width: double.infinity,
                         height: 32,
