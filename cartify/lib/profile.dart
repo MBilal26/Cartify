@@ -296,211 +296,226 @@ class _ProfilePageState extends State<ProfilePage> {
 
   // ===================== DELETE ACCOUNT =====================
 
-  void _showDeleteAccountDialog() {
-    if (userId == null) {
-      _showErrorSnackBar('Please login first');
-      return;
-    }
+ void _showDeleteAccountDialog() {
+  if (userId == null) {
+    _showErrorSnackBar('Please login first');
+    return;
+  }
 
-    final passwordController = TextEditingController();
-    bool isDeleting = false;
+  final passwordController = TextEditingController();
+  bool isDeleting = false;
 
-    showDialog(
-      context: context,
-      barrierDismissible: false,
-      builder: (context) => StatefulBuilder(
-        builder: (context, setDialogState) => AlertDialog(
-          backgroundColor: AppColors.card,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(18),
-          ),
-          title: Row(
-            children: [
-              Icon(
-                Icons.warning_amber_rounded,
-                color: AppColors.error,
-                size: 28,
+  showDialog(
+    context: context,
+    barrierDismissible: false,
+    builder: (context) => StatefulBuilder(
+      builder: (context, setDialogState) => AlertDialog(
+        backgroundColor: AppColors.card,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(18),
+        ),
+        title: Row(
+          children: [
+            Icon(
+              Icons.warning_amber_rounded,
+              color: AppColors.error,
+              size: 28,
+            ),
+            SizedBox(width: 8),
+            Expanded(
+              child: Text(
+                "Delete Account",
+                style: TextStyle(
+                  fontFamily: 'IrishGrover',
+                  color: AppColors.error,
+                ),
               ),
-              SizedBox(width: 8),
-              Expanded(
-                child: Text(
-                  "Delete Account",
-                  style: TextStyle(
-                    fontFamily: 'IrishGrover',
-                    color: AppColors.error,
+            ),
+          ],
+        ),
+        content: SingleChildScrollView(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Container(
+                padding: EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: AppColors.error.withOpacity(0.1),
+                  borderRadius: BorderRadius.circular(8),
+                  border: Border.all(color: AppColors.error.withOpacity(0.3)),
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'This action cannot be undone!',
+                      style: TextStyle(
+                        color: AppColors.error,
+                        fontWeight: FontWeight.bold,
+                        fontSize: 14,
+                        fontFamily: 'ADLaMDisplay',
+                      ),
+                    ),
+                    SizedBox(height: 8),
+                    Text(
+                      'All your data will be permanently deleted:',
+                      style: TextStyle(
+                        color: AppColors.textPrimary,
+                        fontSize: 12,
+                        fontFamily: 'ADLaMDisplay',
+                      ),
+                    ),
+                    SizedBox(height: 4),
+                    Text(
+                      '• Profile information\n'
+                      '• Order history\n'
+                      '• Reward points\n'
+                      '• Cart items\n'
+                      '• Wallet balance',
+                      style: TextStyle(
+                        color: AppColors.textSecondary,
+                        fontSize: 11,
+                        fontFamily: 'ADLaMDisplay',
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              SizedBox(height: 16),
+              Text(
+                'Enter your password to confirm:',
+                style: TextStyle(
+                  color: AppColors.textPrimary,
+                  fontWeight: FontWeight.bold,
+                  fontSize: 13,
+                  fontFamily: 'ADLaMDisplay',
+                ),
+              ),
+              SizedBox(height: 8),
+              TextField(
+                controller: passwordController,
+                obscureText: true,
+                style: TextStyle(color: AppColors.textPrimary),
+                decoration: InputDecoration(
+                  hintText: 'Your password',
+                  hintStyle: TextStyle(color: AppColors.textSecondary),
+                  prefixIcon: Icon(Icons.lock, color: AppColors.error),
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  enabledBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                    borderSide: BorderSide(color: AppColors.border),
+                  ),
+                  contentPadding: EdgeInsets.symmetric(
+                    horizontal: 12,
+                    vertical: 12,
                   ),
                 ),
               ),
             ],
           ),
-          content: SingleChildScrollView(
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Container(
-                  padding: EdgeInsets.all(12),
-                  decoration: BoxDecoration(
-                    color: AppColors.error.withOpacity(0.1),
-                    borderRadius: BorderRadius.circular(8),
-                    border: Border.all(color: AppColors.error.withOpacity(0.3)),
-                  ),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        'This action cannot be undone!',
-                        style: TextStyle(
-                          color: AppColors.error,
-                          fontWeight: FontWeight.bold,
-                          fontSize: 14,
-                          fontFamily: 'ADLaMDisplay',
-                        ),
-                      ),
-                      SizedBox(height: 8),
-                      Text(
-                        'All your data will be permanently deleted:',
-                        style: TextStyle(
-                          color: AppColors.textPrimary,
-                          fontSize: 12,
-                          fontFamily: 'ADLaMDisplay',
-                        ),
-                      ),
-                      SizedBox(height: 4),
-                      Text(
-                        '• Profile information\n'
-                        '• Order history\n'
-                        '• Reward points\n'
-                        '• Cart items\n'
-                        '• Wallet balance',
-                        style: TextStyle(
-                          color: AppColors.textSecondary,
-                          fontSize: 11,
-                          fontFamily: 'ADLaMDisplay',
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-                SizedBox(height: 16),
-                Text(
-                  'Enter your password to confirm:',
-                  style: TextStyle(
-                    color: AppColors.textPrimary,
-                    fontWeight: FontWeight.bold,
-                    fontSize: 13,
-                    fontFamily: 'ADLaMDisplay',
-                  ),
-                ),
-                SizedBox(height: 8),
-                TextField(
-                  controller: passwordController,
-                  obscureText: true,
-                  style: TextStyle(color: AppColors.textPrimary),
-                  decoration: InputDecoration(
-                    hintText: 'Your password',
-                    hintStyle: TextStyle(color: AppColors.textSecondary),
-                    prefixIcon: Icon(Icons.lock, color: AppColors.error),
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    enabledBorder: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(12),
-                      borderSide: BorderSide(color: AppColors.border),
-                    ),
-                    contentPadding: EdgeInsets.symmetric(
-                      horizontal: 12,
-                      vertical: 12,
-                    ),
-                  ),
-                ),
-              ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: isDeleting
+                ? null
+                : () {
+                    passwordController.dispose();
+                    Navigator.pop(context);
+                  },
+            child: Text(
+              'Cancel',
+              style: TextStyle(color: AppColors.textPrimary),
             ),
           ),
-          actions: [
-            TextButton(
-              onPressed: isDeleting ? null : () => Navigator.pop(context),
-              child: Text(
-                'Cancel',
-                style: TextStyle(color: AppColors.textPrimary),
-              ),
+          ElevatedButton(
+            style: ElevatedButton.styleFrom(
+              backgroundColor: AppColors.error,
+              disabledBackgroundColor: Colors.grey,
             ),
-            ElevatedButton(
-              style: ElevatedButton.styleFrom(
-                backgroundColor: AppColors.error,
-                disabledBackgroundColor: Colors.grey,
-              ),
-              onPressed: isDeleting
-                  ? null
-                  : () async {
-                      if (passwordController.text.isEmpty) {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(
-                            content: Text('Please enter your password'),
-                            backgroundColor: AppColors.error,
-                          ),
-                        );
-                        return;
+            onPressed: isDeleting
+                ? null
+                : () async {
+                    if (passwordController.text.isEmpty) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(
+                          content: Text('Please enter your password'),
+                          backgroundColor: AppColors.error,
+                        ),
+                      );
+                      return;
+                    }
+
+                    setDialogState(() => isDeleting = true);
+
+                    try {
+                      final user = FirebaseAuth.instance.currentUser;
+                      if (user == null) {
+                        throw Exception('No user logged in');
                       }
 
-                      setDialogState(() => isDeleting = true);
+                      print('🔄 Starting account deletion for: ${user.uid}');
 
-                      try {
-                        final user = FirebaseAuth.instance.currentUser;
-                        if (user == null) throw Exception('No user logged in');
+                      // Step 1: Re-authenticate user FIRST
+                      final credential = EmailAuthProvider.credential(
+                        email: user.email!,
+                        password: passwordController.text,
+                      );
 
-                        print(
-                          'Attempting to delete account for user: ${user.uid}',
+                      await user.reauthenticateWithCredential(credential);
+                      print('✅ Re-authentication successful');
+
+                      // Step 2: Delete all user data from Firestore WHILE STILL AUTHENTICATED
+                      await _deleteAllUserData(user.uid);
+                      print('✅ All user data deleted from Firestore');
+
+                      // Step 3: NOW delete Firebase Auth account (this removes authentication)
+                      await user.delete();
+                      print('✅ Firebase Auth account deleted');
+
+                      // Step 4: Cleanup and navigate
+                      passwordController.dispose();
+
+                      if (mounted) {
+                        Navigator.of(context).pop(); // Close dialog
+                        
+                        Navigator.of(context).pushNamedAndRemoveUntil(
+                          '/login',
+                          (route) => false,
                         );
 
-                        // Re-authenticate user
-                        final credential = EmailAuthProvider.credential(
-                          email: userEmail,
-                          password: passwordController.text,
-                        );
+                        Future.delayed(Duration(milliseconds: 500), () {
+                          if (mounted) {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(
+                                content: Text('Account deleted successfully'),
+                                backgroundColor: AppColors.success,
+                                duration: Duration(seconds: 3),
+                              ),
+                            );
+                          }
+                        });
+                      }
+                    } on FirebaseAuthException catch (e) {
+                      print('❌ Firebase Auth Error: ${e.code} - ${e.message}');
+                      setDialogState(() => isDeleting = false);
 
-                        await user.reauthenticateWithCredential(credential);
-                        print('Re-authentication successful');
+                      String message = 'Failed to delete account';
+                      if (e.code == 'wrong-password') {
+                        message = 'Incorrect password';
+                      } else if (e.code == 'too-many-requests') {
+                        message = 'Too many attempts. Try again later';
+                      } else if (e.code == 'requires-recent-login') {
+                        message = 'Please logout, login again, then try deleting';
+                      } else if (e.code == 'user-mismatch') {
+                        message = 'Authentication error. Please try again';
+                      } else if (e.code == 'invalid-credential') {
+                        message = 'Invalid credentials. Please check your password';
+                      }
 
-                        // Delete all user data from Firestore
-                        await _deleteAllUserData(user.uid);
-                        print('User data deleted from Firestore');
-
-                        // Delete Firebase Auth account
-                        await user.delete();
-                        print('Firebase Auth account deleted');
-
-                        // Close dialog and navigate to login
-                        if (mounted) {
-                          Navigator.of(context).pop(); // Close dialog
-
-                          // Navigate to login and remove all previous routes
-                          Navigator.of(
-                            context,
-                          ).pushNamedAndRemoveUntil('/login', (route) => false);
-
-                          // Show success message
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(
-                              content: Text('Account deleted successfully'),
-                              backgroundColor: AppColors.success,
-                            ),
-                          );
-                        }
-                      } on FirebaseAuthException catch (e) {
-                        print('Firebase Auth Error: ${e.code} - ${e.message}');
-                        setDialogState(() => isDeleting = false);
-
-                        String message = 'Failed to delete account';
-                        if (e.code == 'wrong-password') {
-                          message = 'Incorrect password';
-                        } else if (e.code == 'too-many-requests') {
-                          message = 'Too many attempts. Try again later';
-                        } else if (e.code == 'requires-recent-login') {
-                          message =
-                              'Please logout and login again, then try deleting';
-                        }
-
+                      if (mounted) {
                         ScaffoldMessenger.of(context).showSnackBar(
                           SnackBar(
                             content: Text(message),
@@ -508,73 +523,134 @@ class _ProfilePageState extends State<ProfilePage> {
                             duration: Duration(seconds: 4),
                           ),
                         );
-                      } catch (e) {
-                        print('General Error: $e');
-                        setDialogState(() => isDeleting = false);
+                      }
+                    } catch (e) {
+                      print('❌ General Error: $e');
+                      setDialogState(() => isDeleting = false);
 
+                      if (mounted) {
                         ScaffoldMessenger.of(context).showSnackBar(
                           SnackBar(
-                            content: Text('Error: $e'),
+                            content: Text('Error: ${e.toString()}'),
                             backgroundColor: AppColors.error,
                             duration: Duration(seconds: 4),
                           ),
                         );
                       }
-                    },
-              child: isDeleting
-                  ? SizedBox(
-                      width: 16,
-                      height: 16,
-                      child: CircularProgressIndicator(
-                        strokeWidth: 2,
-                        valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
-                      ),
-                    )
-                  : Text(
-                      'Delete Account',
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontFamily: 'ADLaMDisplay',
-                      ),
+                    }
+                  },
+            child: isDeleting
+                ? SizedBox(
+                    width: 16,
+                    height: 16,
+                    child: CircularProgressIndicator(
+                      strokeWidth: 2,
+                      valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
                     ),
-            ),
-          ],
-        ),
+                  )
+                : Text(
+                    'Delete Account',
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontFamily: 'ADLaMDisplay',
+                    ),
+                  ),
+          ),
+        ],
       ),
-    );
-  }
+    ),
+  );
+}
 
-  // Helper method to delete all user data
-  Future<void> _deleteAllUserData(String uid) async {
-    try {
-      final batch = FirebaseFirestore.instance.batch();
+// CRITICAL: This runs BEFORE deleting auth, so user is still authenticated
+Future<void> _deleteAllUserData(String uid) async {
+  try {
+    print('🔄 Starting Firestore data deletion (user still authenticated)...');
 
-      // Delete user document
-      batch.delete(FirebaseFirestore.instance.collection('users').doc(uid));
-      print('Marked user doc for deletion');
+    // Use a single batch for better performance and atomicity
+    final batch = FirebaseFirestore.instance.batch();
+    int itemsToDelete = 0;
 
-      // Delete cart items
-      final cartSnapshot = await FirebaseFirestore.instance
-          .collection('cart')
-          .where('userId', isEqualTo: uid)
-          .get();
-      for (var doc in cartSnapshot.docs) {
-        batch.delete(doc.reference);
-      }
-      print('Marked ${cartSnapshot.docs.length} cart items for deletion');
+    // 1. Delete user document
+    final userRef = FirebaseFirestore.instance.collection('users').doc(uid);
+    batch.delete(userRef);
+    itemsToDelete++;
+    print('📝 Marked user document for deletion');
 
-      // Delete rewards
-      batch.delete(FirebaseFirestore.instance.collection('rewards').doc(uid));
-      print('Marked rewards doc for deletion');
-
-      // Commit all deletions
-      await batch.commit();
-      print('Batch deletion completed successfully');
-    } catch (e) {
-      print('Error deleting user data: $e');
-      throw Exception('Failed to delete user data: $e');
+    // 2. Delete cart items - get all cart items for this user
+    final cartSnapshot = await FirebaseFirestore.instance
+        .collection('cart')
+        .where('userId', isEqualTo: uid)
+        .get();
+    
+    for (var doc in cartSnapshot.docs) {
+      batch.delete(doc.reference);
+      itemsToDelete++;
     }
+    print('📝 Marked ${cartSnapshot.docs.length} cart items for deletion');
+
+    // 3. Delete rewards
+    final rewardsRef = FirebaseFirestore.instance.collection('rewards').doc(uid);
+    batch.delete(rewardsRef);
+    itemsToDelete++;
+    print('📝 Marked rewards document for deletion');
+
+    // 4. Delete OTP verifications
+    final otpRef = FirebaseFirestore.instance
+        .collection('otp_verifications')
+        .doc(uid);
+    batch.delete(otpRef);
+    itemsToDelete++;
+    print('📝 Marked OTP verification for deletion');
+
+    // 5. Commit the main batch
+    await batch.commit();
+    print('✅ Batch commit successful! Deleted $itemsToDelete items');
+
+    // 6. Delete user's coupons subcollection (separate batch for subcollections)
+    try {
+      final couponsSnapshot = await FirebaseFirestore.instance
+          .collection('users')
+          .doc(uid)
+          .collection('coupons')
+          .get();
+      
+      if (couponsSnapshot.docs.isNotEmpty) {
+        final couponsBatch = FirebaseFirestore.instance.batch();
+        for (var doc in couponsSnapshot.docs) {
+          couponsBatch.delete(doc.reference);
+        }
+        await couponsBatch.commit();
+        print('✅ Deleted ${couponsSnapshot.docs.length} user coupons');
+      }
+    } catch (e) {
+      print('⚠️ No coupons to delete or error: $e');
+    }
+
+    // 7. OPTIONAL: Delete orders (uncomment if you want to delete order history)
+    /*
+    final ordersSnapshot = await FirebaseFirestore.instance
+        .collection('orders')
+        .where('userId', isEqualTo: uid)
+        .get();
+    
+    if (ordersSnapshot.docs.isNotEmpty) {
+      final ordersBatch = FirebaseFirestore.instance.batch();
+      for (var doc in ordersSnapshot.docs) {
+        ordersBatch.delete(doc.reference);
+      }
+      await ordersBatch.commit();
+      print('✅ Deleted ${ordersSnapshot.docs.length} orders');
+    }
+    */
+
+    print('✅ ALL user data successfully deleted from Firestore');
+  } catch (e) {
+    print('❌ Error deleting user data: $e');
+    print('❌ Stack trace: ${StackTrace.current}');
+    throw Exception('Failed to delete user data: $e');
   }
+}
 
   // ===================== OTHER ACTIONS =====================
 

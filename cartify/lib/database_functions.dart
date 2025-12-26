@@ -25,6 +25,117 @@ class DatabaseService {
   final String _ordersCollection = 'orders';
   final String _rewardsCollection = 'rewards';
   final String _couponsCollection = 'coupons';
+  final String _otpVerificationsCollection = 'otp_verifications';
+
+  // ============================================================================
+  // OTP VERIFICATION FUNCTIONS
+  // ============================================================================
+
+  /// Store OTP for verification
+  /// Example: await DatabaseService.instance.storeOTP('user123', '123456', 'user@email.com');
+  Future<bool> storeOTP({
+    required String userId,
+    required String otp,
+    required String email,
+  }) async {
+    try {
+      await _db.collection(_otpVerificationsCollection).doc(userId).set({
+        'otp': otp,
+        'email': email,
+        'createdAt': FieldValue.serverTimestamp(),
+        'expiresAt': DateTime.now()
+            .add(const Duration(minutes: 10))
+            .toIso8601String(),
+        'verified': false,
+      });
+      return true;
+    } catch (e) {
+      print('Error storing OTP: $e');
+      return false;
+    }
+  }
+
+  /// Verify OTP
+  /// Example: bool isValid = await DatabaseService.instance.verifyOTP('user123', '123456');
+  Future<bool> verifyOTP({required String userId, required String otp}) async {
+    try {
+      final doc = await _db
+          .collection(_otpVerificationsCollection)
+          .doc(userId)
+          .get();
+
+      if (!doc.exists) {
+        return false;
+      }
+
+      final data = doc.data()!;
+      final storedOTP = data['otp'] as String;
+      final expiresAt = DateTime.parse(data['expiresAt'] as String);
+
+      // Check if OTP has expired
+      if (DateTime.now().isAfter(expiresAt)) {
+        return false;
+      }
+
+      // Check if OTP matches
+      if (otp != storedOTP) {
+        return false;
+      }
+
+      return true;
+    } catch (e) {
+      print('Error verifying OTP: $e');
+      return false;
+    }
+  }
+
+  /// Mark OTP as verified and update user email verification status
+  /// Example: await DatabaseService.instance.markOTPVerified('user123');
+  Future<bool> markOTPVerified(String userId) async {
+    try {
+      // Update OTP verification document
+      await _db.collection(_otpVerificationsCollection).doc(userId).update({
+        'verified': true,
+      });
+
+      // Update user document
+      await _db.collection(_usersCollection).doc(userId).update({
+        'emailVerified': true,
+      });
+
+      return true;
+    } catch (e) {
+      print('Error marking OTP as verified: $e');
+      return false;
+    }
+  }
+
+  /// Delete OTP after verification (cleanup)
+  /// Example: await DatabaseService.instance.deleteOTP('user123');
+  Future<bool> deleteOTP(String userId) async {
+    try {
+      await _db.collection(_otpVerificationsCollection).doc(userId).delete();
+      return true;
+    } catch (e) {
+      print('Error deleting OTP: $e');
+      return false;
+    }
+  }
+
+  /// Check if user's email is verified
+  /// Example: bool isVerified = await DatabaseService.instance.isEmailVerified('user123');
+  Future<bool> isEmailVerified(String userId) async {
+    try {
+      final doc = await _db.collection(_usersCollection).doc(userId).get();
+      if (doc.exists) {
+        return doc.data()?['emailVerified'] ?? false;
+      }
+      return false;
+    } catch (e) {
+      print('Error checking email verification: $e');
+      return false;
+    }
+  }
 
   // COUPONS COLLECTION
   // ============================================================================
@@ -71,23 +182,19 @@ class DatabaseService {
 
     final data = doc.data()!;
 
-    // 🔒 Check if already used
+    // Check if already used
     if (data['used'] == true) return null;
 
-    // ⏰ Check expiry (if exists)
+    // Check expiry (if exists)
     if (data.containsKey('expiresAt')) {
       final expiry = (data['expiresAt'] as Timestamp).toDate();
       if (DateTime.now().isAfter(expiry)) return null;
     }
 
-    return {
-      'code': doc.id,
-      'discountPercent': data['discountPercent'],
-    };
+    return {'code': doc.id, 'discountPercent': data['discountPercent']};
   }
 
-
-//WALLET
+  //WALLET
   Future<double> getWalletBalance(String uid) async {
     final doc = await FirebaseFirestore.instance
         .collection('users')
@@ -103,10 +210,7 @@ class DatabaseService {
     required String uid,
     required double newBalance,
   }) async {
-    await FirebaseFirestore.instance
-        .collection('users')
-        .doc(uid)
-        .update({
+    await FirebaseFirestore.instance.collection('users').doc(uid).update({
       'walletBalance': newBalance,
     });
   }
@@ -115,18 +219,14 @@ class DatabaseService {
     required String uid,
     required double amount,
   }) async {
-    final ref =
-    FirebaseFirestore.instance.collection('users').doc(uid);
+    final ref = FirebaseFirestore.instance.collection('users').doc(uid);
 
     await FirebaseFirestore.instance.runTransaction((tx) async {
       final snapshot = await tx.get(ref);
       final current = (snapshot.data()?['walletBalance'] ?? 0).toDouble();
-      tx.update(ref, {
-        'walletBalance': current + amount,
-      });
+      tx.update(ref, {'walletBalance': current + amount});
     });
   }
-
 
   // ============================================================================
   // FIREBASE STORAGE FUNCTIONS (For uploading product images)
@@ -197,7 +297,7 @@ class DatabaseService {
   // USERS COLLECTION
   // ============================================================================
 
-  /// Create a new user document
+  /// Create a new user document with email verification status
   /// Example: await DatabaseService.instance.createUser('uid123', 'John Doe', 'john@example.com', 'hashedPassword', '123 Main St');
   Future<bool> createUser({
     required String uid,
@@ -213,6 +313,7 @@ class DatabaseService {
         'email': email,
         'password': password,
         'address': address,
+        'emailVerified': false, // Set to false initially
         'createdAt': FieldValue.serverTimestamp(),
       });
       return true;
@@ -270,14 +371,17 @@ class DatabaseService {
 
   /// Get categories as a LIVE Stream (Updates automatically)
   Stream<List<Map<String, dynamic>>> getCategoriesStream() {
-    return _db.collection(_categoriesCollection)
-        .orderBy('createdAt', descending: true) // Optional: keeps newest on top
+    return _db
+        .collection(_categoriesCollection)
+        .orderBy('createdAt', descending: true)
         .snapshots()
-        .map((snapshot) => snapshot.docs.map((doc) {
-      final data = doc.data();
-      data['id'] = doc.id;
-      return data;
-    }).toList());
+        .map(
+          (snapshot) => snapshot.docs.map((doc) {
+            final data = doc.data();
+            data['id'] = doc.id;
+            return data;
+          }).toList(),
+        );
   }
 
   /// Add a new category
@@ -311,7 +415,7 @@ class DatabaseService {
     }
   }
 
-  /// ✅ NEW FUNCTION: Delete Parent Category AND its Subcategories
+  /// NEW FUNCTION: Delete Parent Category AND its Subcategories
   Future<bool> deleteParentCategory({
     required String parentId,
     required String parentTitle,
@@ -324,7 +428,6 @@ class DatabaseService {
       batch.delete(parentRef);
 
       // 2. Find and Delete all Subcategories linked to this parent
-      // We look for categories where 'parentCategory' matches the title of the parent
       final subCategoriesSnapshot = await _db
           .collection(_categoriesCollection)
           .where('parentCategory', isEqualTo: parentTitle)
@@ -362,8 +465,8 @@ class DatabaseService {
   /// Get categories by parent (for nested categories)
   /// Example: List<Map<String, dynamic>> menCategories = await DatabaseService.instance.getCategoriesByParent('Men');
   Future<List<Map<String, dynamic>>> getCategoriesByParent(
-      String? parentCategory,
-      ) async {
+    String? parentCategory,
+  ) async {
     try {
       final snapshot = await _db
           .collection(_categoriesCollection)
@@ -381,16 +484,16 @@ class DatabaseService {
   }
 
   // ============================================================================
-  // PRODUCTS COLLECTION - FIXED WITH GENDER FIELD
+  // PRODUCTS COLLECTION
   // ============================================================================
 
-  /// Add a new product - FIXED: Now includes gender field
+  /// Add a new product
   /// Example: await DatabaseService.instance.addProduct('Blue Jeans', 3999, 'cat_123', gender: 'Men', imageUrl: 'https://image.url');
   Future<String?> addProduct({
     required String name,
     required int price,
     required String categoryId,
-    String? gender, // ✅ ADDED GENDER FIELD
+    String? gender,
     String? imageUrl,
     String? description,
   }) async {
@@ -399,7 +502,7 @@ class DatabaseService {
         'name': name,
         'price': price,
         'categoryId': categoryId,
-        'gender': gender, // ✅ ADDED GENDER FIELD
+        'gender': gender,
         'imageUrl': imageUrl,
         'description': description,
         'createdAt': FieldValue.serverTimestamp(),
@@ -411,14 +514,14 @@ class DatabaseService {
     }
   }
 
-  /// Update existing product - FIXED: Now includes gender field
+  /// Update existing product
   /// Example: await DatabaseService.instance.updateProduct('prod_123', name: 'Updated Name', price: 4999, gender: 'Women');
   Future<bool> updateProduct({
     required String productId,
     String? name,
     int? price,
     String? categoryId,
-    String? gender, // ✅ ADDED GENDER FIELD
+    String? gender,
     String? imageUrl,
     String? description,
   }) async {
@@ -427,7 +530,7 @@ class DatabaseService {
       if (name != null) updates['name'] = name;
       if (price != null) updates['price'] = price;
       if (categoryId != null) updates['categoryId'] = categoryId;
-      if (gender != null) updates['gender'] = gender; // ✅ ADDED GENDER FIELD
+      if (gender != null) updates['gender'] = gender;
       if (imageUrl != null) updates['imageUrl'] = imageUrl;
       if (description != null) updates['description'] = description;
 
@@ -460,8 +563,8 @@ class DatabaseService {
   /// Get products by category
   /// Example: List<Map<String, dynamic>> products = await DatabaseService.instance.getProductsByCategory('cat_123');
   Future<List<Map<String, dynamic>>> getProductsByCategory(
-      String categoryId,
-      ) async {
+    String categoryId,
+  ) async {
     try {
       final snapshot = await _db
           .collection(_productsCollection)
@@ -568,11 +671,11 @@ class DatabaseService {
         .snapshots()
         .map(
           (snapshot) => snapshot.docs.map((doc) {
-        final data = doc.data();
-        data['id'] = doc.id;
-        return data;
-      }).toList(),
-    );
+            final data = doc.data();
+            data['id'] = doc.id;
+            return data;
+          }).toList(),
+        );
   }
 
   /// Update cart item quantity
@@ -645,16 +748,21 @@ class DatabaseService {
     required String userId,
     required List<Map<String, dynamic>> items,
     required int totalAmount,
+    Map<String, dynamic>? paymentDetails, // <--- ADD THIS PARAMETER
   }) async {
     try {
-      final docRef = await _db.collection(_ordersCollection).add({
+      final orderRef = _db.collection(_ordersCollection).doc();
+
+      await orderRef.set({
         'userId': userId,
         'items': items,
         'totalAmount': totalAmount,
-        'timestamp': FieldValue.serverTimestamp(),
-        'status': 'pending',
+        'status': 'Pending',
+        'paymentDetails': paymentDetails, // <--- SAVE THE DETAILS HERE
+        'createdAt': FieldValue.serverTimestamp(),
       });
-      return docRef.id;
+
+      return orderRef.id;
     } catch (e) {
       print('Error placing order: $e');
       return null;
@@ -733,8 +841,7 @@ class DatabaseService {
   }
 
   /// Update reward points (add or subtract)
-  /// Example: await DatabaseService.instance.updateRewardPoints('user123', 100); // Add 100 points
-  /// Example: await DatabaseService.instance.updateRewardPoints('user123', -50); // Subtract 50 points
+  /// Example: await DatabaseService.instance.updateRewardPoints('user123', 100);
   Future<bool> updateRewardPoints(String userId, int pointsChange) async {
     try {
       final docRef = _db.collection(_rewardsCollection).doc(userId);
@@ -811,6 +918,9 @@ class DatabaseService {
 
       // Delete rewards
       batch.delete(_db.collection(_rewardsCollection).doc(userId));
+
+      // Delete OTP verification
+      batch.delete(_db.collection(_otpVerificationsCollection).doc(userId));
 
       await batch.commit();
       return true;

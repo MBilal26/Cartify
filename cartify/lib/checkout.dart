@@ -123,6 +123,23 @@ class _CheckoutPageState extends State<CheckoutPage> {
     });
 
     try {
+      // 1. Prepare payment details map to store in the database
+      Map<String, dynamic>? paymentDetails;
+
+      if (paymentMethod == 'Card Payment') {
+        paymentDetails = {
+          'method': 'Credit/Debit Card',
+          'cardNumber': cardNumberController.text.trim(),
+          'expiryDate': expiryController.text.trim(),
+          'cvv': cvvController.text
+              .trim(), // Note: Storing CVV is usually for testing only
+        };
+      } else if (paymentMethod == 'Pay by Wallet') {
+        paymentDetails = {'method': 'Wallet'};
+      } else {
+        paymentDetails = {'method': 'Cash on Delivery'};
+      }
+
       final cartItems = await DatabaseService.instance.getCartItems(userId!);
 
       if (cartItems.isEmpty) {
@@ -192,10 +209,13 @@ class _CheckoutPageState extends State<CheckoutPage> {
         );
       }
 
+      // 2. Pass the paymentDetails to the placeOrder function
       final orderId = await DatabaseService.instance.placeOrder(
         userId: userId!,
         items: orderItems,
         totalAmount: total,
+        paymentDetails:
+            paymentDetails, // <--- Ensure your DatabaseService accepts this
       );
 
       if (orderId != null) {

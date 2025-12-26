@@ -5,6 +5,8 @@ import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'colors.dart';
 import 'reset_password.dart';
 import 'database_functions.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'otp_verification.dart';
 
 // 1.__Splash Screen
 
@@ -60,9 +62,7 @@ class _SplashScreenState extends State<SplashScreen>
       body: Container(
         width: double.infinity,
         height: double.infinity,
-        decoration: BoxDecoration(
-          gradient: AppGradients.splashBackground, // keep your gradient
-        ),
+        decoration: BoxDecoration(gradient: AppGradients.splashBackground),
         child: FadeTransition(
           opacity: _fadeAnimation,
           child: ScaleTransition(
@@ -92,7 +92,7 @@ class _SplashScreenState extends State<SplashScreen>
   }
 }
 
-// 3.__Login Screen
+// 2.__Login Screen
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
 
@@ -131,16 +131,45 @@ class _LoginScreenState extends State<LoginScreen> {
     });
 
     try {
-      await FirebaseAuth.instance.signInWithEmailAndPassword(
-        email: emailController.text.trim(),
-        password: passwordController.text.trim(),
-      );
+      UserCredential userCredential = await FirebaseAuth.instance
+          .signInWithEmailAndPassword(
+            email: emailController.text.trim(),
+            password: passwordController.text.trim(),
+          );
+
+      // Check if email is verified in Firestore
+      final userDoc = await FirebaseFirestore.instance
+          .collection('users')
+          .doc(userCredential.user!.uid)
+          .get();
+
+      final isEmailVerified = userDoc.data()?['emailVerified'] ?? false;
 
       setState(() {
         _isLoading = false;
       });
 
-      Navigator.pushReplacementNamed(context, '/home');
+      if (!isEmailVerified) {
+        // Email not verified, navigate to OTP screen
+        if (mounted) {
+          // Inside login_and_signup.dart
+          Navigator.pushAndRemoveUntil(
+            context,
+            MaterialPageRoute(
+              builder: (context) => OTPVerificationScreen(
+                email: emailController.text.trim(),
+                userId: userCredential.user!.uid,
+              ),
+            ),
+            (route) => false, // This clears the login screen from the history
+          );
+        }
+      } else {
+        // Email verified, proceed to home
+        if (mounted) {
+          Navigator.pushReplacementNamed(context, '/home');
+        }
+      }
     } on FirebaseAuthException catch (e) {
       setState(() {
         _isLoading = false;
@@ -153,6 +182,8 @@ class _LoginScreenState extends State<LoginScreen> {
         message = 'Wrong password';
       } else if (e.code == 'invalid-email') {
         message = 'Invalid email address';
+      } else if (e.code == 'invalid-credential') {
+        message = 'Invalid email or password';
       }
 
       ScaffoldMessenger.of(context).showSnackBar(
@@ -372,7 +403,7 @@ class _LoginScreenState extends State<LoginScreen> {
   }
 }
 
-// 4.___Sign Up Screen
+// 3.__Sign Up Screen
 class SignUpScreen extends StatefulWidget {
   const SignUpScreen({super.key});
 
@@ -400,7 +431,70 @@ class _SignUpScreenState extends State<SignUpScreen> {
     super.dispose();
   }
 
+  // Email validation function
+  String? _validateEmail(String email) {
+    if (email.isEmpty) {
+      return 'Email is required';
+    }
+
+    // Basic email format validation
+    final emailRegex = RegExp(
+      r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$',
+    );
+
+    if (!emailRegex.hasMatch(email)) {
+      return 'Please enter a valid email address';
+    }
+
+    // Check for common disposable/temporary email domains
+    final disposableDomains = [
+      'tempmail.com',
+      '10minutemail.com',
+      'guerrillamail.com',
+      'mailinator.com',
+      'trashmail.com',
+      'throwaway.email',
+      'fakeinbox.com',
+      'maildrop.cc',
+      'temp-mail.org',
+      'getnada.com',
+    ];
+
+    final domain = email.split('@').last.toLowerCase();
+    if (disposableDomains.contains(domain)) {
+      return 'Please use a permanent email address';
+    }
+
+    // Check for suspicious patterns
+    if (email.contains('..') || email.startsWith('.') || email.endsWith('.')) {
+      return 'Invalid email format';
+    }
+
+    return null; // Email is valid
+  }
+
+  // Password validation function
+  String? _validatePassword(String password) {
+    if (password.isEmpty) {
+      return 'Password is required';
+    }
+    if (password.length < 6) {
+      return 'Password must be at least 6 characters';
+    }
+    if (password.length > 11) {
+      return 'Password must not exceed 11 characters';
+    }
+    if (!password.contains(RegExp(r'[A-Z]'))) {
+      return 'Password must contain at least one capital letter';
+    }
+    if (!password.contains(RegExp(r'[0-9]'))) {
+      return 'Password must contain at least one number';
+    }
+    return null; // Password is valid
+  }
+
   Future<void> _signUp() async {
+    // Validate all fields
     if (nameController.text.trim().isEmpty ||
         emailController.text.trim().isEmpty ||
         passwordController.text.trim().isEmpty ||
@@ -414,20 +508,37 @@ class _SignUpScreenState extends State<SignUpScreen> {
       return;
     }
 
-    if (passwordController.text != confirmPasswordController.text) {
+    // Validate email
+    String? emailError = _validateEmail(emailController.text.trim());
+    if (emailError != null) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text('Passwords do not match'),
+          content: Text(emailError),
           backgroundColor: AppColors.error,
+          duration: Duration(seconds: 3),
         ),
       );
       return;
     }
 
-    if (passwordController.text.length < 6) {
+    // Validate password with new rules
+    String? passwordError = _validatePassword(passwordController.text);
+    if (passwordError != null) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text('Password must be at least 6 characters'),
+          content: Text(passwordError),
+          backgroundColor: AppColors.error,
+          duration: Duration(seconds: 3),
+        ),
+      );
+      return;
+    }
+
+    // Check if passwords match
+    if (passwordController.text != confirmPasswordController.text) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Passwords do not match'),
           backgroundColor: AppColors.error,
         ),
       );
@@ -439,12 +550,14 @@ class _SignUpScreenState extends State<SignUpScreen> {
     });
 
     try {
+      // Create user with Firebase Auth
       UserCredential userCredential = await FirebaseAuth.instance
           .createUserWithEmailAndPassword(
             email: emailController.text.trim(),
             password: passwordController.text.trim(),
           );
 
+      // Create user document in Firestore
       await DatabaseService.instance.createUser(
         uid: userCredential.user!.uid,
         name: nameController.text.trim(),
@@ -452,6 +565,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
         password: passwordController.text.trim(),
       );
 
+      // Initialize reward points
       await DatabaseService.instance.setRewardPoints(
         userCredential.user!.uid,
         0,
@@ -461,14 +575,20 @@ class _SignUpScreenState extends State<SignUpScreen> {
         _isLoading = false;
       });
 
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Account created successfully!'),
-          backgroundColor: AppColors.success,
-        ),
-      );
-
-      Navigator.pushReplacementNamed(context, '/home');
+      // Navigate to OTP verification screen
+      if (mounted) {
+        // Inside login_and_signup.dart
+        Navigator.pushAndRemoveUntil(
+          context,
+          MaterialPageRoute(
+            builder: (context) => OTPVerificationScreen(
+              email: emailController.text.trim(),
+              userId: userCredential.user!.uid,
+            ),
+          ),
+          (route) => false, // This clears the login screen from the history
+        );
+      }
     } on FirebaseAuthException catch (e) {
       setState(() {
         _isLoading = false;
@@ -599,6 +719,11 @@ class _SignUpScreenState extends State<SignUpScreen> {
                     decoration: InputDecoration(
                       labelText: "Email",
                       labelStyle: TextStyle(color: AppColors.textSecondary),
+                      helperText: "Use a valid, permanent email address",
+                      helperStyle: TextStyle(
+                        color: AppColors.textSecondary,
+                        fontSize: 12,
+                      ),
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.all(Radius.circular(12)),
                       ),
@@ -630,10 +755,16 @@ class _SignUpScreenState extends State<SignUpScreen> {
                   TextField(
                     controller: passwordController,
                     obscureText: !_isPasswordVisible,
+                    maxLength: 11,
                     style: TextStyle(color: AppColors.textPrimary),
                     decoration: InputDecoration(
                       labelText: "Password",
                       labelStyle: TextStyle(color: AppColors.textSecondary),
+                      helperText: "6-11 chars, 1 capital, 1 number",
+                      helperStyle: TextStyle(
+                        color: AppColors.textSecondary,
+                        fontSize: 12,
+                      ),
                       border: const OutlineInputBorder(
                         borderRadius: BorderRadius.all(Radius.circular(12)),
                       ),
@@ -660,7 +791,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
               ),
             ),
 
-            const SizedBox(height: 16),
+            const SizedBox(height: 8),
 
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 24),
@@ -678,6 +809,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
                   TextField(
                     controller: confirmPasswordController,
                     obscureText: !_isConfirmPasswordVisible,
+                    maxLength: 11,
                     style: TextStyle(color: AppColors.textPrimary),
                     decoration: InputDecoration(
                       hintText: "Re-enter your password",
@@ -709,7 +841,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
               ),
             ),
 
-            const SizedBox(height: 30),
+            const SizedBox(height: 20),
 
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 24),
