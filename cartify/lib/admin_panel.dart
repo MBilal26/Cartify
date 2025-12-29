@@ -1,7 +1,4 @@
-import 'package:flutter/material.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
-import 'colors.dart';
-import 'database_functions.dart';
+import 'app_imports.dart';
 
 class AdminPanelPage extends StatefulWidget {
   const AdminPanelPage({super.key});
@@ -29,13 +26,11 @@ class _AdminPanelPageState extends State<AdminPanelPage>
   int totalProducts = 0;
   int totalUsers = 0;
 
-  // ✅ CONSTANT: Page ID for Colors
   final String pageId = 'ADMIN';
 
   @override
   void initState() {
     super.initState();
-    // Updated to 4 tabs (Analytics, Products, Orders, Coupons)
     _tabController = TabController(length: 4, vsync: this);
     _tabController.addListener(() => setState(() {}));
     _loadData();
@@ -118,7 +113,7 @@ class _AdminPanelPageState extends State<AdminPanelPage>
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppColors.getBackgroundForPage(pageId), // ✅ UPDATED
+      backgroundColor: AppColors.getBackgroundForPage(pageId),
       appBar: AppBar(
         leading: IconButton(
           icon: Icon(Icons.chevron_left),
@@ -126,7 +121,7 @@ class _AdminPanelPageState extends State<AdminPanelPage>
             Navigator.pop(context);
           },
         ),
-        backgroundColor: AppColors.getAccentForPage(pageId), // ✅ UPDATED
+        backgroundColor: AppColors.getAccentForPage(pageId),
         title: Text(
           'Admin Panel',
           style: TextStyle(
@@ -139,8 +134,9 @@ class _AdminPanelPageState extends State<AdminPanelPage>
         iconTheme: IconThemeData(color: Colors.white),
         bottom: TabBar(
           controller: _tabController,
-          // ✅ UPDATED: Use 'AccentBG' from customization for Tabs
-          indicatorColor: AppColors.getAccentBGForPage(pageId) == Color(0xFF008080)
+
+          indicatorColor:
+              AppColors.getAccentBGForPage(pageId) == Color(0xFF008080)
               ? Colors.white
               : AppColors.getAccentBGForPage(pageId),
           labelColor: AppColors.getAccentBGForPage(pageId) == Color(0xFF008080)
@@ -168,16 +164,20 @@ class _AdminPanelPageState extends State<AdminPanelPage>
         ),
       ),
       body: isLoading
-          ? Center(child: CircularProgressIndicator(color: AppColors.getAccentForPage(pageId))) // ✅ UPDATED
+          ? Center(
+              child: CircularProgressIndicator(
+                color: AppColors.getAccentForPage(pageId),
+              ),
+            )
           : TabBarView(
-        controller: _tabController,
-        children: [
-          _buildAnalyticsTab(),
-          _buildProductsTab(),
-          _buildOrdersTab(),
-          _buildCouponsTab(),
-        ],
-      ),
+              controller: _tabController,
+              children: [
+                _buildAnalyticsTab(),
+                _buildProductsTab(),
+                _buildOrdersTab(),
+                _buildCouponsTab(),
+              ],
+            ),
       floatingActionButton: AnimatedSwitcher(
         duration: Duration(milliseconds: 300),
         transitionBuilder: (Widget child, Animation<double> animation) {
@@ -185,36 +185,36 @@ class _AdminPanelPageState extends State<AdminPanelPage>
         },
         child: _tabController.index == 1
             ? FloatingActionButton.extended(
-          key: ValueKey('add_product_fab'),
-          onPressed: () => _showAddEditProductDialog(),
-          backgroundColor: AppColors.getAccentForPage(pageId), // ✅ UPDATED
-          icon: Icon(Icons.add, color: Colors.white, size: 20),
-          label: Text(
-            'Add Product',
-            style: TextStyle(
-              color: Colors.white,
-              fontWeight: FontWeight.bold,
-              fontFamily: 'ADLaMDisplay',
-              fontSize: 12,
-            ),
-          ),
-        )
+                key: ValueKey('add_product_fab'),
+                onPressed: () => _showAddEditProductDialog(),
+                backgroundColor: AppColors.getAccentForPage(pageId),
+                icon: Icon(Icons.add, color: Colors.white, size: 20),
+                label: Text(
+                  'Add Product',
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontWeight: FontWeight.bold,
+                    fontFamily: 'ADLaMDisplay',
+                    fontSize: 12,
+                  ),
+                ),
+              )
             : _tabController.index == 3
             ? FloatingActionButton.extended(
-          key: ValueKey('add_coupon_fab'),
-          onPressed: _showAddCouponDialog,
-          backgroundColor: AppColors.getAccentForPage(pageId), // ✅ UPDATED
-          icon: Icon(Icons.add, color: Colors.white, size: 20),
-          label: Text(
-            'Add Coupon',
-            style: TextStyle(
-              color: Colors.white,
-              fontWeight: FontWeight.bold,
-              fontFamily: 'ADLaMDisplay',
-              fontSize: 12,
-            ),
-          ),
-        )
+                key: ValueKey('add_coupon_fab'),
+                onPressed: _showAddCouponDialog,
+                backgroundColor: AppColors.getAccentForPage(pageId),
+                icon: Icon(Icons.add, color: Colors.white, size: 20),
+                label: Text(
+                  'Add Coupon',
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontWeight: FontWeight.bold,
+                    fontFamily: 'ADLaMDisplay',
+                    fontSize: 12,
+                  ),
+                ),
+              )
             : SizedBox.shrink(key: ValueKey('empty_fab')),
       ),
     );
@@ -223,7 +223,7 @@ class _AdminPanelPageState extends State<AdminPanelPage>
   Widget _buildAnalyticsTab() {
     return RefreshIndicator(
       onRefresh: _loadData,
-      color: AppColors.getAccentForPage(pageId), // ✅ UPDATED
+      color: AppColors.getAccentForPage(pageId),
       child: SingleChildScrollView(
         physics: AlwaysScrollableScrollPhysics(),
         padding: EdgeInsets.all(16),
@@ -236,7 +236,7 @@ class _AdminPanelPageState extends State<AdminPanelPage>
                 fontSize: 24,
                 fontWeight: FontWeight.bold,
                 fontFamily: 'IrishGrover',
-                color: AppColors.getTextPrimaryForPage(pageId), // ✅ UPDATED
+                color: AppColors.getTextPrimaryForPage(pageId),
               ),
             ),
             SizedBox(height: 8),
@@ -244,7 +244,7 @@ class _AdminPanelPageState extends State<AdminPanelPage>
               'Overview of your business performance',
               style: TextStyle(
                 fontSize: 14,
-                color: AppColors.getTextSecondaryForPage(pageId), // ✅ UPDATED
+                color: AppColors.getTextSecondaryForPage(pageId),
                 fontFamily: 'ADLaMDisplay',
               ),
             ),
@@ -325,23 +325,26 @@ class _AdminPanelPageState extends State<AdminPanelPage>
             Container(
               padding: EdgeInsets.all(16),
               decoration: BoxDecoration(
-                color: AppColors.getCardForPage(pageId), // ✅ UPDATED
+                color: AppColors.getCardForPage(pageId),
                 borderRadius: BorderRadius.circular(12),
-                border: Border.all(color: AppColors.getBorderForPage(pageId)), // ✅ UPDATED
+                border: Border.all(color: AppColors.getBorderForPage(pageId)),
               ),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Row(
                     children: [
-                      Icon(Icons.trending_up, color: AppColors.getAccentForPage(pageId)), // ✅ UPDATED
+                      Icon(
+                        Icons.trending_up,
+                        color: AppColors.getAccentForPage(pageId),
+                      ),
                       SizedBox(width: 8),
                       Text(
                         'Quick Stats',
                         style: TextStyle(
                           fontSize: 18,
                           fontWeight: FontWeight.bold,
-                          color: AppColors.getTextPrimaryForPage(pageId), // ✅ UPDATED
+                          color: AppColors.getTextPrimaryForPage(pageId),
                           fontFamily: 'IrishGrover',
                         ),
                       ),
@@ -382,7 +385,7 @@ class _AdminPanelPageState extends State<AdminPanelPage>
               style: TextStyle(
                 fontSize: 18,
                 fontWeight: FontWeight.bold,
-                color: AppColors.getTextPrimaryForPage(pageId), // ✅ UPDATED
+                color: AppColors.getTextPrimaryForPage(pageId),
                 fontFamily: 'IrishGrover',
               ),
             ),
@@ -393,14 +396,16 @@ class _AdminPanelPageState extends State<AdminPanelPage>
                   ? timestamp.toDate().toString().substring(0, 16)
                   : 'N/A';
               return Card(
-                color: AppColors.getCardForPage(pageId), // ✅ UPDATED
+                color: AppColors.getCardForPage(pageId),
                 margin: EdgeInsets.only(bottom: 8),
                 child: ListTile(
                   leading: CircleAvatar(
-                    backgroundColor: AppColors.getAccentForPage(pageId).withOpacity(0.2), // ✅ UPDATED
+                    backgroundColor: AppColors.getAccentForPage(
+                      pageId,
+                    ).withOpacity(0.2),
                     child: Icon(
                       Icons.shopping_bag,
-                      color: AppColors.getAccentForPage(pageId), // ✅ UPDATED
+                      color: AppColors.getAccentForPage(pageId),
                       size: 20,
                     ),
                   ),
@@ -408,7 +413,7 @@ class _AdminPanelPageState extends State<AdminPanelPage>
                     'Order #${order['orderId'].substring(0, 8)}',
                     style: TextStyle(
                       fontWeight: FontWeight.bold,
-                      color: AppColors.getTextPrimaryForPage(pageId), // ✅ UPDATED
+                      color: AppColors.getTextPrimaryForPage(pageId),
                       fontFamily: 'ADLaMDisplay',
                       fontSize: 14,
                     ),
@@ -416,7 +421,7 @@ class _AdminPanelPageState extends State<AdminPanelPage>
                   subtitle: Text(
                     dateStr,
                     style: TextStyle(
-                      color: AppColors.getTextSecondaryForPage(pageId), // ✅ UPDATED
+                      color: AppColors.getTextSecondaryForPage(pageId),
                       fontFamily: 'ADLaMDisplay',
                       fontSize: 12,
                     ),
@@ -425,7 +430,7 @@ class _AdminPanelPageState extends State<AdminPanelPage>
                     'Rs. ${order['totalAmount']}',
                     style: TextStyle(
                       fontWeight: FontWeight.bold,
-                      color: AppColors.getAccentForPage(pageId), // ✅ UPDATED
+                      color: AppColors.getAccentForPage(pageId),
                       fontFamily: 'ADLaMDisplay',
                       fontSize: 14,
                     ),
@@ -443,7 +448,7 @@ class _AdminPanelPageState extends State<AdminPanelPage>
     showDialog(
       context: context,
       builder: (context) => Dialog(
-        backgroundColor: AppColors.getCardForPage(pageId), // ✅ UPDATED
+        backgroundColor: AppColors.getCardForPage(pageId),
         child: Container(
           width: MediaQuery.of(context).size.width * 0.95,
           height: MediaQuery.of(context).size.height * 0.8,
@@ -452,7 +457,7 @@ class _AdminPanelPageState extends State<AdminPanelPage>
               Container(
                 padding: EdgeInsets.all(16),
                 decoration: BoxDecoration(
-                  color: AppColors.getAccentForPage(pageId), // ✅ UPDATED
+                  color: AppColors.getAccentForPage(pageId),
                   borderRadius: BorderRadius.only(
                     topLeft: Radius.circular(4),
                     topRight: Radius.circular(4),
@@ -483,32 +488,32 @@ class _AdminPanelPageState extends State<AdminPanelPage>
               Expanded(
                 child: users.isEmpty
                     ? Center(
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Icon(
-                        Icons.people_outline,
-                        size: 80,
-                        color: Colors.grey,
-                      ),
-                      SizedBox(height: 16),
-                      Text(
-                        'No users registered yet',
-                        style: TextStyle(
-                          fontSize: 18,
-                          color: AppColors.getTextPrimaryForPage(pageId), // ✅ UPDATED
-                          fontFamily: 'IrishGrover',
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Icon(
+                              Icons.people_outline,
+                              size: 80,
+                              color: Colors.grey,
+                            ),
+                            SizedBox(height: 16),
+                            Text(
+                              'No users registered yet',
+                              style: TextStyle(
+                                fontSize: 18,
+                                color: AppColors.getTextPrimaryForPage(pageId),
+                                fontFamily: 'IrishGrover',
+                              ),
+                            ),
+                          ],
                         ),
-                      ),
-                    ],
-                  ),
-                )
+                      )
                     : ListView.builder(
-                  padding: EdgeInsets.all(16),
-                  itemCount: users.length,
-                  itemBuilder: (context, index) =>
-                      _buildUserCard(users[index]),
-                ),
+                        padding: EdgeInsets.all(16),
+                        itemCount: users.length,
+                        itemBuilder: (context, index) =>
+                            _buildUserCard(users[index]),
+                      ),
               ),
             ],
           ),
@@ -528,9 +533,9 @@ class _AdminPanelPageState extends State<AdminPanelPage>
     return Container(
       padding: EdgeInsets.all(isCompact ? 12 : 16),
       decoration: BoxDecoration(
-        color: AppColors.getCardForPage(pageId), // ✅ UPDATED
+        color: AppColors.getCardForPage(pageId),
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: AppColors.getBorderForPage(pageId)), // ✅ UPDATED
+        border: Border.all(color: AppColors.getBorderForPage(pageId)),
         boxShadow: [
           BoxShadow(
             color: Colors.black.withOpacity(0.05),
@@ -561,7 +566,7 @@ class _AdminPanelPageState extends State<AdminPanelPage>
             style: TextStyle(
               fontSize: isCompact ? 18 : 24,
               fontWeight: FontWeight.bold,
-              color: AppColors.getTextPrimaryForPage(pageId), // ✅ UPDATED
+              color: AppColors.getTextPrimaryForPage(pageId),
               fontFamily: 'IrishGrover',
             ),
           ),
@@ -570,7 +575,7 @@ class _AdminPanelPageState extends State<AdminPanelPage>
             title,
             style: TextStyle(
               fontSize: isCompact ? 11 : 13,
-              color: AppColors.getTextSecondaryForPage(pageId), // ✅ UPDATED
+              color: AppColors.getTextSecondaryForPage(pageId),
               fontFamily: 'ADLaMDisplay',
             ),
           ),
@@ -602,7 +607,7 @@ class _AdminPanelPageState extends State<AdminPanelPage>
               label,
               style: TextStyle(
                 fontSize: 13,
-                color: AppColors.getTextSecondaryForPage(pageId), // ✅ UPDATED
+                color: AppColors.getTextSecondaryForPage(pageId),
                 fontFamily: 'ADLaMDisplay',
               ),
             ),
@@ -613,7 +618,7 @@ class _AdminPanelPageState extends State<AdminPanelPage>
             style: TextStyle(
               fontSize: 14,
               fontWeight: FontWeight.bold,
-              color: AppColors.getTextPrimaryForPage(pageId), // ✅ UPDATED
+              color: AppColors.getTextPrimaryForPage(pageId),
               fontFamily: 'ADLaMDisplay',
             ),
           ),
@@ -634,7 +639,7 @@ class _AdminPanelPageState extends State<AdminPanelPage>
               'No products yet',
               style: TextStyle(
                 fontSize: 18,
-                color: AppColors.getTextPrimaryForPage(pageId), // ✅ UPDATED
+                color: AppColors.getTextPrimaryForPage(pageId),
                 fontFamily: 'IrishGrover',
               ),
             ),
@@ -671,7 +676,7 @@ class _AdminPanelPageState extends State<AdminPanelPage>
               'No orders yet',
               style: TextStyle(
                 fontSize: 18,
-                color: AppColors.getTextPrimaryForPage(pageId), // ✅ UPDATED
+                color: AppColors.getTextPrimaryForPage(pageId),
                 fontFamily: 'IrishGrover',
               ),
             ),
@@ -692,7 +697,7 @@ class _AdminPanelPageState extends State<AdminPanelPage>
 
     return RefreshIndicator(
       onRefresh: _loadData,
-      color: AppColors.getAccentForPage(pageId), // ✅ UPDATED
+      color: AppColors.getAccentForPage(pageId),
       child: ListView.builder(
         padding: EdgeInsets.all(16),
         itemCount: orders.length,
@@ -703,7 +708,7 @@ class _AdminPanelPageState extends State<AdminPanelPage>
 
   Widget _buildProductCard(Map<String, dynamic> product) {
     return Card(
-      color: AppColors.getCardForPage(pageId), // ✅ UPDATED
+      color: AppColors.getCardForPage(pageId),
       margin: EdgeInsets.only(bottom: 12),
       elevation: 2,
       child: ListTile(
@@ -712,29 +717,29 @@ class _AdminPanelPageState extends State<AdminPanelPage>
           borderRadius: BorderRadius.circular(8),
           child: product['imageUrl'] != null && product['imageUrl'].isNotEmpty
               ? Image.network(
-            product['imageUrl'],
-            width: 60,
-            height: 60,
-            fit: BoxFit.cover,
-            errorBuilder: (context, error, stackTrace) => Container(
-              width: 60,
-              height: 60,
-              color: AppColors.getBorderForPage(pageId), // ✅ UPDATED
-              child: Icon(Icons.image, color: Colors.grey, size: 30),
-            ),
-          )
+                  product['imageUrl'],
+                  width: 60,
+                  height: 60,
+                  fit: BoxFit.cover,
+                  errorBuilder: (context, error, stackTrace) => Container(
+                    width: 60,
+                    height: 60,
+                    color: AppColors.getBorderForPage(pageId),
+                    child: Icon(Icons.image, color: Colors.grey, size: 30),
+                  ),
+                )
               : Container(
-            width: 60,
-            height: 60,
-            color: AppColors.getBorderForPage(pageId), // ✅ UPDATED
-            child: Icon(Icons.image, color: Colors.grey, size: 30),
-          ),
+                  width: 60,
+                  height: 60,
+                  color: AppColors.getBorderForPage(pageId),
+                  child: Icon(Icons.image, color: Colors.grey, size: 30),
+                ),
         ),
         title: Text(
           product['name'] ?? 'Product',
           style: TextStyle(
             fontWeight: FontWeight.bold,
-            color: AppColors.getTextPrimaryForPage(pageId), // ✅ UPDATED
+            color: AppColors.getTextPrimaryForPage(pageId),
             fontFamily: 'ADLaMDisplay',
             fontSize: 14,
           ),
@@ -761,7 +766,7 @@ class _AdminPanelPageState extends State<AdminPanelPage>
                 overflow: TextOverflow.ellipsis,
                 style: TextStyle(
                   fontSize: 11,
-                  color: AppColors.getTextSecondaryForPage(pageId), // ✅ UPDATED
+                  color: AppColors.getTextSecondaryForPage(pageId),
                   fontFamily: 'ADLaMDisplay',
                 ),
               ),
@@ -789,64 +794,216 @@ class _AdminPanelPageState extends State<AdminPanelPage>
   }
 
   Widget _buildCouponsTab() {
+    final Color primaryAccent = AppColors.getAccentForPage(pageId);
+    final Color textColor = AppColors.getTextPrimaryForPage(pageId);
+    final Color cardBg = AppColors.getCardForPage(pageId);
+
     if (coupons.isEmpty) {
-      return Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(Icons.discount_outlined, size: 80, color: Colors.grey),
-            SizedBox(height: 16),
-            const Text(
-              "No coupons generated yet.",
-              style: TextStyle(fontSize: 16),
-            ),
-            const SizedBox(height: 10),
-            ElevatedButton(
-              onPressed: _showAddCouponDialog,
-              style: ElevatedButton.styleFrom(
-                backgroundColor: AppColors.getAccentForPage(pageId), // ✅ UPDATED
-              ),
-              child: const Text(
-                "Create First Coupon",
-                style: TextStyle(color: Colors.white),
-              ),
-            ),
-          ],
-        ),
-      );
+      return _buildEmptyCouponsState(primaryAccent, textColor);
     }
+
     return ListView.builder(
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 20),
+      physics: const BouncingScrollPhysics(),
       itemCount: coupons.length,
       itemBuilder: (context, index) {
         final coupon = coupons[index];
-        return Card(
-          color: AppColors.getCardForPage(pageId), // ✅ UPDATED
-          margin: EdgeInsets.only(bottom: 12),
-          child: ListTile(
-            contentPadding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-            title: Text(
-              coupon['code'],
-              style: const TextStyle(
-                fontWeight: FontWeight.bold,
-                color: Colors.amber,
-                fontSize: 16,
-              ),
-            ),
-            subtitle: Text(
-              "${coupon['discountPercent']}% Off",
-              style: TextStyle(fontSize: 13),
-            ),
-            trailing: IconButton(
-              icon: const Icon(Icons.delete, color: Colors.red, size: 20),
-              onPressed: () async {
-                await DatabaseService.instance.deleteCoupon(coupon['code']);
-                _loadData();
-              },
-            ),
-          ),
+        return _buildCouponTicket(
+          context,
+          coupon,
+          primaryAccent,
+          cardBg,
+          textColor,
         );
       },
+    );
+  }
+
+  Widget _buildCouponTicket(
+    BuildContext context,
+    Map coupon,
+    Color accent,
+    Color cardBg,
+    Color textColor,
+  ) {
+    return Container(
+      margin: const EdgeInsets.only(bottom: 20),
+      height: 100,
+      child: Row(
+        children: [
+          // LEFT SIDE: DISCOUNT PERCENTAGE
+          Container(
+            width: 90,
+            decoration: BoxDecoration(
+              color: accent,
+              borderRadius: const BorderRadius.only(
+                topLeft: Radius.circular(16),
+                bottomLeft: Radius.circular(16),
+              ),
+            ),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Text(
+                  "${coupon['discountPercent']}%",
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontSize: 24,
+                    fontWeight: FontWeight.bold,
+                    fontFamily: 'ADLaMDisplay',
+                  ),
+                ),
+                const Text(
+                  "OFF",
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 12,
+                    letterSpacing: 2,
+                  ),
+                ),
+              ],
+            ),
+          ),
+
+          // MIDDLE: TICKET DIVIDER (Custom Design)
+          Container(
+            width: 1,
+            color: Colors.white.withOpacity(0.3),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: List.generate(
+                5,
+                (index) => Container(
+                  width: 1,
+                  height: 10,
+                  color: Colors.grey.withOpacity(0.3),
+                ),
+              ),
+            ),
+          ),
+
+          // RIGHT SIDE: CODE AND ACTIONS
+          Expanded(
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 16),
+              decoration: BoxDecoration(
+                color: cardBg,
+                borderRadius: const BorderRadius.only(
+                  topRight: Radius.circular(16),
+                  bottomRight: Radius.circular(16),
+                ),
+                border: Border.all(
+                  color: AppColors.getBorderForPage(pageId).withOpacity(0.5),
+                ),
+              ),
+              child: Row(
+                children: [
+                  Expanded(
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          "COUPON CODE",
+                          style: TextStyle(
+                            color: AppColors.getTextSecondaryForPage(pageId),
+                            fontSize: 10,
+                            letterSpacing: 1.2,
+                          ),
+                        ),
+                        const SizedBox(height: 4),
+                        Text(
+                          coupon['code'],
+                          style: TextStyle(
+                            color: textColor,
+                            fontSize: 18,
+                            fontWeight: FontWeight.bold,
+                            letterSpacing: 1.5,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  // Delete Action
+                  IconButton(
+                    icon: Container(
+                      padding: const EdgeInsets.all(6),
+                      decoration: BoxDecoration(
+                        color: Colors.red.withOpacity(0.1),
+                        shape: BoxShape.circle,
+                      ),
+                      child: const Icon(
+                        Icons.delete_outline,
+                        color: Colors.red,
+                        size: 20,
+                      ),
+                    ),
+                    onPressed: () async {
+                      await DatabaseService.instance.deleteCoupon(
+                        coupon['code'],
+                      );
+                      _loadData();
+                    },
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildEmptyCouponsState(Color accent, Color textColor) {
+    return Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Container(
+            padding: const EdgeInsets.all(30),
+            decoration: BoxDecoration(
+              color: accent.withOpacity(0.1),
+              shape: BoxShape.circle,
+            ),
+            child: Icon(
+              Icons.confirmation_number_outlined,
+              size: 80,
+              color: accent,
+            ),
+          ),
+          const SizedBox(height: 24),
+          Text(
+            "No active coupons",
+            style: TextStyle(
+              fontSize: 20,
+              fontWeight: FontWeight.bold,
+              color: textColor,
+              fontFamily: 'IrishGrover',
+            ),
+          ),
+          const SizedBox(height: 8),
+          const Text(
+            "Generate discount codes for your customers.",
+            style: TextStyle(color: Colors.grey),
+          ),
+          const SizedBox(height: 30),
+          ElevatedButton.icon(
+            onPressed: _showAddCouponDialog,
+            icon: const Icon(Icons.add, color: Colors.white),
+            label: const Text(
+              "Create Coupon",
+              style: TextStyle(color: Colors.white),
+            ),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: accent,
+              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12),
+              ),
+            ),
+          ),
+        ],
+      ),
     );
   }
 
@@ -857,16 +1014,16 @@ class _AdminPanelPageState extends State<AdminPanelPage>
         : 'N/A';
 
     return Card(
-      color: AppColors.getCardForPage(pageId), // ✅ UPDATED
+      color: AppColors.getCardForPage(pageId),
       margin: EdgeInsets.only(bottom: 12),
       elevation: 2,
       child: ExpansionTile(
         leading: CircleAvatar(
-          backgroundColor: AppColors.getAccentForPage(pageId).withOpacity(0.2), // ✅ UPDATED
+          backgroundColor: AppColors.getAccentForPage(pageId).withOpacity(0.2),
           child: Text(
             (user['name'] ?? 'U')[0].toUpperCase(),
             style: TextStyle(
-              color: AppColors.getAccentForPage(pageId), // ✅ UPDATED
+              color: AppColors.getAccentForPage(pageId),
               fontWeight: FontWeight.bold,
               fontSize: 18,
             ),
@@ -876,7 +1033,7 @@ class _AdminPanelPageState extends State<AdminPanelPage>
           user['name'] ?? 'Unknown User',
           style: TextStyle(
             fontWeight: FontWeight.bold,
-            color: AppColors.getTextPrimaryForPage(pageId), // ✅ UPDATED
+            color: AppColors.getTextPrimaryForPage(pageId),
             fontFamily: 'ADLaMDisplay',
             fontSize: 14,
           ),
@@ -887,7 +1044,7 @@ class _AdminPanelPageState extends State<AdminPanelPage>
           user['email'] ?? 'No email',
           style: TextStyle(
             fontSize: 12,
-            color: AppColors.getTextSecondaryForPage(pageId), // ✅ UPDATED
+            color: AppColors.getTextSecondaryForPage(pageId),
             fontFamily: 'ADLaMDisplay',
           ),
           maxLines: 1,
@@ -919,19 +1076,25 @@ class _AdminPanelPageState extends State<AdminPanelPage>
                     return Container(
                       padding: EdgeInsets.all(12),
                       decoration: BoxDecoration(
-                        color: AppColors.getAccentForPage(pageId).withOpacity(0.1), // ✅ UPDATED
+                        color: AppColors.getAccentForPage(
+                          pageId,
+                        ).withOpacity(0.1),
                         borderRadius: BorderRadius.circular(8),
                       ),
                       child: Row(
                         children: [
-                          Icon(Icons.stars, color: AppColors.getAccentForPage(pageId), size: 20), // ✅ UPDATED
+                          Icon(
+                            Icons.stars,
+                            color: AppColors.getAccentForPage(pageId),
+                            size: 20,
+                          ),
                           SizedBox(width: 8),
                           Expanded(
                             child: Text(
                               'Reward Points: $points',
                               style: TextStyle(
                                 fontWeight: FontWeight.bold,
-                                color: AppColors.getAccentForPage(pageId), // ✅ UPDATED
+                                color: AppColors.getAccentForPage(pageId),
                                 fontFamily: 'ADLaMDisplay',
                                 fontSize: 13,
                               ),
@@ -1053,7 +1216,7 @@ class _AdminPanelPageState extends State<AdminPanelPage>
     return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Icon(icon, color: AppColors.getAccentForPage(pageId), size: 18), // ✅ UPDATED
+        Icon(icon, color: AppColors.getAccentForPage(pageId), size: 18),
         SizedBox(width: 8),
         Expanded(
           child: Column(
@@ -1063,7 +1226,7 @@ class _AdminPanelPageState extends State<AdminPanelPage>
                 label,
                 style: TextStyle(
                   fontSize: 11,
-                  color: AppColors.getTextSecondaryForPage(pageId), // ✅ UPDATED
+                  color: AppColors.getTextSecondaryForPage(pageId),
                   fontFamily: 'ADLaMDisplay',
                 ),
               ),
@@ -1071,7 +1234,7 @@ class _AdminPanelPageState extends State<AdminPanelPage>
                 value,
                 style: TextStyle(
                   fontSize: 13,
-                  color: AppColors.getTextPrimaryForPage(pageId), // ✅ UPDATED
+                  color: AppColors.getTextPrimaryForPage(pageId),
                   fontFamily: 'ADLaMDisplay',
                   overflow: TextOverflow.ellipsis,
                 ),
@@ -1088,7 +1251,7 @@ class _AdminPanelPageState extends State<AdminPanelPage>
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        backgroundColor: AppColors.getCardForPage(pageId), // ✅ UPDATED
+        backgroundColor: AppColors.getCardForPage(pageId),
         title: Row(
           children: [
             Icon(Icons.warning, color: Colors.red, size: 24),
@@ -1097,7 +1260,7 @@ class _AdminPanelPageState extends State<AdminPanelPage>
               child: Text(
                 'Delete User',
                 style: TextStyle(
-                  color: AppColors.getTextPrimaryForPage(pageId), // ✅ UPDATED
+                  color: AppColors.getTextPrimaryForPage(pageId),
                   fontFamily: 'IrishGrover',
                   fontSize: 18,
                 ),
@@ -1113,7 +1276,7 @@ class _AdminPanelPageState extends State<AdminPanelPage>
               Text(
                 'Are you sure you want to permanently delete ${userName ?? 'this user'}?',
                 style: TextStyle(
-                  color: AppColors.getTextPrimaryForPage(pageId), // ✅ UPDATED
+                  color: AppColors.getTextPrimaryForPage(pageId),
                   fontFamily: 'ADLaMDisplay',
                   fontSize: 14,
                 ),
@@ -1153,7 +1316,7 @@ class _AdminPanelPageState extends State<AdminPanelPage>
             child: Text(
               'Cancel',
               style: TextStyle(
-                color: AppColors.getTextPrimaryForPage(pageId), // ✅ UPDATED
+                color: AppColors.getTextPrimaryForPage(pageId),
                 fontFamily: 'ADLaMDisplay',
               ),
             ),
@@ -1209,7 +1372,7 @@ class _AdminPanelPageState extends State<AdminPanelPage>
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        backgroundColor: AppColors.getCardForPage(pageId), // ✅ UPDATED
+        backgroundColor: AppColors.getCardForPage(pageId),
         title: const Text("New Coupon", style: TextStyle(fontSize: 18)),
         contentPadding: EdgeInsets.symmetric(horizontal: 20, vertical: 16),
         content: SingleChildScrollView(
@@ -1218,7 +1381,10 @@ class _AdminPanelPageState extends State<AdminPanelPage>
             children: [
               TextField(
                 controller: codeController,
-                style: TextStyle(color: AppColors.getTextPrimaryForPage(pageId), fontSize: 14), // ✅ UPDATED
+                style: TextStyle(
+                  color: AppColors.getTextPrimaryForPage(pageId),
+                  fontSize: 14,
+                ),
                 decoration: InputDecoration(
                   hintText: "Enter Code (e.g., WELCOME10)",
                   hintStyle: TextStyle(fontSize: 13),
@@ -1234,7 +1400,10 @@ class _AdminPanelPageState extends State<AdminPanelPage>
               SizedBox(height: 12),
               TextField(
                 controller: discountController,
-                style: TextStyle(color: AppColors.getTextPrimaryForPage(pageId), fontSize: 14), // ✅ UPDATED
+                style: TextStyle(
+                  color: AppColors.getTextPrimaryForPage(pageId),
+                  fontSize: 14,
+                ),
                 decoration: InputDecoration(
                   hintText: "Discount Percentage",
                   hintStyle: TextStyle(fontSize: 13),
@@ -1258,7 +1427,7 @@ class _AdminPanelPageState extends State<AdminPanelPage>
           ),
           ElevatedButton(
             style: ElevatedButton.styleFrom(
-              backgroundColor: AppColors.getAccentForPage(pageId), // ✅ UPDATED
+              backgroundColor: AppColors.getAccentForPage(pageId),
               padding: EdgeInsets.symmetric(horizontal: 16, vertical: 10),
             ),
             onPressed: () async {
@@ -1315,7 +1484,7 @@ class _AdminPanelPageState extends State<AdminPanelPage>
     }
 
     return Card(
-      color: AppColors.getCardForPage(pageId), // ✅ UPDATED
+      color: AppColors.getCardForPage(pageId),
       margin: EdgeInsets.only(bottom: 12),
       elevation: 2,
       child: ExpansionTile(
@@ -1328,7 +1497,7 @@ class _AdminPanelPageState extends State<AdminPanelPage>
           'Order #${orderId.substring(0, 8)}',
           style: TextStyle(
             fontWeight: FontWeight.bold,
-            color: AppColors.getTextPrimaryForPage(pageId), // ✅ UPDATED
+            color: AppColors.getTextPrimaryForPage(pageId),
             fontFamily: 'ADLaMDisplay',
             fontSize: 14,
           ),
@@ -1341,7 +1510,7 @@ class _AdminPanelPageState extends State<AdminPanelPage>
               dateStr,
               style: TextStyle(
                 fontSize: 11,
-                color: AppColors.getTextSecondaryForPage(pageId), // ✅ UPDATED
+                color: AppColors.getTextSecondaryForPage(pageId),
                 fontFamily: 'ADLaMDisplay',
               ),
             ),
@@ -1369,7 +1538,7 @@ class _AdminPanelPageState extends State<AdminPanelPage>
                   '${items.length} items',
                   style: TextStyle(
                     fontSize: 11,
-                    color: AppColors.getTextSecondaryForPage(pageId), // ✅ UPDATED
+                    color: AppColors.getTextSecondaryForPage(pageId),
                     fontFamily: 'ADLaMDisplay',
                   ),
                 ),
@@ -1382,7 +1551,7 @@ class _AdminPanelPageState extends State<AdminPanelPage>
           style: TextStyle(
             fontWeight: FontWeight.bold,
             fontSize: 14,
-            color: AppColors.getAccentForPage(pageId), // ✅ UPDATED
+            color: AppColors.getAccentForPage(pageId),
             fontFamily: 'ADLaMDisplay',
           ),
         ),
@@ -1397,49 +1566,51 @@ class _AdminPanelPageState extends State<AdminPanelPage>
                   'Order Items:',
                   style: TextStyle(
                     fontWeight: FontWeight.bold,
-                    color: AppColors.getTextPrimaryForPage(pageId), // ✅ UPDATED
+                    color: AppColors.getTextPrimaryForPage(pageId),
                     fontFamily: 'IrishGrover',
                     fontSize: 14,
                   ),
                 ),
                 SizedBox(height: 8),
                 ...items.map(
-                      (item) => Padding(
+                  (item) => Padding(
                     padding: EdgeInsets.symmetric(vertical: 4),
                     child: Row(
                       children: [
                         ClipRRect(
                           borderRadius: BorderRadius.circular(4),
                           child:
-                          item['imageUrl'] != null &&
-                              item['imageUrl'].isNotEmpty
+                              item['imageUrl'] != null &&
+                                  item['imageUrl'].isNotEmpty
                               ? Image.network(
-                            item['imageUrl'],
-                            width: 40,
-                            height: 40,
-                            fit: BoxFit.cover,
-                            errorBuilder: (context, error, stackTrace) =>
-                                Container(
+                                  item['imageUrl'],
                                   width: 40,
                                   height: 40,
-                                  color: AppColors.getBorderForPage(pageId), // ✅ UPDATED
+                                  fit: BoxFit.cover,
+                                  errorBuilder: (context, error, stackTrace) =>
+                                      Container(
+                                        width: 40,
+                                        height: 40,
+                                        color: AppColors.getBorderForPage(
+                                          pageId,
+                                        ),
+                                        child: Icon(
+                                          Icons.image,
+                                          size: 20,
+                                          color: Colors.grey,
+                                        ),
+                                      ),
+                                )
+                              : Container(
+                                  width: 40,
+                                  height: 40,
+                                  color: AppColors.getBorderForPage(pageId),
                                   child: Icon(
                                     Icons.image,
                                     size: 20,
                                     color: Colors.grey,
                                   ),
                                 ),
-                          )
-                              : Container(
-                            width: 40,
-                            height: 40,
-                            color: AppColors.getBorderForPage(pageId), // ✅ UPDATED
-                            child: Icon(
-                              Icons.image,
-                              size: 20,
-                              color: Colors.grey,
-                            ),
-                          ),
                         ),
                         SizedBox(width: 12),
                         Expanded(
@@ -1450,7 +1621,9 @@ class _AdminPanelPageState extends State<AdminPanelPage>
                                 item['name'] ?? 'Product',
                                 style: TextStyle(
                                   fontWeight: FontWeight.w500,
-                                  color: AppColors.getTextPrimaryForPage(pageId), // ✅ UPDATED
+                                  color: AppColors.getTextPrimaryForPage(
+                                    pageId,
+                                  ),
                                   fontFamily: 'ADLaMDisplay',
                                   fontSize: 13,
                                 ),
@@ -1461,7 +1634,9 @@ class _AdminPanelPageState extends State<AdminPanelPage>
                                 'Qty: ${item['quantity']} × Rs. ${item['price']}',
                                 style: TextStyle(
                                   fontSize: 11,
-                                  color: AppColors.getTextSecondaryForPage(pageId), // ✅ UPDATED
+                                  color: AppColors.getTextSecondaryForPage(
+                                    pageId,
+                                  ),
                                   fontFamily: 'ADLaMDisplay',
                                 ),
                               ),
@@ -1472,7 +1647,7 @@ class _AdminPanelPageState extends State<AdminPanelPage>
                           'Rs. ${(item['price'] * item['quantity'])}',
                           style: TextStyle(
                             fontWeight: FontWeight.bold,
-                            color: AppColors.getTextPrimaryForPage(pageId), // ✅ UPDATED
+                            color: AppColors.getTextPrimaryForPage(pageId),
                             fontFamily: 'ADLaMDisplay',
                             fontSize: 13,
                           ),
@@ -1490,7 +1665,7 @@ class _AdminPanelPageState extends State<AdminPanelPage>
                       style: TextStyle(
                         fontWeight: FontWeight.bold,
                         fontSize: 14,
-                        color: AppColors.getTextPrimaryForPage(pageId), // ✅ UPDATED
+                        color: AppColors.getTextPrimaryForPage(pageId),
                         fontFamily: 'IrishGrover',
                       ),
                     ),
@@ -1499,7 +1674,7 @@ class _AdminPanelPageState extends State<AdminPanelPage>
                       style: TextStyle(
                         fontWeight: FontWeight.bold,
                         fontSize: 16,
-                        color: AppColors.getAccentForPage(pageId), // ✅ UPDATED
+                        color: AppColors.getAccentForPage(pageId),
                         fontFamily: 'IrishGrover',
                       ),
                     ),
@@ -1630,7 +1805,7 @@ class _AdminPanelPageState extends State<AdminPanelPage>
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        backgroundColor: AppColors.getCardForPage(pageId), // ✅ UPDATED
+        backgroundColor: AppColors.getCardForPage(pageId),
         title: Row(
           children: [
             Icon(Icons.warning, color: Colors.red, size: 24),
@@ -1639,7 +1814,7 @@ class _AdminPanelPageState extends State<AdminPanelPage>
               child: Text(
                 'Delete Order',
                 style: TextStyle(
-                  color: AppColors.getTextPrimaryForPage(pageId), // ✅ UPDATED
+                  color: AppColors.getTextPrimaryForPage(pageId),
                   fontFamily: 'IrishGrover',
                   fontSize: 18,
                 ),
@@ -1655,7 +1830,7 @@ class _AdminPanelPageState extends State<AdminPanelPage>
               Text(
                 'Are you sure you want to permanently delete this order?',
                 style: TextStyle(
-                  color: AppColors.getTextPrimaryForPage(pageId), // ✅ UPDATED
+                  color: AppColors.getTextPrimaryForPage(pageId),
                   fontFamily: 'ADLaMDisplay',
                   fontSize: 14,
                 ),
@@ -1695,7 +1870,7 @@ class _AdminPanelPageState extends State<AdminPanelPage>
             child: Text(
               'Cancel',
               style: TextStyle(
-                color: AppColors.getTextPrimaryForPage(pageId), // ✅ UPDATED
+                color: AppColors.getTextPrimaryForPage(pageId),
                 fontFamily: 'ADLaMDisplay',
               ),
             ),
@@ -1776,7 +1951,9 @@ class _AdminPanelPageState extends State<AdminPanelPage>
 
       // Safety check: ensure the sub-category actually belongs to this parent
       if (selectedSubCategoryId != null &&
-          !availableSubCategories.any((cat) => cat['id'] == selectedSubCategoryId)) {
+          !availableSubCategories.any(
+            (cat) => cat['id'] == selectedSubCategoryId,
+          )) {
         selectedSubCategoryId = null;
       }
     }
@@ -1786,11 +1963,11 @@ class _AdminPanelPageState extends State<AdminPanelPage>
       builder: (context) => StatefulBuilder(
         builder: (context, setDialogState) {
           return AlertDialog(
-            backgroundColor: AppColors.getCardForPage(pageId), // ✅ UPDATED
+            backgroundColor: AppColors.getCardForPage(pageId),
             title: Text(
               isEdit ? 'Edit Product' : 'Add New Product',
               style: TextStyle(
-                color: AppColors.getTextPrimaryForPage(pageId), // ✅ UPDATED
+                color: AppColors.getTextPrimaryForPage(pageId),
                 fontFamily: 'IrishGrover',
                 fontSize: 18,
               ),
@@ -1803,16 +1980,14 @@ class _AdminPanelPageState extends State<AdminPanelPage>
                   TextField(
                     controller: nameController,
                     style: TextStyle(
-                      color: AppColors.getTextPrimaryForPage(
-                          pageId), // ✅ UPDATED
+                      color: AppColors.getTextPrimaryForPage(pageId),
                       fontFamily: 'ADLaMDisplay',
                       fontSize: 14,
                     ),
                     decoration: InputDecoration(
                       labelText: 'Product Name *',
                       labelStyle: TextStyle(
-                        color: AppColors.getTextSecondaryForPage(
-                            pageId), // ✅ UPDATED
+                        color: AppColors.getTextSecondaryForPage(pageId),
                         fontFamily: 'ADLaMDisplay',
                         fontSize: 13,
                       ),
@@ -1822,8 +1997,8 @@ class _AdminPanelPageState extends State<AdminPanelPage>
                       enabledBorder: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(12),
                         borderSide: BorderSide(
-                            color: AppColors.getBorderForPage(
-                                pageId)), // ✅ UPDATED
+                          color: AppColors.getBorderForPage(pageId),
+                        ),
                       ),
                       contentPadding: EdgeInsets.symmetric(
                         horizontal: 12,
@@ -1836,16 +2011,14 @@ class _AdminPanelPageState extends State<AdminPanelPage>
                     controller: priceController,
                     keyboardType: TextInputType.number,
                     style: TextStyle(
-                      color: AppColors.getTextPrimaryForPage(
-                          pageId), // ✅ UPDATED
+                      color: AppColors.getTextPrimaryForPage(pageId),
                       fontFamily: 'ADLaMDisplay',
                       fontSize: 14,
                     ),
                     decoration: InputDecoration(
                       labelText: 'Price (Rs.) *',
                       labelStyle: TextStyle(
-                        color: AppColors.getTextSecondaryForPage(
-                            pageId), // ✅ UPDATED
+                        color: AppColors.getTextSecondaryForPage(pageId),
                         fontFamily: 'ADLaMDisplay',
                         fontSize: 13,
                       ),
@@ -1855,8 +2028,8 @@ class _AdminPanelPageState extends State<AdminPanelPage>
                       enabledBorder: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(12),
                         borderSide: BorderSide(
-                            color: AppColors.getBorderForPage(
-                                pageId)), // ✅ UPDATED
+                          color: AppColors.getBorderForPage(pageId),
+                        ),
                       ),
                       contentPadding: EdgeInsets.symmetric(
                         horizontal: 12,
@@ -1869,16 +2042,14 @@ class _AdminPanelPageState extends State<AdminPanelPage>
                     controller: descriptionController,
                     maxLines: 2,
                     style: TextStyle(
-                      color: AppColors.getTextPrimaryForPage(
-                          pageId), // ✅ UPDATED
+                      color: AppColors.getTextPrimaryForPage(pageId),
                       fontFamily: 'ADLaMDisplay',
                       fontSize: 14,
                     ),
                     decoration: InputDecoration(
                       labelText: 'Description',
                       labelStyle: TextStyle(
-                        color: AppColors.getTextSecondaryForPage(
-                            pageId), // ✅ UPDATED
+                        color: AppColors.getTextSecondaryForPage(pageId),
                         fontFamily: 'ADLaMDisplay',
                         fontSize: 13,
                       ),
@@ -1888,8 +2059,8 @@ class _AdminPanelPageState extends State<AdminPanelPage>
                       enabledBorder: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(12),
                         borderSide: BorderSide(
-                            color: AppColors.getBorderForPage(
-                                pageId)), // ✅ UPDATED
+                          color: AppColors.getBorderForPage(pageId),
+                        ),
                       ),
                       contentPadding: EdgeInsets.symmetric(
                         horizontal: 12,
@@ -1902,19 +2073,17 @@ class _AdminPanelPageState extends State<AdminPanelPage>
                   // 1. PARENT CATEGORY DROPDOWN
                   DropdownButtonFormField<String>(
                     value: selectedParentCategory,
-                    dropdownColor: AppColors.getCardForPage(pageId), // ✅ UPDATED
+                    dropdownColor: AppColors.getCardForPage(pageId),
                     isExpanded: true,
                     style: TextStyle(
-                      color: AppColors.getTextPrimaryForPage(
-                          pageId), // ✅ UPDATED
+                      color: AppColors.getTextPrimaryForPage(pageId),
                       fontFamily: 'ADLaMDisplay',
                       fontSize: 14,
                     ),
                     decoration: InputDecoration(
                       labelText: 'Parent Category *',
                       labelStyle: TextStyle(
-                        color: AppColors.getTextSecondaryForPage(
-                            pageId), // ✅ UPDATED
+                        color: AppColors.getTextSecondaryForPage(pageId),
                         fontFamily: 'ADLaMDisplay',
                         fontSize: 13,
                       ),
@@ -1924,8 +2093,8 @@ class _AdminPanelPageState extends State<AdminPanelPage>
                       enabledBorder: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(12),
                         borderSide: BorderSide(
-                            color: AppColors.getBorderForPage(
-                                pageId)), // ✅ UPDATED
+                          color: AppColors.getBorderForPage(pageId),
+                        ),
                       ),
                       contentPadding: EdgeInsets.symmetric(
                         horizontal: 12,
@@ -1934,19 +2103,19 @@ class _AdminPanelPageState extends State<AdminPanelPage>
                     ),
                     items: parentCategories.isEmpty
                         ? [
-                      DropdownMenuItem<String>(
-                        value: null,
-                        child: Text('No parent categories found'),
-                      )
-                    ]
+                            DropdownMenuItem<String>(
+                              value: null,
+                              child: Text('No parent categories found'),
+                            ),
+                          ]
                         : parentCategories
-                        .map(
-                          (cat) => DropdownMenuItem<String>(
-                        value: cat['title'],
-                        child: Text(cat['title']),
-                      ),
-                    )
-                        .toList(),
+                              .map(
+                                (cat) => DropdownMenuItem<String>(
+                                  value: cat['title'],
+                                  child: Text(cat['title']),
+                                ),
+                              )
+                              .toList(),
                     onChanged: (value) {
                       setDialogState(() {
                         selectedParentCategory = value;
@@ -1964,19 +2133,17 @@ class _AdminPanelPageState extends State<AdminPanelPage>
                   // 2. SUB-CATEGORY DROPDOWN
                   DropdownButtonFormField<String>(
                     value: selectedSubCategoryId,
-                    dropdownColor: AppColors.getCardForPage(pageId), // ✅ UPDATED
+                    dropdownColor: AppColors.getCardForPage(pageId),
                     isExpanded: true,
                     style: TextStyle(
-                      color: AppColors.getTextPrimaryForPage(
-                          pageId), // ✅ UPDATED
+                      color: AppColors.getTextPrimaryForPage(pageId),
                       fontFamily: 'ADLaMDisplay',
                       fontSize: 14,
                     ),
                     decoration: InputDecoration(
                       labelText: 'Sub-Category *',
                       labelStyle: TextStyle(
-                        color: AppColors.getTextSecondaryForPage(
-                            pageId), // ✅ UPDATED
+                        color: AppColors.getTextSecondaryForPage(pageId),
                         fontFamily: 'ADLaMDisplay',
                         fontSize: 13,
                       ),
@@ -1986,8 +2153,8 @@ class _AdminPanelPageState extends State<AdminPanelPage>
                       enabledBorder: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(12),
                         borderSide: BorderSide(
-                            color: AppColors.getBorderForPage(
-                                pageId)), // ✅ UPDATED
+                          color: AppColors.getBorderForPage(pageId),
+                        ),
                       ),
                       contentPadding: EdgeInsets.symmetric(
                         horizontal: 12,
@@ -1996,35 +2163,41 @@ class _AdminPanelPageState extends State<AdminPanelPage>
                     ),
                     items: selectedParentCategory == null
                         ? [
-                      DropdownMenuItem<String>(
-                        value: null,
-                        child: Text(
-                          'Select Parent Category First',
-                          style: TextStyle(fontSize: 13, color: Colors.grey),
-                        ),
-                      ),
-                    ]
+                            DropdownMenuItem<String>(
+                              value: null,
+                              child: Text(
+                                'Select Parent Category First',
+                                style: TextStyle(
+                                  fontSize: 13,
+                                  color: Colors.grey,
+                                ),
+                              ),
+                            ),
+                          ]
                         : availableSubCategories.isEmpty
                         ? [
-                      DropdownMenuItem<String>(
-                        value: null,
-                        child: Text(
-                          'No sub-categories in $selectedParentCategory',
-                          style: TextStyle(fontSize: 13, color: Colors.grey),
-                        ),
-                      ),
-                    ]
+                            DropdownMenuItem<String>(
+                              value: null,
+                              child: Text(
+                                'No sub-categories in $selectedParentCategory',
+                                style: TextStyle(
+                                  fontSize: 13,
+                                  color: Colors.grey,
+                                ),
+                              ),
+                            ),
+                          ]
                         : availableSubCategories
-                        .map(
-                          (cat) => DropdownMenuItem<String>(
-                        value: cat['id'].toString(),
-                        child: Text(
-                          cat['title'],
-                          style: TextStyle(fontSize: 13),
-                        ),
-                      ),
-                    )
-                        .toList(),
+                              .map(
+                                (cat) => DropdownMenuItem<String>(
+                                  value: cat['id'].toString(),
+                                  child: Text(
+                                    cat['title'],
+                                    style: TextStyle(fontSize: 13),
+                                  ),
+                                ),
+                              )
+                              .toList(),
                     onChanged: (value) {
                       setDialogState(() {
                         selectedSubCategoryId = value;
@@ -2035,16 +2208,14 @@ class _AdminPanelPageState extends State<AdminPanelPage>
                   TextField(
                     controller: imageUrlController,
                     style: TextStyle(
-                      color: AppColors.getTextPrimaryForPage(
-                          pageId), // ✅ UPDATED
+                      color: AppColors.getTextPrimaryForPage(pageId),
                       fontFamily: 'ADLaMDisplay',
                       fontSize: 14,
                     ),
                     decoration: InputDecoration(
                       labelText: 'Image URL',
                       labelStyle: TextStyle(
-                        color: AppColors.getTextSecondaryForPage(
-                            pageId), // ✅ UPDATED
+                        color: AppColors.getTextSecondaryForPage(pageId),
                         fontFamily: 'ADLaMDisplay',
                         fontSize: 13,
                       ),
@@ -2054,13 +2225,12 @@ class _AdminPanelPageState extends State<AdminPanelPage>
                       enabledBorder: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(12),
                         borderSide: BorderSide(
-                            color: AppColors.getBorderForPage(
-                                pageId)), // ✅ UPDATED
+                          color: AppColors.getBorderForPage(pageId),
+                        ),
                       ),
                       helperText: 'Optional: Add product image URL',
                       helperStyle: TextStyle(
-                        color: AppColors.getTextSecondaryForPage(
-                            pageId), // ✅ UPDATED
+                        color: AppColors.getTextSecondaryForPage(pageId),
                         fontFamily: 'ADLaMDisplay',
                         fontSize: 11,
                       ),
@@ -2079,7 +2249,7 @@ class _AdminPanelPageState extends State<AdminPanelPage>
                 child: Text(
                   'Cancel',
                   style: TextStyle(
-                    color: AppColors.getTextPrimaryForPage(pageId), // ✅ UPDATED
+                    color: AppColors.getTextPrimaryForPage(pageId),
                     fontFamily: 'ADLaMDisplay',
                     fontSize: 14,
                   ),
@@ -2087,7 +2257,7 @@ class _AdminPanelPageState extends State<AdminPanelPage>
               ),
               ElevatedButton(
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: AppColors.getAccentForPage(pageId), // ✅ UPDATED
+                  backgroundColor: AppColors.getAccentForPage(pageId),
                   padding: EdgeInsets.symmetric(horizontal: 16, vertical: 10),
                 ),
                 onPressed: () async {
@@ -2230,18 +2400,18 @@ class _AdminPanelPageState extends State<AdminPanelPage>
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        backgroundColor: AppColors.getCardForPage(pageId), // ✅ UPDATED
+        backgroundColor: AppColors.getCardForPage(pageId),
         title: Text(
           'Delete Product',
           style: TextStyle(
-            color: AppColors.getTextPrimaryForPage(pageId), // ✅ UPDATED
+            color: AppColors.getTextPrimaryForPage(pageId),
             fontFamily: 'IrishGrover',
           ),
         ),
         content: Text(
           'Are you sure you want to delete "${product['name']}"?',
           style: TextStyle(
-            color: AppColors.getTextPrimaryForPage(pageId), // ✅ UPDATED
+            color: AppColors.getTextPrimaryForPage(pageId),
             fontFamily: 'ADLaMDisplay',
           ),
         ),
@@ -2250,7 +2420,7 @@ class _AdminPanelPageState extends State<AdminPanelPage>
             onPressed: () => Navigator.pop(context),
             child: Text(
               'Cancel',
-              style: TextStyle(color: AppColors.getTextPrimaryForPage(pageId)), // ✅ UPDATED
+              style: TextStyle(color: AppColors.getTextPrimaryForPage(pageId)),
             ),
           ),
           ElevatedButton(

@@ -21,7 +21,6 @@ class _ProfilePageState extends State<ProfilePage> {
   bool _isLoading = true;
   double walletBalance = 0.0;
 
-  // ✅ CONSTANT for this page colors
   final String pageId = 'PROFILE';
 
   @override
@@ -35,10 +34,7 @@ class _ProfilePageState extends State<ProfilePage> {
 
     if (userId != null) {
       try {
-        // Load user data
         final userData = await DatabaseService.instance.getUser(userId!);
-
-        // Load wallet balance
         final balance = await DatabaseService.instance.getWalletBalance(
           userId!,
         );
@@ -74,8 +70,6 @@ class _ProfilePageState extends State<ProfilePage> {
     }
   }
 
-  // ===================== WALLET ACTIONS =====================
-
   void _showWalletDialog() {
     if (userId == null) {
       _showErrorSnackBar('Please login first');
@@ -85,17 +79,20 @@ class _ProfilePageState extends State<ProfilePage> {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        backgroundColor: AppColors.getCardForPage(pageId), // ✅ UPDATED
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
+        backgroundColor: AppColors.getCardForPage(pageId),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
         title: Row(
           children: [
-            Icon(Icons.account_balance_wallet, color: AppColors.getAccentForPage(pageId)), // ✅ UPDATED
+            Icon(
+              Icons.account_balance_wallet,
+              color: AppColors.getAccentForPage(pageId),
+            ),
             SizedBox(width: 8),
             Text(
               "My Wallet",
               style: TextStyle(
                 fontFamily: 'IrishGrover',
-                color: AppColors.getTextPrimaryForPage(pageId), // ✅ UPDATED
+                color: AppColors.getTextPrimaryForPage(pageId),
               ),
             ),
           ],
@@ -105,17 +102,17 @@ class _ProfilePageState extends State<ProfilePage> {
             mainAxisSize: MainAxisSize.min,
             children: [
               Container(
-                padding: EdgeInsets.all(20),
+                padding: EdgeInsets.all(24),
                 decoration: BoxDecoration(
                   gradient: LinearGradient(
                     colors: [
-                      AppColors.getAccentForPage(pageId), // ✅ UPDATED
-                      AppColors.getAccentForPage(pageId).withOpacity(0.7), // ✅ UPDATED
+                      AppColors.getAccentForPage(pageId),
+                      AppColors.getAccentForPage(pageId).withOpacity(0.7),
                     ],
                     begin: Alignment.topLeft,
                     end: Alignment.bottomRight,
                   ),
-                  borderRadius: BorderRadius.circular(12),
+                  borderRadius: BorderRadius.circular(16),
                 ),
                 child: Column(
                   children: [
@@ -145,7 +142,7 @@ class _ProfilePageState extends State<ProfilePage> {
                 'Add money to your wallet for faster checkout',
                 textAlign: TextAlign.center,
                 style: TextStyle(
-                  color: AppColors.getTextSecondaryForPage(pageId), // ✅ UPDATED
+                  color: AppColors.getTextSecondaryForPage(pageId),
                   fontSize: 13,
                   fontFamily: 'ADLaMDisplay',
                 ),
@@ -158,11 +155,13 @@ class _ProfilePageState extends State<ProfilePage> {
             onPressed: () => Navigator.pop(context),
             child: Text(
               'Close',
-              style: TextStyle(color: AppColors.getTextPrimaryForPage(pageId)), // ✅ UPDATED
+              style: TextStyle(color: AppColors.getTextPrimaryForPage(pageId)),
             ),
           ),
           ElevatedButton(
-            style: ElevatedButton.styleFrom(backgroundColor: AppColors.getAccentForPage(pageId)), // ✅ UPDATED
+            style: ElevatedButton.styleFrom(
+              backgroundColor: AppColors.getAccentForPage(pageId),
+            ),
             onPressed: () {
               Navigator.pop(context);
               _showAddMoneyDialog();
@@ -185,15 +184,15 @@ class _ProfilePageState extends State<ProfilePage> {
       builder: (context) => StatefulBuilder(
         builder: (context, setDialogState) {
           return AlertDialog(
-            backgroundColor: AppColors.getCardForPage(pageId), // ✅ UPDATED
+            backgroundColor: AppColors.getCardForPage(pageId),
             shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(18),
+              borderRadius: BorderRadius.circular(20),
             ),
             title: Text(
               "Add Money to Wallet",
               style: TextStyle(
                 fontFamily: 'IrishGrover',
-                color: AppColors.getTextPrimaryForPage(pageId), // ✅ UPDATED
+                color: AppColors.getTextPrimaryForPage(pageId),
               ),
             ),
             content: SingleChildScrollView(
@@ -203,17 +202,26 @@ class _ProfilePageState extends State<ProfilePage> {
                   TextField(
                     controller: amountController,
                     keyboardType: TextInputType.number,
-                    style: TextStyle(color: AppColors.getTextPrimaryForPage(pageId)), // ✅ UPDATED
+                    style: TextStyle(
+                      color: AppColors.getTextPrimaryForPage(pageId),
+                    ),
                     decoration: InputDecoration(
                       labelText: 'Amount (Rs.)',
-                      labelStyle: TextStyle(color: AppColors.getTextSecondaryForPage(pageId)), // ✅ UPDATED
-                      prefixIcon: Icon(Icons.money, color: AppColors.getAccentForPage(pageId)), // ✅ UPDATED
+                      labelStyle: TextStyle(
+                        color: AppColors.getTextSecondaryForPage(pageId),
+                      ),
+                      prefixIcon: Icon(
+                        Icons.money,
+                        color: AppColors.getAccentForPage(pageId),
+                      ),
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(12),
                       ),
                       enabledBorder: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(12),
-                        borderSide: BorderSide(color: AppColors.getBorderForPage(pageId)), // ✅ UPDATED
+                        borderSide: BorderSide(
+                          color: AppColors.getBorderForPage(pageId),
+                        ),
                       ),
                     ),
                   ),
@@ -225,10 +233,12 @@ class _ProfilePageState extends State<ProfilePage> {
                       return ActionChip(
                         label: Text('Rs. $amount'),
                         labelStyle: TextStyle(
-                          color: AppColors.getAccentForPage(pageId), // ✅ UPDATED
+                          color: AppColors.getAccentForPage(pageId),
                           fontFamily: 'ADLaMDisplay',
                         ),
-                        backgroundColor: AppColors.getAccentForPage(pageId).withOpacity(0.1), // ✅ UPDATED
+                        backgroundColor: AppColors.getAccentForPage(
+                          pageId,
+                        ).withOpacity(0.1),
                         onPressed: () {
                           setDialogState(() {
                             amountController.text = amount.toString();
@@ -245,12 +255,14 @@ class _ProfilePageState extends State<ProfilePage> {
                 onPressed: () => Navigator.pop(context),
                 child: Text(
                   'Cancel',
-                  style: TextStyle(color: AppColors.getTextPrimaryForPage(pageId)), // ✅ UPDATED
+                  style: TextStyle(
+                    color: AppColors.getTextPrimaryForPage(pageId),
+                  ),
                 ),
               ),
               ElevatedButton(
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: AppColors.getAccentForPage(pageId), // ✅ UPDATED
+                  backgroundColor: AppColors.getAccentForPage(pageId),
                 ),
                 onPressed: () async {
                   final amount = double.tryParse(amountController.text);
@@ -261,17 +273,13 @@ class _ProfilePageState extends State<ProfilePage> {
                   }
 
                   try {
-                    // Add to wallet in Firestore
                     await DatabaseService.instance.addToWallet(
                       uid: userId!,
                       amount: amount,
                     );
-
-                    // Update local state
                     setState(() {
                       walletBalance += amount;
                     });
-
                     Navigator.pop(context);
                     _showSuccessSnackBar(
                       'Rs. ${amount.toStringAsFixed(2)} added to wallet!',
@@ -297,8 +305,6 @@ class _ProfilePageState extends State<ProfilePage> {
     );
   }
 
-  // ===================== DELETE ACCOUNT =====================
-
   void _showDeleteAccountDialog() {
     if (userId == null) {
       _showErrorSnackBar('Please login first');
@@ -313,9 +319,9 @@ class _ProfilePageState extends State<ProfilePage> {
       barrierDismissible: false,
       builder: (context) => StatefulBuilder(
         builder: (context, setDialogState) => AlertDialog(
-          backgroundColor: AppColors.getCardForPage(pageId), // ✅ UPDATED
+          backgroundColor: AppColors.getCardForPage(pageId),
           shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(18),
+            borderRadius: BorderRadius.circular(20),
           ),
           title: Row(
             children: [
@@ -364,20 +370,16 @@ class _ProfilePageState extends State<ProfilePage> {
                       Text(
                         'All your data will be permanently deleted:',
                         style: TextStyle(
-                          color: AppColors.getTextPrimaryForPage(pageId), // ✅ UPDATED
+                          color: AppColors.getTextPrimaryForPage(pageId),
                           fontSize: 12,
                           fontFamily: 'ADLaMDisplay',
                         ),
                       ),
                       SizedBox(height: 4),
                       Text(
-                        '• Profile information\n'
-                            '• Order history\n'
-                            '• Reward points\n'
-                            '• Cart items\n'
-                            '• Wallet balance',
+                        '• Profile information\n• Order history\n• Reward points\n• Cart items\n• Wallet balance',
                         style: TextStyle(
-                          color: AppColors.getTextSecondaryForPage(pageId), // ✅ UPDATED
+                          color: AppColors.getTextSecondaryForPage(pageId),
                           fontSize: 11,
                           fontFamily: 'ADLaMDisplay',
                         ),
@@ -389,7 +391,7 @@ class _ProfilePageState extends State<ProfilePage> {
                 Text(
                   'Enter your password to confirm:',
                   style: TextStyle(
-                    color: AppColors.getTextPrimaryForPage(pageId), // ✅ UPDATED
+                    color: AppColors.getTextPrimaryForPage(pageId),
                     fontWeight: FontWeight.bold,
                     fontSize: 13,
                     fontFamily: 'ADLaMDisplay',
@@ -399,17 +401,23 @@ class _ProfilePageState extends State<ProfilePage> {
                 TextField(
                   controller: passwordController,
                   obscureText: true,
-                  style: TextStyle(color: AppColors.getTextPrimaryForPage(pageId)), // ✅ UPDATED
+                  style: TextStyle(
+                    color: AppColors.getTextPrimaryForPage(pageId),
+                  ),
                   decoration: InputDecoration(
                     hintText: 'Your password',
-                    hintStyle: TextStyle(color: AppColors.getTextSecondaryForPage(pageId)), // ✅ UPDATED
+                    hintStyle: TextStyle(
+                      color: AppColors.getTextSecondaryForPage(pageId),
+                    ),
                     prefixIcon: Icon(Icons.lock, color: AppColors.error),
                     border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(12),
                     ),
                     enabledBorder: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(12),
-                      borderSide: BorderSide(color: AppColors.getBorderForPage(pageId)), // ✅ UPDATED
+                      borderSide: BorderSide(
+                        color: AppColors.getBorderForPage(pageId),
+                      ),
                     ),
                     contentPadding: EdgeInsets.symmetric(
                       horizontal: 12,
@@ -425,12 +433,14 @@ class _ProfilePageState extends State<ProfilePage> {
               onPressed: isDeleting
                   ? null
                   : () {
-                passwordController.dispose();
-                Navigator.pop(context);
-              },
+                      passwordController.dispose();
+                      Navigator.pop(context);
+                    },
               child: Text(
                 'Cancel',
-                style: TextStyle(color: AppColors.getTextPrimaryForPage(pageId)), // ✅ UPDATED
+                style: TextStyle(
+                  color: AppColors.getTextPrimaryForPage(pageId),
+                ),
               ),
             ),
             ElevatedButton(
@@ -441,123 +451,98 @@ class _ProfilePageState extends State<ProfilePage> {
               onPressed: isDeleting
                   ? null
                   : () async {
-                if (passwordController.text.isEmpty) {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(
-                      content: Text('Please enter your password'),
-                      backgroundColor: AppColors.error,
-                    ),
-                  );
-                  return;
-                }
-
-                setDialogState(() => isDeleting = true);
-
-                try {
-                  final user = FirebaseAuth.instance.currentUser;
-                  if (user == null) {
-                    throw Exception('No user logged in');
-                  }
-
-                  print('🔄 Starting account deletion for: ${user.uid}');
-
-                  // Step 1: Re-authenticate user FIRST
-                  final credential = EmailAuthProvider.credential(
-                    email: user.email!,
-                    password: passwordController.text,
-                  );
-
-                  await user.reauthenticateWithCredential(credential);
-                  print('✅ Re-authentication successful');
-
-                  // Step 2: Delete all user data from Firestore WHILE STILL AUTHENTICATED
-                  await _deleteAllUserData(user.uid);
-                  print('✅ All user data deleted from Firestore');
-
-                  // Step 3: NOW delete Firebase Auth account (this removes authentication)
-                  await user.delete();
-                  print('✅ Firebase Auth account deleted');
-
-                  // Step 4: Cleanup and navigate
-                  passwordController.dispose();
-
-                  if (mounted) {
-                    Navigator.of(context).pop(); // Close dialog
-
-                    Navigator.of(context).pushNamedAndRemoveUntil(
-                      '/login',
-                          (route) => false,
-                    );
-
-                    Future.delayed(Duration(milliseconds: 500), () {
-                      if (mounted) {
+                      if (passwordController.text.isEmpty) {
                         ScaffoldMessenger.of(context).showSnackBar(
                           SnackBar(
-                            content: Text('Account deleted successfully'),
-                            backgroundColor: AppColors.success,
-                            duration: Duration(seconds: 3),
+                            content: Text('Please enter your password'),
+                            backgroundColor: AppColors.error,
                           ),
                         );
+                        return;
                       }
-                    });
-                  }
-                } on FirebaseAuthException catch (e) {
-                  print('❌ Firebase Auth Error: ${e.code} - ${e.message}');
-                  setDialogState(() => isDeleting = false);
 
-                  String message = 'Failed to delete account';
-                  if (e.code == 'wrong-password') {
-                    message = 'Incorrect password';
-                  } else if (e.code == 'too-many-requests') {
-                    message = 'Too many attempts. Try again later';
-                  } else if (e.code == 'requires-recent-login') {
-                    message = 'Please logout, login again, then try deleting';
-                  } else if (e.code == 'user-mismatch') {
-                    message = 'Authentication error. Please try again';
-                  } else if (e.code == 'invalid-credential') {
-                    message = 'Invalid credentials. Please check your password';
-                  }
+                      setDialogState(() => isDeleting = true);
 
-                  if (mounted) {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(
-                        content: Text(message),
-                        backgroundColor: AppColors.error,
-                        duration: Duration(seconds: 4),
-                      ),
-                    );
-                  }
-                } catch (e) {
-                  print('❌ General Error: $e');
-                  setDialogState(() => isDeleting = false);
+                      try {
+                        final user = FirebaseAuth.instance.currentUser;
+                        if (user == null) throw Exception('No user logged in');
 
-                  if (mounted) {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(
-                        content: Text('Error: ${e.toString()}'),
-                        backgroundColor: AppColors.error,
-                        duration: Duration(seconds: 4),
-                      ),
-                    );
-                  }
-                }
-              },
+                        final credential = EmailAuthProvider.credential(
+                          email: user.email!,
+                          password: passwordController.text,
+                        );
+                        await user.reauthenticateWithCredential(credential);
+                        await _deleteAllUserData(user.uid);
+                        await user.delete();
+
+                        passwordController.dispose();
+
+                        if (mounted) {
+                          Navigator.of(context).pop();
+                          Navigator.of(
+                            context,
+                          ).pushNamedAndRemoveUntil('/login', (route) => false);
+                          Future.delayed(Duration(milliseconds: 500), () {
+                            if (mounted) {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(
+                                  content: Text('Account deleted successfully'),
+                                  backgroundColor: AppColors.success,
+                                  duration: Duration(seconds: 3),
+                                ),
+                              );
+                            }
+                          });
+                        }
+                      } on FirebaseAuthException catch (e) {
+                        setDialogState(() => isDeleting = false);
+                        String message = 'Failed to delete account';
+                        if (e.code == 'wrong-password')
+                          message = 'Incorrect password';
+                        else if (e.code == 'too-many-requests')
+                          message = 'Too many attempts. Try again later';
+                        else if (e.code == 'requires-recent-login')
+                          message =
+                              'Please logout, login again, then try deleting';
+
+                        if (mounted) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(
+                              content: Text(message),
+                              backgroundColor: AppColors.error,
+                              duration: Duration(seconds: 4),
+                            ),
+                          );
+                        }
+                      } catch (e) {
+                        setDialogState(() => isDeleting = false);
+                        if (mounted) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(
+                              content: Text('Error: ${e.toString()}'),
+                              backgroundColor: AppColors.error,
+                              duration: Duration(seconds: 4),
+                            ),
+                          );
+                        }
+                      }
+                    },
               child: isDeleting
                   ? SizedBox(
-                width: 16,
-                height: 16,
-                child: CircularProgressIndicator(
-                  strokeWidth: 2,
-                  valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
-                ),
-              )
+                      width: 16,
+                      height: 16,
+                      child: CircularProgressIndicator(
+                        strokeWidth: 2,
+                        valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                      ),
+                    )
                   : Text(
-                'Delete Account',
-                style: TextStyle(
-                  color: Colors.white,
-                  fontFamily: 'ADLaMDisplay',
-                ),
-              ),
+                      'Delete Account',
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontFamily: 'ADLaMDisplay',
+                      ),
+                    ),
             ),
           ],
         ),
@@ -565,97 +550,53 @@ class _ProfilePageState extends State<ProfilePage> {
     );
   }
 
-// CRITICAL: This runs BEFORE deleting auth, so user is still authenticated
   Future<void> _deleteAllUserData(String uid) async {
     try {
-      print('🔄 Starting Firestore data deletion (user still authenticated)...');
-
-      // Use a single batch for better performance and atomicity
       final batch = FirebaseFirestore.instance.batch();
-      int itemsToDelete = 0;
 
-      // 1. Delete user document
       final userRef = FirebaseFirestore.instance.collection('users').doc(uid);
       batch.delete(userRef);
-      itemsToDelete++;
-      print('📝 Marked user document for deletion');
 
-      // 2. Delete cart items - get all cart items for this user
       final cartSnapshot = await FirebaseFirestore.instance
           .collection('cart')
           .where('userId', isEqualTo: uid)
           .get();
-
       for (var doc in cartSnapshot.docs) {
         batch.delete(doc.reference);
-        itemsToDelete++;
       }
-      print('📝 Marked ${cartSnapshot.docs.length} cart items for deletion');
 
-      // 3. Delete rewards
-      final rewardsRef = FirebaseFirestore.instance.collection('rewards').doc(uid);
+      final rewardsRef = FirebaseFirestore.instance
+          .collection('rewards')
+          .doc(uid);
       batch.delete(rewardsRef);
-      itemsToDelete++;
-      print('📝 Marked rewards document for deletion');
 
-      // 4. Delete OTP verifications
       final otpRef = FirebaseFirestore.instance
           .collection('otp_verifications')
           .doc(uid);
       batch.delete(otpRef);
-      itemsToDelete++;
-      print('📝 Marked OTP verification for deletion');
 
-      // 5. Commit the main batch
       await batch.commit();
-      print('✅ Batch commit successful! Deleted $itemsToDelete items');
 
-      // 6. Delete user's coupons subcollection (separate batch for subcollections)
       try {
         final couponsSnapshot = await FirebaseFirestore.instance
             .collection('users')
             .doc(uid)
             .collection('coupons')
             .get();
-
         if (couponsSnapshot.docs.isNotEmpty) {
           final couponsBatch = FirebaseFirestore.instance.batch();
           for (var doc in couponsSnapshot.docs) {
             couponsBatch.delete(doc.reference);
           }
           await couponsBatch.commit();
-          print('✅ Deleted ${couponsSnapshot.docs.length} user coupons');
         }
       } catch (e) {
-        print('⚠️ No coupons to delete or error: $e');
+        print('No coupons to delete or error: $e');
       }
-
-      // 7. OPTIONAL: Delete orders (uncomment if you want to delete order history)
-      /*
-    final ordersSnapshot = await FirebaseFirestore.instance
-        .collection('orders')
-        .where('userId', isEqualTo: uid)
-        .get();
-
-    if (ordersSnapshot.docs.isNotEmpty) {
-      final ordersBatch = FirebaseFirestore.instance.batch();
-      for (var doc in ordersSnapshot.docs) {
-        ordersBatch.delete(doc.reference);
-      }
-      await ordersBatch.commit();
-      print('✅ Deleted ${ordersSnapshot.docs.length} orders');
-    }
-    */
-
-      print('✅ ALL user data successfully deleted from Firestore');
     } catch (e) {
-      print('❌ Error deleting user data: $e');
-      print('❌ Stack trace: ${StackTrace.current}');
       throw Exception('Failed to delete user data: $e');
     }
   }
-
-  // ===================== OTHER ACTIONS =====================
 
   void _addNewAddress() async {
     if (userId == null) {
@@ -668,26 +609,24 @@ class _ProfilePageState extends State<ProfilePage> {
     await showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        backgroundColor: AppColors.getCardForPage(pageId), // ✅ UPDATED
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
+        backgroundColor: AppColors.getCardForPage(pageId),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
         title: Text(
           "Add Address",
           style: TextStyle(
             fontFamily: 'IrishGrover',
-            color: AppColors.getTextPrimaryForPage(pageId), // ✅ UPDATED
+            color: AppColors.getTextPrimaryForPage(pageId),
           ),
         ),
-        content: SingleChildScrollView(
-          child: TextField(
-            controller: controller,
-            maxLines: 3,
-            style: TextStyle(color: AppColors.getTextPrimaryForPage(pageId)), // ✅ UPDATED
-            decoration: InputDecoration(
-              border: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(12),
-              ),
-              hintText: 'Enter your address',
-              hintStyle: TextStyle(color: AppColors.getTextSecondaryForPage(pageId)), // ✅ UPDATED
+        content: TextField(
+          controller: controller,
+          maxLines: 3,
+          style: TextStyle(color: AppColors.getTextPrimaryForPage(pageId)),
+          decoration: InputDecoration(
+            border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+            hintText: 'Enter your address',
+            hintStyle: TextStyle(
+              color: AppColors.getTextSecondaryForPage(pageId),
             ),
           ),
         ),
@@ -696,11 +635,13 @@ class _ProfilePageState extends State<ProfilePage> {
             onPressed: () => Navigator.pop(context),
             child: Text(
               "Cancel",
-              style: TextStyle(color: AppColors.getTextPrimaryForPage(pageId)), // ✅ UPDATED
+              style: TextStyle(color: AppColors.getTextPrimaryForPage(pageId)),
             ),
           ),
           ElevatedButton(
-            style: ElevatedButton.styleFrom(backgroundColor: AppColors.getAccentForPage(pageId)), // ✅ UPDATED
+            style: ElevatedButton.styleFrom(
+              backgroundColor: AppColors.getAccentForPage(pageId),
+            ),
             onPressed: () async {
               final newAddress = controller.text.trim();
               if (newAddress.isEmpty) {
@@ -767,26 +708,24 @@ class _ProfilePageState extends State<ProfilePage> {
     await showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        backgroundColor: AppColors.getCardForPage(pageId), // ✅ UPDATED
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
+        backgroundColor: AppColors.getCardForPage(pageId),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
         title: Text(
           "Edit Profile",
           style: TextStyle(
             fontFamily: 'IrishGrover',
-            color: AppColors.getTextPrimaryForPage(pageId), // ✅ UPDATED
+            color: AppColors.getTextPrimaryForPage(pageId),
           ),
         ),
-        content: SingleChildScrollView(
-          child: TextField(
-            controller: nameController,
-            style: TextStyle(color: AppColors.getTextPrimaryForPage(pageId)), // ✅ UPDATED
-            decoration: InputDecoration(
-              labelText: "Name",
-              labelStyle: TextStyle(color: AppColors.getTextSecondaryForPage(pageId)), // ✅ UPDATED
-              border: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(12),
-              ),
+        content: TextField(
+          controller: nameController,
+          style: TextStyle(color: AppColors.getTextPrimaryForPage(pageId)),
+          decoration: InputDecoration(
+            labelText: "Name",
+            labelStyle: TextStyle(
+              color: AppColors.getTextSecondaryForPage(pageId),
             ),
+            border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
           ),
         ),
         actions: [
@@ -794,11 +733,13 @@ class _ProfilePageState extends State<ProfilePage> {
             onPressed: () => Navigator.pop(context),
             child: Text(
               "Cancel",
-              style: TextStyle(color: AppColors.getTextPrimaryForPage(pageId)), // ✅ UPDATED
+              style: TextStyle(color: AppColors.getTextPrimaryForPage(pageId)),
             ),
           ),
           ElevatedButton(
-            style: ElevatedButton.styleFrom(backgroundColor: AppColors.getAccentForPage(pageId)), // ✅ UPDATED
+            style: ElevatedButton.styleFrom(
+              backgroundColor: AppColors.getAccentForPage(pageId),
+            ),
             onPressed: () async {
               final newName = nameController.text.trim();
               if (newName.isEmpty) {
@@ -839,13 +780,13 @@ class _ProfilePageState extends State<ProfilePage> {
     await showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        backgroundColor: AppColors.getCardForPage(pageId), // ✅ UPDATED
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
+        backgroundColor: AppColors.getCardForPage(pageId),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
         title: Text(
           "Change Password",
           style: TextStyle(
             fontFamily: 'IrishGrover',
-            color: AppColors.getTextPrimaryForPage(pageId), // ✅ UPDATED
+            color: AppColors.getTextPrimaryForPage(pageId),
           ),
         ),
         content: SingleChildScrollView(
@@ -855,10 +796,14 @@ class _ProfilePageState extends State<ProfilePage> {
               TextField(
                 controller: currentController,
                 obscureText: true,
-                style: TextStyle(color: AppColors.getTextPrimaryForPage(pageId)), // ✅ UPDATED
+                style: TextStyle(
+                  color: AppColors.getTextPrimaryForPage(pageId),
+                ),
                 decoration: InputDecoration(
                   labelText: "Current Password",
-                  labelStyle: TextStyle(color: AppColors.getTextSecondaryForPage(pageId)), // ✅ UPDATED
+                  labelStyle: TextStyle(
+                    color: AppColors.getTextSecondaryForPage(pageId),
+                  ),
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(12),
                   ),
@@ -868,10 +813,14 @@ class _ProfilePageState extends State<ProfilePage> {
               TextField(
                 controller: newController,
                 obscureText: true,
-                style: TextStyle(color: AppColors.getTextPrimaryForPage(pageId)), // ✅ UPDATED
+                style: TextStyle(
+                  color: AppColors.getTextPrimaryForPage(pageId),
+                ),
                 decoration: InputDecoration(
                   labelText: "New Password",
-                  labelStyle: TextStyle(color: AppColors.getTextSecondaryForPage(pageId)), // ✅ UPDATED
+                  labelStyle: TextStyle(
+                    color: AppColors.getTextSecondaryForPage(pageId),
+                  ),
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(12),
                   ),
@@ -881,10 +830,14 @@ class _ProfilePageState extends State<ProfilePage> {
               TextField(
                 controller: confirmController,
                 obscureText: true,
-                style: TextStyle(color: AppColors.getTextPrimaryForPage(pageId)), // ✅ UPDATED
+                style: TextStyle(
+                  color: AppColors.getTextPrimaryForPage(pageId),
+                ),
                 decoration: InputDecoration(
                   labelText: "Confirm New Password",
-                  labelStyle: TextStyle(color: AppColors.getTextSecondaryForPage(pageId)), // ✅ UPDATED
+                  labelStyle: TextStyle(
+                    color: AppColors.getTextSecondaryForPage(pageId),
+                  ),
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(12),
                   ),
@@ -915,11 +868,13 @@ class _ProfilePageState extends State<ProfilePage> {
             onPressed: () => Navigator.pop(context),
             child: Text(
               "Cancel",
-              style: TextStyle(color: AppColors.getTextPrimaryForPage(pageId)), // ✅ UPDATED
+              style: TextStyle(color: AppColors.getTextPrimaryForPage(pageId)),
             ),
           ),
           ElevatedButton(
-            style: ElevatedButton.styleFrom(backgroundColor: AppColors.getAccentForPage(pageId)), // ✅ UPDATED
+            style: ElevatedButton.styleFrom(
+              backgroundColor: AppColors.getAccentForPage(pageId),
+            ),
             onPressed: () async {
               if (newController.text.length < 6) {
                 _showErrorSnackBar('Password must be at least 6 characters');
@@ -970,8 +925,6 @@ class _ProfilePageState extends State<ProfilePage> {
     Navigator.pushReplacementNamed(context, '/login');
   }
 
-  // ===================== HELPER METHODS =====================
-
   void _showSuccessSnackBar(String message) {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
@@ -990,284 +943,399 @@ class _ProfilePageState extends State<ProfilePage> {
     );
   }
 
-  // ===================== UI =====================
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppColors.getBackgroundForPage(pageId), // ✅ UPDATED
+      backgroundColor: AppColors.getBackgroundForPage(pageId),
       body: _isLoading
-          ? Center(child: CircularProgressIndicator(color: AppColors.getAccentForPage(pageId))) // ✅ UPDATED
-          : SingleChildScrollView(
-        child: Column(
-          children: [
-            // HEADER
-            Container(
-              height: 280,
-              width: double.infinity,
-              decoration: BoxDecoration(
-                gradient: AppGradients.splashBackgroundForPage(pageId), // ✅ UPDATED
+          ? Center(
+              child: CircularProgressIndicator(
+                color: AppColors.getAccentForPage(pageId),
               ),
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Container(
-                    padding: EdgeInsets.all(4),
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      shape: BoxShape.circle,
-                    ),
-                    child: CircleAvatar(
-                      radius: 46,
-                      backgroundColor: AppColors.getBackgroundForPage(pageId), // ✅ UPDATED
-                      child: Icon(
-                        Icons.person,
-                        size: 50,
-                        color: AppColors.getTextPrimaryForPage(pageId), // ✅ UPDATED
+            )
+          : CustomScrollView(
+              slivers: [
+                // Modern App Bar with gradient
+                SliverAppBar(
+                  expandedHeight: 200,
+                  pinned: true,
+                  backgroundColor: AppColors.getAccentForPage(pageId),
+                  flexibleSpace: FlexibleSpaceBar(
+                    background: Container(
+                      decoration: BoxDecoration(
+                        gradient: AppGradients.splashBackgroundForPage(pageId),
                       ),
-                    ),
-                  ),
-                  SizedBox(height: 10),
-                  Text(
-                    userName,
-                    style: TextStyle(
-                      fontFamily: 'IrishGrover',
-                      fontSize: 26,
-                      color: AppColors.getTextPrimaryForPage(pageId), // ✅ UPDATED
-                    ),
-                  ),
-                  Text(
-                    userEmail,
-                    style: TextStyle(
-                      fontFamily: 'ADLaMDisplay',
-                      color: AppColors.getTextSecondaryForPage(pageId), // ✅ UPDATED
-                    ),
-                  ),
-                ],
-              ),
-            ),
-
-            // WALLET CARD
-            Padding(
-              padding: EdgeInsets.symmetric(horizontal: 24),
-              child: InkWell(
-                onTap: _showWalletDialog,
-                borderRadius: BorderRadius.circular(18),
-                child: Container(
-                  padding: EdgeInsets.all(18),
-                  decoration: BoxDecoration(
-                    gradient: LinearGradient(
-                      colors: [
-                        AppColors.getAccentForPage(pageId), // ✅ UPDATED
-                        AppColors.getAccentForPage(pageId).withOpacity(0.8), // ✅ UPDATED
-                      ],
-                      begin: Alignment.topLeft,
-                      end: Alignment.bottomRight,
-                    ),
-                    borderRadius: BorderRadius.circular(18),
-                    boxShadow: [
-                      BoxShadow(
-                        color: AppColors.getAccentForPage(pageId).withOpacity(0.3), // ✅ UPDATED
-                        blurRadius: 8,
-                        offset: Offset(0, 4),
-                      ),
-                    ],
-                  ),
-                  child: Row(
-                    children: [
-                      Container(
-                        padding: EdgeInsets.all(12),
-                        decoration: BoxDecoration(
-                          color: Colors.white.withOpacity(0.2),
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                        child: Icon(
-                          Icons.account_balance_wallet,
-                          color: Colors.white,
-                          size: 28,
-                        ),
-                      ),
-                      SizedBox(width: 16),
-                      Expanded(
+                      child: SafeArea(
                         child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
+                          mainAxisAlignment: MainAxisAlignment.center,
                           children: [
+                            SizedBox(height: 40),
+                            Container(
+                              padding: EdgeInsets.all(4),
+                              decoration: BoxDecoration(
+                                color: Colors.white,
+                                shape: BoxShape.circle,
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: Colors.black.withOpacity(0.2),
+                                    blurRadius: 10,
+                                    offset: Offset(0, 4),
+                                  ),
+                                ],
+                              ),
+                              child: CircleAvatar(
+                                radius: 42,
+                                backgroundColor: AppColors.getBackgroundForPage(
+                                  pageId,
+                                ),
+                                child: Text(
+                                  userName.isNotEmpty
+                                      ? userName[0].toUpperCase()
+                                      : 'U',
+                                  style: TextStyle(
+                                    fontSize: 32,
+                                    fontWeight: FontWeight.bold,
+                                    color: AppColors.getAccentForPage(pageId),
+                                    fontFamily: 'IrishGrover',
+                                  ),
+                                ),
+                              ),
+                            ),
+                            SizedBox(height: 12),
                             Text(
-                              'Wallet Balance',
+                              userName,
                               style: TextStyle(
-                                fontFamily: 'ADLaMDisplay',
-                                fontSize: 14,
-                                color: Colors.white70,
+                                fontFamily: 'IrishGrover',
+                                fontSize: 22,
+                                fontWeight: FontWeight.bold,
+                                color: AppColors.getTextPrimaryForPage(pageId),
                               ),
                             ),
                             SizedBox(height: 4),
                             Text(
-                              'Rs. ${walletBalance.toStringAsFixed(2)}',
+                              userEmail,
                               style: TextStyle(
-                                fontFamily: 'IrishGrover',
-                                fontSize: 24,
-                                color: Colors.white,
-                                fontWeight: FontWeight.bold,
+                                fontFamily: 'ADLaMDisplay',
+                                fontSize: 14,
+                                color: AppColors.getTextPrimaryForPage(pageId),
                               ),
                             ),
                           ],
                         ),
                       ),
-                      Icon(
-                        Icons.arrow_forward_ios,
-                        color: Colors.white,
-                        size: 20,
+                    ),
+                  ),
+                ),
+
+                // Content
+                SliverToBoxAdapter(
+                  child: Padding(
+                    padding: EdgeInsets.all(20),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        // Wallet Card
+                        _buildWalletCard(),
+
+                        SizedBox(height: 24),
+
+                        // Address Section
+                        Text(
+                          'Delivery Address',
+                          style: TextStyle(
+                            fontSize: 18,
+                            fontWeight: FontWeight.bold,
+                            color: AppColors.getTextPrimaryForPage(pageId),
+                            fontFamily: 'IrishGrover',
+                          ),
+                        ),
+                        SizedBox(height: 12),
+                        _buildAddressCard(),
+
+                        SizedBox(height: 24),
+
+                        // Account Settings
+                        Text(
+                          'Account Settings',
+                          style: TextStyle(
+                            fontSize: 18,
+                            fontWeight: FontWeight.bold,
+                            color: AppColors.getTextPrimaryForPage(pageId),
+                            fontFamily: 'IrishGrover',
+                          ),
+                        ),
+                        SizedBox(height: 12),
+                        _buildSettingsCard(),
+
+                        SizedBox(height: 24),
+
+                        // Actions
+                        _buildActionButtons(),
+
+                        SizedBox(height: 40),
+                      ],
+                    ),
+                  ),
+                ),
+              ],
+            ),
+    );
+  }
+
+  Widget _buildWalletCard() {
+    return Container(
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          colors: [
+            AppColors.getAccentForPage(pageId),
+            AppColors.getAccentForPage(pageId).withOpacity(0.8),
+          ],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+        borderRadius: BorderRadius.circular(20),
+        boxShadow: [
+          BoxShadow(
+            color: AppColors.getAccentForPage(pageId).withOpacity(0.3),
+            blurRadius: 12,
+            offset: Offset(0, 6),
+          ),
+        ],
+      ),
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          onTap: _showWalletDialog,
+          borderRadius: BorderRadius.circular(20),
+          child: Padding(
+            padding: EdgeInsets.all(20),
+            child: Row(
+              children: [
+                Container(
+                  padding: EdgeInsets.all(16),
+                  decoration: BoxDecoration(
+                    color: Colors.white.withOpacity(0.2),
+                    borderRadius: BorderRadius.circular(16),
+                  ),
+                  child: Icon(
+                    Icons.account_balance_wallet,
+                    color: Colors.white,
+                    size: 32,
+                  ),
+                ),
+                SizedBox(width: 20),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'Wallet Balance',
+                        style: TextStyle(
+                          fontFamily: 'ADLaMDisplay',
+                          fontSize: 14,
+                          color: Colors.white70,
+                        ),
+                      ),
+                      SizedBox(height: 6),
+                      Text(
+                        'Rs. ${walletBalance.toStringAsFixed(2)}',
+                        style: TextStyle(
+                          fontFamily: 'IrishGrover',
+                          fontSize: 26,
+                          color: Colors.white,
+                          fontWeight: FontWeight.bold,
+                        ),
                       ),
                     ],
                   ),
                 ),
-              ),
+                Icon(Icons.arrow_forward_ios, color: Colors.white, size: 20),
+              ],
             ),
-
-            SizedBox(height: 20),
-
-            // ADDRESS CARD
-            Padding(
-              padding: EdgeInsets.symmetric(horizontal: 24),
-              child: Column(
-                children: [
-                  Container(
-                    padding: EdgeInsets.all(18),
-                    decoration: BoxDecoration(
-                      color: AppColors.getCardForPage(pageId), // ✅ UPDATED
-                      borderRadius: BorderRadius.circular(18),
-                      border: Border.all(color: AppColors.getBorderForPage(pageId)), // ✅ UPDATED
-                    ),
-                    child: Row(
-                      children: [
-                        Icon(Icons.location_on, color: AppColors.getAccentForPage(pageId)), // ✅ UPDATED
-                        SizedBox(width: 14),
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                "Delivery Address",
-                                style: TextStyle(
-                                  fontFamily: 'IrishGrover',
-                                  fontSize: 16,
-                                  color: AppColors.getTextPrimaryForPage(pageId), // ✅ UPDATED
-                                ),
-                              ),
-                              SizedBox(height: 4),
-                              Text(
-                                userAddress ?? "No address added yet",
-                                style: TextStyle(
-                                  fontFamily: 'ADLaMDisplay',
-                                  color: AppColors.getTextSecondaryForPage(pageId), // ✅ UPDATED
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                  SizedBox(height: 12),
-                  SizedBox(
-                    width: double.infinity,
-                    child: ElevatedButton.icon(
-                      onPressed: _selectAddressFromMap,
-                      icon: Icon(Icons.map_outlined, color: Colors.white),
-                      label: Text(
-                        'Select Address from Map',
-                        style: TextStyle(
-                          fontFamily: 'ADLaMDisplay',
-                          fontSize: 16,
-                          color: Colors.white,
-                          fontWeight: FontWeight.w600,
-                        ),
-                      ),
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: AppColors.getAccentForPage(pageId), // ✅ UPDATED
-                        padding: EdgeInsets.symmetric(vertical: 14),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                        elevation: 2,
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-
-            SizedBox(height: 20),
-
-            // ACTIONS
-            _actionTile(
-              Icons.add_location_alt,
-              "Add New Address",
-              _addNewAddress,
-            ),
-            _actionTile(
-              Icons.edit,
-              "Edit Profile Details",
-              _editProfileDetails,
-            ),
-            _actionTile(Icons.lock, "Change Password", _changePassword),
-
-            SizedBox(height: 30),
-
-            // ACTION BUTTONS
-            _authPillButton(
-              text: "Logout",
-              icon: Icons.logout,
-              backgroundColor: AppColors.error,
-              textColor: Colors.white,
-              onTap: _logout,
-            ),
-
-            SizedBox(height: 16),
-
-            _authPillButton(
-              text: "Delete Account",
-              icon: Icons.delete_forever,
-              backgroundColor: AppColors.error,
-              textColor: Colors.white,
-              onTap: _showDeleteAccountDialog,
-            ),
-
-            SizedBox(height: 40),
-          ],
+          ),
         ),
       ),
     );
   }
 
-  Widget _actionTile(IconData icon, String text, VoidCallback onTap) {
-    return Padding(
-      padding: EdgeInsets.symmetric(horizontal: 24, vertical: 6),
+  Widget _buildAddressCard() {
+    return Container(
+      decoration: BoxDecoration(
+        color: AppColors.getCardForPage(pageId),
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: AppColors.getBorderForPage(pageId), width: 1),
+      ),
+      child: Column(
+        children: [
+          Padding(
+            padding: EdgeInsets.all(16),
+            child: Row(
+              children: [
+                Container(
+                  padding: EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    color: AppColors.getAccentForPage(pageId).withOpacity(0.1),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: Icon(
+                    Icons.location_on,
+                    color: AppColors.getAccentForPage(pageId),
+                    size: 24,
+                  ),
+                ),
+                SizedBox(width: 16),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        userAddress ?? "No address added yet",
+                        style: TextStyle(
+                          fontFamily: 'ADLaMDisplay',
+                          fontSize: 14,
+                          color: userAddress != null
+                              ? AppColors.getTextPrimaryForPage(pageId)
+                              : AppColors.getTextSecondaryForPage(pageId),
+                        ),
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ],
+                  ),
+                ),
+                IconButton(
+                  icon: Icon(
+                    Icons.edit,
+                    color: AppColors.getAccentForPage(pageId),
+                  ),
+                  onPressed: _addNewAddress,
+                ),
+              ],
+            ),
+          ),
+          Divider(height: 1, color: AppColors.getBorderForPage(pageId)),
+          Material(
+            color: Colors.transparent,
+            child: InkWell(
+              onTap: _selectAddressFromMap,
+              borderRadius: BorderRadius.only(
+                bottomLeft: Radius.circular(16),
+                bottomRight: Radius.circular(16),
+              ),
+              child: Padding(
+                padding: EdgeInsets.symmetric(vertical: 14, horizontal: 16),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Icon(
+                      Icons.map,
+                      color: AppColors.getAccentForPage(pageId),
+                      size: 20,
+                    ),
+                    SizedBox(width: 8),
+                    Text(
+                      'Select from Map',
+                      style: TextStyle(
+                        fontFamily: 'ADLaMDisplay',
+                        fontSize: 14,
+                        color: AppColors.getAccentForPage(pageId),
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildSettingsCard() {
+    return Container(
+      decoration: BoxDecoration(
+        color: AppColors.getCardForPage(pageId),
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: AppColors.getBorderForPage(pageId), width: 1),
+      ),
+      child: Column(
+        children: [
+          _settingsTile(
+            icon: Icons.person_outline,
+            title: 'Edit Profile',
+            onTap: _editProfileDetails,
+            isFirst: true,
+          ),
+          _settingsTile(
+            icon: Icons.lock_outline,
+            title: 'Change Password',
+            onTap: _changePassword,
+            isLast: true,
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _settingsTile({
+    required IconData icon,
+    required String title,
+    required VoidCallback onTap,
+    bool isFirst = false,
+    bool isLast = false,
+  }) {
+    return Material(
+      color: Colors.transparent,
       child: InkWell(
         onTap: onTap,
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.vertical(
+          top: isFirst ? Radius.circular(16) : Radius.zero,
+          bottom: isLast ? Radius.circular(16) : Radius.zero,
+        ),
         child: Container(
-          padding: EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+          padding: EdgeInsets.symmetric(horizontal: 16, vertical: 16),
           decoration: BoxDecoration(
-            color: AppColors.getCardForPage(pageId), // ✅ UPDATED
-            borderRadius: BorderRadius.circular(16),
-            border: Border.all(color: AppColors.getBorderForPage(pageId)), // ✅ UPDATED
+            border: !isLast
+                ? Border(
+                    bottom: BorderSide(
+                      color: AppColors.getBorderForPage(pageId),
+                      width: 1,
+                    ),
+                  )
+                : null,
           ),
           child: Row(
             children: [
-              Icon(icon, color: AppColors.getAccentForPage(pageId)), // ✅ UPDATED
-              SizedBox(width: 14),
+              Container(
+                padding: EdgeInsets.all(10),
+                decoration: BoxDecoration(
+                  color: AppColors.getAccentForPage(pageId).withOpacity(0.1),
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                child: Icon(
+                  icon,
+                  color: AppColors.getAccentForPage(pageId),
+                  size: 22,
+                ),
+              ),
+              SizedBox(width: 16),
               Expanded(
                 child: Text(
-                  text,
+                  title,
                   style: TextStyle(
                     fontFamily: 'ADLaMDisplay',
-                    fontSize: 16,
-                    color: AppColors.getTextPrimaryForPage(pageId), // ✅ UPDATED
+                    fontSize: 15,
+                    color: AppColors.getTextPrimaryForPage(pageId),
+                    fontWeight: FontWeight.w500,
                   ),
                 ),
               ),
-              Icon(Icons.chevron_right, color: AppColors.getTextSecondaryForPage(pageId)), // ✅ UPDATED
+              Icon(
+                Icons.chevron_right,
+                color: AppColors.getTextSecondaryForPage(pageId),
+                size: 22,
+              ),
             ],
           ),
         ),
@@ -1275,34 +1343,54 @@ class _ProfilePageState extends State<ProfilePage> {
     );
   }
 
-  Widget _authPillButton({
+  Widget _buildActionButtons() {
+    return Column(
+      children: [
+        _actionButton(
+          text: 'Logout',
+          icon: Icons.logout,
+          color: AppColors.getAccentForPage(pageId),
+          onTap: _logout,
+        ),
+        SizedBox(height: 12),
+        _actionButton(
+          text: 'Delete Account',
+          icon: Icons.delete_forever,
+          color: AppColors.error,
+          onTap: _showDeleteAccountDialog,
+        ),
+      ],
+    );
+  }
+
+  Widget _actionButton({
     required String text,
     required IconData icon,
-    required Color backgroundColor,
-    required Color textColor,
+    required Color color,
     required VoidCallback onTap,
   }) {
     return SizedBox(
-      width: 200,
-      height: 46,
+      width: double.infinity,
+      height: 52,
       child: ElevatedButton.icon(
         onPressed: onTap,
-        icon: Icon(icon, color: textColor),
+        icon: Icon(icon, color: Colors.white, size: 22),
         label: Text(
           text,
           style: TextStyle(
             fontFamily: 'ADLaMDisplay',
             fontSize: 16,
-            color: textColor,
+            color: Colors.white,
             fontWeight: FontWeight.w600,
           ),
         ),
         style: ElevatedButton.styleFrom(
-          backgroundColor: backgroundColor,
+          backgroundColor: color,
           shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(30),
+            borderRadius: BorderRadius.circular(14),
           ),
-          elevation: 4,
+          elevation: 2,
+          shadowColor: color.withOpacity(0.3),
         ),
       ),
     );

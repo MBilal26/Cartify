@@ -1,13 +1,5 @@
-import 'dart:async';
-import 'package:flutter/material.dart';
-import 'package:firebase_auth/firebase_auth.dart';
-import 'package:flutter_spinkit/flutter_spinkit.dart';
-import 'colors.dart';
-import 'reset_password.dart';
-import 'database_functions.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
-import 'otp_verification.dart';
-
+import 'app_imports.dart';
+import 'package:shimmer/shimmer.dart';
 // 1.__Splash Screen
 
 class SplashScreen extends StatefulWidget {
@@ -23,29 +15,29 @@ class _SplashScreenState extends State<SplashScreen>
   late Animation<double> _fadeAnimation;
   late Animation<double> _scaleAnimation;
 
-  // ✅ CONSTANT: Page ID for Colors (Shared with Login)
   final String pageId = 'LOGIN';
 
   @override
   void initState() {
     super.initState();
 
-    // Animation setup
     _controller = AnimationController(
       vsync: this,
-      duration: const Duration(seconds: 2),
+      duration: const Duration(milliseconds: 2500),
     );
 
-    _fadeAnimation = CurvedAnimation(parent: _controller, curve: Curves.easeIn);
+    _fadeAnimation = CurvedAnimation(
+      parent: _controller,
+      curve: const Interval(0.0, 0.6, curve: Curves.easeIn),
+    );
 
     _scaleAnimation = Tween<double>(
-      begin: 0.8,
+      begin: 0.6,
       end: 1.0,
-    ).animate(CurvedAnimation(parent: _controller, curve: Curves.easeOutBack));
+    ).animate(CurvedAnimation(parent: _controller, curve: Curves.elasticOut));
 
     _controller.forward();
 
-    // Navigate to Home after 4 seconds
     Timer(const Duration(seconds: 4), () {
       if (mounted) {
         Navigator.pushReplacementNamed(context, '/home');
@@ -62,39 +54,151 @@ class _SplashScreenState extends State<SplashScreen>
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: Container(
-        width: double.infinity,
-        height: double.infinity,
-        decoration: BoxDecoration(
-            gradient: AppGradients.splashBackgroundForPage(
-                pageId)), // ✅ UPDATED
-        child: FadeTransition(
-          opacity: _fadeAnimation,
-          child: ScaleTransition(
-            scale: _scaleAnimation,
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Image.asset('assets/images/glass-logo.png', height: 150),
-
-                Text(
-                  " CARTIFY",
-                  style: TextStyle(
-                    fontSize: 35,
-                    fontFamily: 'IrishGrover',
-                    letterSpacing: 2,
-                    color: AppColors.getAccentForPage(pageId), // ✅ UPDATED
-                  ),
-                ),
-                const SizedBox(height: 30),
-                SpinKitThreeBounce(
-                    color: AppColors.getAccentForPage(pageId),
-                    size: 25.0), // ✅ UPDATED
-              ],
+      body: Stack(
+        children: [
+          // 1. THE BASE GRADIENT
+          Container(
+            decoration: BoxDecoration(
+              gradient: AppGradients.splashBackgroundForPage(pageId),
             ),
           ),
+
+          // 2. DECORATIVE BLURRED BLOBS (The "Modern" look)
+          _buildBlurredBlob(top: -100, right: -50, color: Colors.white24),
+          _buildBlurredBlob(
+            bottom: -150,
+            left: -100,
+            color: AppColors.getAccentForPage(pageId).withOpacity(0.3),
+          ),
+
+          // 3. MAIN CONTENT
+          Center(
+            child: FadeTransition(
+              opacity: _fadeAnimation,
+              child: ScaleTransition(
+                scale: _scaleAnimation,
+                child: Column(
+                  mainAxisSize:
+                      MainAxisSize.min, // Groups items tightly in the center
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  crossAxisAlignment:
+                      CrossAxisAlignment.center, // Forces horizontal alignment
+                  children: [
+                    // 1. THE LOGO (Floating)
+                    _buildFloatingLogo(),
+
+                    // 3. THE TEXT
+                    // 3. THE TEXT (Improved Shimmer with no black artifacts)
+                    Stack(
+                      alignment: Alignment.center,
+                      children: [
+                        // LAYER A: THE STATIC SHADOW
+                        // This provides the depth and glow without being affected by the shimmer mask
+                        Text(
+                          "  CARTIFY ",
+                          textAlign: TextAlign.center,
+                          style: TextStyle(
+                            fontSize: 45,
+                            fontFamily: 'IrishGrover',
+                            letterSpacing: 4,
+                            color: Colors
+                                .transparent, // We only want the shadow from this layer
+                            shadows: [
+                              Shadow(
+                                blurRadius: 25,
+                                color: AppColors.getAccentForPage(
+                                  pageId,
+                                ).withOpacity(0.4),
+                                offset: const Offset(0, 8),
+                              ),
+                              Shadow(
+                                blurRadius: 10,
+                                color: Colors.black.withOpacity(0.2),
+                                offset: const Offset(0, 4),
+                              ),
+                            ],
+                          ),
+                        ),
+
+                        // LAYER B: THE SHIMMERING INK
+                        // This layer handles the "light beam" moving across the letters
+                        Shimmer.fromColors(
+                          baseColor:
+                              Colors.white, // Pure white base for clarity
+                          highlightColor: AppColors.getAccentForPage(
+                            pageId,
+                          ).withOpacity(0.5), // Brand-colored glow
+                          period: const Duration(milliseconds: 2500),
+                          child: Text(
+                            "  CARTIFY ",
+                            textAlign: TextAlign.center,
+                            style: TextStyle(
+                              fontSize: 45,
+                              fontFamily: 'IrishGrover',
+                              letterSpacing: 4,
+                              fontWeight: FontWeight.bold,
+                              color: Colors.white, // The actual ink color
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+
+                    const SizedBox(height: 50), // Space before the loader
+                    // 4. THE LOADER
+                  ],
+                ),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  // --- UI HELPER METHODS ---
+
+  Widget _buildBlurredBlob({
+    double? top,
+    double? bottom,
+    double? left,
+    double? right,
+    required Color color,
+  }) {
+    return Positioned(
+      top: top,
+      bottom: bottom,
+      left: left,
+      right: right,
+      child: Container(
+        width: 300,
+        height: 300,
+        decoration: BoxDecoration(
+          shape: BoxShape.circle,
+          color: color,
+          boxShadow: [
+            BoxShadow(
+              color: color.withOpacity(0.5),
+              blurRadius: 100,
+              spreadRadius: 50,
+            ),
+          ],
         ),
       ),
+    );
+  }
+
+  Widget _buildFloatingLogo() {
+    return TweenAnimationBuilder(
+      tween: Tween<double>(begin: 0, end: 10),
+      duration: const Duration(seconds: 2),
+      builder: (context, double value, child) {
+        return Transform.translate(
+          offset: Offset(0, -value), // Subtle up/down float
+          child: child,
+        );
+      },
+      child: Image.asset('assets/images/glass-logo.png', height: 200),
     );
   }
 }
@@ -114,7 +218,6 @@ class _LoginScreenState extends State<LoginScreen> {
   final TextEditingController emailController = TextEditingController();
   final TextEditingController passwordController = TextEditingController();
 
-  // ✅ CONSTANT: Page ID for Colors
   final String pageId = 'LOGIN';
 
   @override
@@ -141,11 +244,11 @@ class _LoginScreenState extends State<LoginScreen> {
     });
 
     try {
-      UserCredential userCredential =
-      await FirebaseAuth.instance.signInWithEmailAndPassword(
-        email: emailController.text.trim(),
-        password: passwordController.text.trim(),
-      );
+      UserCredential userCredential = await FirebaseAuth.instance
+          .signInWithEmailAndPassword(
+            email: emailController.text.trim(),
+            password: passwordController.text.trim(),
+          );
 
       // Check if email is verified in Firestore
       final userDoc = await FirebaseFirestore.instance
@@ -170,7 +273,7 @@ class _LoginScreenState extends State<LoginScreen> {
                 userId: userCredential.user!.uid,
               ),
             ),
-                (route) => false,
+            (route) => false,
           );
         }
       } else {
@@ -204,13 +307,13 @@ class _LoginScreenState extends State<LoginScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppColors.getBackgroundForPage(pageId), // ✅ UPDATED
+      backgroundColor: AppColors.getBackgroundForPage(pageId),
       extendBodyBehindAppBar: true,
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         leading: IconButton(
           icon: const Icon(Icons.chevron_left, size: 42),
-          color: AppColors.getTextPrimaryForPage(pageId), // ✅ UPDATED
+          color: AppColors.getTextPrimaryForPage(pageId),
           onPressed: () {
             Navigator.pop(context);
           },
@@ -223,8 +326,7 @@ class _LoginScreenState extends State<LoginScreen> {
               height: 280,
               width: double.infinity,
               decoration: BoxDecoration(
-                gradient: AppGradients.splashBackgroundForPage(
-                    pageId), // ✅ UPDATED
+                gradient: AppGradients.splashBackgroundForPage(pageId),
               ),
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
@@ -235,8 +337,7 @@ class _LoginScreenState extends State<LoginScreen> {
                       fontFamily: 'IrishGrover',
                       fontSize: 30,
                       fontWeight: FontWeight.bold,
-                      color: AppColors.getTextPrimaryForPage(
-                          pageId), // ✅ UPDATED
+                      color: AppColors.getTextPrimaryForPage(pageId),
                     ),
                   ),
                   SizedBox(height: 20),
@@ -255,8 +356,7 @@ class _LoginScreenState extends State<LoginScreen> {
                   Text(
                     " Enter your Email",
                     style: TextStyle(
-                      color: AppColors.getTextPrimaryForPage(
-                          pageId), // ✅ UPDATED
+                      color: AppColors.getTextPrimaryForPage(pageId),
                       fontFamily: 'ADLaMDisplay',
                     ),
                   ),
@@ -265,8 +365,8 @@ class _LoginScreenState extends State<LoginScreen> {
                     controller: emailController,
                     keyboardType: TextInputType.emailAddress,
                     style: TextStyle(
-                        color: AppColors.getTextPrimaryForPage(
-                            pageId)), // ✅ UPDATED
+                      color: AppColors.getTextPrimaryForPage(pageId),
+                    ),
                     decoration: InputDecoration(
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.all(Radius.circular(12)),
@@ -274,13 +374,13 @@ class _LoginScreenState extends State<LoginScreen> {
                       enabledBorder: OutlineInputBorder(
                         borderRadius: BorderRadius.all(Radius.circular(12)),
                         borderSide: BorderSide(
-                            color: AppColors.getBorderForPage(
-                                pageId)), // ✅ UPDATED
+                          color: AppColors.getBorderForPage(pageId),
+                        ),
                       ),
                       labelText: 'Email',
                       labelStyle: TextStyle(
-                          color: AppColors.getTextSecondaryForPage(
-                              pageId)), // ✅ UPDATED
+                        color: AppColors.getTextSecondaryForPage(pageId),
+                      ),
                     ),
                   ),
                 ],
@@ -297,8 +397,7 @@ class _LoginScreenState extends State<LoginScreen> {
                   Text(
                     " Enter your password",
                     style: TextStyle(
-                      color: AppColors.getTextPrimaryForPage(
-                          pageId), // ✅ UPDATED
+                      color: AppColors.getTextPrimaryForPage(pageId),
                       fontFamily: 'ADLaMDisplay',
                     ),
                   ),
@@ -307,29 +406,28 @@ class _LoginScreenState extends State<LoginScreen> {
                     controller: passwordController,
                     obscureText: !_isPasswordVisible,
                     style: TextStyle(
-                        color: AppColors.getTextPrimaryForPage(
-                            pageId)), // ✅ UPDATED
+                      color: AppColors.getTextPrimaryForPage(pageId),
+                    ),
                     decoration: InputDecoration(
                       labelText: 'Password',
                       labelStyle: TextStyle(
-                          color: AppColors.getTextSecondaryForPage(
-                              pageId)), // ✅ UPDATED
+                        color: AppColors.getTextSecondaryForPage(pageId),
+                      ),
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.all(Radius.circular(12)),
                       ),
                       enabledBorder: OutlineInputBorder(
                         borderRadius: BorderRadius.all(Radius.circular(12)),
                         borderSide: BorderSide(
-                            color: AppColors.getBorderForPage(
-                                pageId)), // ✅ UPDATED
+                          color: AppColors.getBorderForPage(pageId),
+                        ),
                       ),
                       suffixIcon: IconButton(
                         icon: Icon(
                           _isPasswordVisible
                               ? Icons.visibility
                               : Icons.visibility_off,
-                          color: AppColors.getTextSecondaryForPage(
-                              pageId), // ✅ UPDATED
+                          color: AppColors.getTextSecondaryForPage(pageId),
                         ),
                         onPressed: () {
                           setState(() {
@@ -359,8 +457,7 @@ class _LoginScreenState extends State<LoginScreen> {
                   child: Text(
                     "forgot password?",
                     style: TextStyle(
-                      color:
-                      AppColors.getAccentForPage(pageId), // ✅ UPDATED
+                      color: AppColors.getAccentForPage(pageId),
                       fontFamily: 'ADLaMDisplay',
                     ),
                   ),
@@ -377,8 +474,7 @@ class _LoginScreenState extends State<LoginScreen> {
                 height: 50,
                 child: ElevatedButton(
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: AppColors.getAccentForPage(
-                        pageId), // ✅ UPDATED
+                    backgroundColor: AppColors.getAccentForPage(pageId),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(16),
                     ),
@@ -387,13 +483,13 @@ class _LoginScreenState extends State<LoginScreen> {
                   child: _isLoading
                       ? CircularProgressIndicator(color: Colors.white)
                       : const Text(
-                    "Login",
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontFamily: 'ADLaMDisplay',
-                      fontSize: 20,
-                    ),
-                  ),
+                          "Login",
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontFamily: 'ADLaMDisplay',
+                            fontSize: 20,
+                          ),
+                        ),
                 ),
               ),
             ),
@@ -405,8 +501,7 @@ class _LoginScreenState extends State<LoginScreen> {
                 Text(
                   "Don't have an account?",
                   style: TextStyle(
-                    color: AppColors.getTextPrimaryForPage(
-                        pageId), // ✅ UPDATED
+                    color: AppColors.getTextPrimaryForPage(pageId),
                     fontFamily: 'ADLaMDisplay',
                   ),
                 ),
@@ -418,8 +513,7 @@ class _LoginScreenState extends State<LoginScreen> {
                     "Sign Up",
                     style: TextStyle(
                       fontWeight: FontWeight.bold,
-                      color: AppColors.getTextPrimaryForPage(
-                          pageId), // ✅ UPDATED
+                      color: AppColors.getTextPrimaryForPage(pageId),
                       fontFamily: 'ADLaMDisplay',
                     ),
                   ),
@@ -450,9 +544,8 @@ class _SignUpScreenState extends State<SignUpScreen> {
   final TextEditingController emailController = TextEditingController();
   final TextEditingController passwordController = TextEditingController();
   final TextEditingController confirmPasswordController =
-  TextEditingController();
+      TextEditingController();
 
-  // ✅ CONSTANT: Page ID for Colors
   final String pageId = 'LOGIN';
 
   @override
@@ -584,11 +677,11 @@ class _SignUpScreenState extends State<SignUpScreen> {
 
     try {
       // Create user with Firebase Auth
-      UserCredential userCredential =
-      await FirebaseAuth.instance.createUserWithEmailAndPassword(
-        email: emailController.text.trim(),
-        password: passwordController.text.trim(),
-      );
+      UserCredential userCredential = await FirebaseAuth.instance
+          .createUserWithEmailAndPassword(
+            email: emailController.text.trim(),
+            password: passwordController.text.trim(),
+          );
 
       // Create user document in Firestore
       await DatabaseService.instance.createUser(
@@ -618,7 +711,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
               userId: userCredential.user!.uid,
             ),
           ),
-              (route) => false,
+          (route) => false,
         );
       }
     } on FirebaseAuthException catch (e) {
@@ -655,14 +748,14 @@ class _SignUpScreenState extends State<SignUpScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppColors.getBackgroundForPage(pageId), // ✅ UPDATED
+      backgroundColor: AppColors.getBackgroundForPage(pageId),
       extendBodyBehindAppBar: true,
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
         leading: IconButton(
           icon: const Icon(Icons.chevron_left, size: 42),
-          color: AppColors.getTextPrimaryForPage(pageId), // ✅ UPDATED
+          color: AppColors.getTextPrimaryForPage(pageId),
           onPressed: () {
             Navigator.pop(context);
           },
@@ -675,8 +768,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
               height: 250,
               width: double.infinity,
               decoration: BoxDecoration(
-                gradient: AppGradients.splashBackgroundForPage(
-                    pageId), // ✅ UPDATED
+                gradient: AppGradients.splashBackgroundForPage(pageId),
               ),
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
@@ -687,8 +779,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
                       fontFamily: 'IrishGrover',
                       fontSize: 30,
                       fontWeight: FontWeight.bold,
-                      color: AppColors.getTextPrimaryForPage(
-                          pageId), // ✅ UPDATED
+                      color: AppColors.getTextPrimaryForPage(pageId),
                     ),
                   ),
                   const SizedBox(height: 20),
@@ -707,8 +798,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
                   Text(
                     " Enter Name",
                     style: TextStyle(
-                      color: AppColors.getTextPrimaryForPage(
-                          pageId), // ✅ UPDATED
+                      color: AppColors.getTextPrimaryForPage(pageId),
                       fontFamily: 'ADLaMDisplay',
                     ),
                   ),
@@ -716,21 +806,21 @@ class _SignUpScreenState extends State<SignUpScreen> {
                   TextField(
                     controller: nameController,
                     style: TextStyle(
-                        color: AppColors.getTextPrimaryForPage(
-                            pageId)), // ✅ UPDATED
+                      color: AppColors.getTextPrimaryForPage(pageId),
+                    ),
                     decoration: InputDecoration(
                       labelText: "Name",
                       labelStyle: TextStyle(
-                          color: AppColors.getTextSecondaryForPage(
-                              pageId)), // ✅ UPDATED
+                        color: AppColors.getTextSecondaryForPage(pageId),
+                      ),
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.all(Radius.circular(12)),
                       ),
                       enabledBorder: OutlineInputBorder(
                         borderRadius: BorderRadius.all(Radius.circular(12)),
                         borderSide: BorderSide(
-                            color: AppColors.getBorderForPage(
-                                pageId)), // ✅ UPDATED
+                          color: AppColors.getBorderForPage(pageId),
+                        ),
                       ),
                     ),
                   ),
@@ -748,8 +838,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
                   Text(
                     " Enter Email",
                     style: TextStyle(
-                      color: AppColors.getTextPrimaryForPage(
-                          pageId), // ✅ UPDATED
+                      color: AppColors.getTextPrimaryForPage(pageId),
                       fontFamily: 'ADLaMDisplay',
                     ),
                   ),
@@ -758,17 +847,16 @@ class _SignUpScreenState extends State<SignUpScreen> {
                     controller: emailController,
                     keyboardType: TextInputType.emailAddress,
                     style: TextStyle(
-                        color: AppColors.getTextPrimaryForPage(
-                            pageId)), // ✅ UPDATED
+                      color: AppColors.getTextPrimaryForPage(pageId),
+                    ),
                     decoration: InputDecoration(
                       labelText: "Email",
                       labelStyle: TextStyle(
-                          color: AppColors.getTextSecondaryForPage(
-                              pageId)), // ✅ UPDATED
+                        color: AppColors.getTextSecondaryForPage(pageId),
+                      ),
                       helperText: "Use a valid, permanent email address",
                       helperStyle: TextStyle(
-                        color: AppColors.getTextSecondaryForPage(
-                            pageId), // ✅ UPDATED
+                        color: AppColors.getTextSecondaryForPage(pageId),
                         fontSize: 12,
                       ),
                       border: OutlineInputBorder(
@@ -777,8 +865,8 @@ class _SignUpScreenState extends State<SignUpScreen> {
                       enabledBorder: OutlineInputBorder(
                         borderRadius: BorderRadius.all(Radius.circular(12)),
                         borderSide: BorderSide(
-                            color: AppColors.getBorderForPage(
-                                pageId)), // ✅ UPDATED
+                          color: AppColors.getBorderForPage(pageId),
+                        ),
                       ),
                     ),
                   ),
@@ -796,8 +884,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
                   Text(
                     " Enter Password",
                     style: TextStyle(
-                      color: AppColors.getTextPrimaryForPage(
-                          pageId), // ✅ UPDATED
+                      color: AppColors.getTextPrimaryForPage(pageId),
                       fontFamily: 'ADLaMDisplay',
                     ),
                   ),
@@ -807,17 +894,16 @@ class _SignUpScreenState extends State<SignUpScreen> {
                     obscureText: !_isPasswordVisible,
                     maxLength: 11,
                     style: TextStyle(
-                        color: AppColors.getTextPrimaryForPage(
-                            pageId)), // ✅ UPDATED
+                      color: AppColors.getTextPrimaryForPage(pageId),
+                    ),
                     decoration: InputDecoration(
                       labelText: "Password",
                       labelStyle: TextStyle(
-                          color: AppColors.getTextSecondaryForPage(
-                              pageId)), // ✅ UPDATED
+                        color: AppColors.getTextSecondaryForPage(pageId),
+                      ),
                       helperText: "6-11 chars, 1 capital, 1 number",
                       helperStyle: TextStyle(
-                        color: AppColors.getTextSecondaryForPage(
-                            pageId), // ✅ UPDATED
+                        color: AppColors.getTextSecondaryForPage(pageId),
                         fontSize: 12,
                       ),
                       border: const OutlineInputBorder(
@@ -826,16 +912,15 @@ class _SignUpScreenState extends State<SignUpScreen> {
                       enabledBorder: OutlineInputBorder(
                         borderRadius: BorderRadius.all(Radius.circular(12)),
                         borderSide: BorderSide(
-                            color: AppColors.getBorderForPage(
-                                pageId)), // ✅ UPDATED
+                          color: AppColors.getBorderForPage(pageId),
+                        ),
                       ),
                       suffixIcon: IconButton(
                         icon: Icon(
                           _isPasswordVisible
                               ? Icons.visibility
                               : Icons.visibility_off,
-                          color: AppColors.getTextSecondaryForPage(
-                              pageId), // ✅ UPDATED
+                          color: AppColors.getTextSecondaryForPage(pageId),
                         ),
                         onPressed: () {
                           setState(() {
@@ -859,8 +944,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
                   Text(
                     " Confirm Password",
                     style: TextStyle(
-                      color: AppColors.getTextPrimaryForPage(
-                          pageId), // ✅ UPDATED
+                      color: AppColors.getTextPrimaryForPage(pageId),
                       fontFamily: 'ADLaMDisplay',
                     ),
                   ),
@@ -870,34 +954,33 @@ class _SignUpScreenState extends State<SignUpScreen> {
                     obscureText: !_isConfirmPasswordVisible,
                     maxLength: 11,
                     style: TextStyle(
-                        color: AppColors.getTextPrimaryForPage(
-                            pageId)), // ✅ UPDATED
+                      color: AppColors.getTextPrimaryForPage(pageId),
+                    ),
                     decoration: InputDecoration(
                       hintText: "Re-enter your password",
                       hintStyle: TextStyle(
-                          color: AppColors.getTextSecondaryForPage(
-                              pageId)), // ✅ UPDATED
+                        color: AppColors.getTextSecondaryForPage(pageId),
+                      ),
                       border: const OutlineInputBorder(
                         borderRadius: BorderRadius.all(Radius.circular(12)),
                       ),
                       enabledBorder: OutlineInputBorder(
                         borderRadius: BorderRadius.all(Radius.circular(12)),
                         borderSide: BorderSide(
-                            color: AppColors.getBorderForPage(
-                                pageId)), // ✅ UPDATED
+                          color: AppColors.getBorderForPage(pageId),
+                        ),
                       ),
                       suffixIcon: IconButton(
                         icon: Icon(
                           _isConfirmPasswordVisible
                               ? Icons.visibility
                               : Icons.visibility_off,
-                          color: AppColors.getTextSecondaryForPage(
-                              pageId), // ✅ UPDATED
+                          color: AppColors.getTextSecondaryForPage(pageId),
                         ),
                         onPressed: () {
                           setState(() {
                             _isConfirmPasswordVisible =
-                            !_isConfirmPasswordVisible;
+                                !_isConfirmPasswordVisible;
                           });
                         },
                       ),
@@ -916,8 +999,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
                 height: 50,
                 child: ElevatedButton(
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: AppColors.getAccentForPage(
-                        pageId), // ✅ UPDATED
+                    backgroundColor: AppColors.getAccentForPage(pageId),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(16),
                     ),
@@ -926,13 +1008,13 @@ class _SignUpScreenState extends State<SignUpScreen> {
                   child: _isLoading
                       ? CircularProgressIndicator(color: Colors.white)
                       : const Text(
-                    "Sign Up",
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontFamily: 'ADLaMDisplay',
-                      fontSize: 20,
-                    ),
-                  ),
+                          "Sign Up",
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontFamily: 'ADLaMDisplay',
+                            fontSize: 20,
+                          ),
+                        ),
                 ),
               ),
             ),
@@ -945,8 +1027,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
                 Text(
                   "Already have an account?",
                   style: TextStyle(
-                    color: AppColors.getTextPrimaryForPage(
-                        pageId), // ✅ UPDATED
+                    color: AppColors.getTextPrimaryForPage(pageId),
                     fontFamily: 'ADLaMDisplay',
                   ),
                 ),
@@ -958,8 +1039,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
                     "Log In",
                     style: TextStyle(
                       fontWeight: FontWeight.bold,
-                      color: AppColors.getTextPrimaryForPage(
-                          pageId), // ✅ UPDATED
+                      color: AppColors.getTextPrimaryForPage(pageId),
                       fontFamily: 'ADLaMDisplay',
                     ),
                   ),

@@ -1,29 +1,9 @@
-import 'dart:async';
-import 'package:flutter/material.dart';
-import 'package:firebase_core/firebase_core.dart';
-import 'package:firebase_auth/firebase_auth.dart';
-import 'firebase_options.dart';
-import 'login_and_signup.dart';
-import 'colors.dart';
-import 'profile.dart';
-import 'cart.dart';
-import 'categories.dart';
-import 'rewards.dart';
-import 'checkout.dart';
-import 'products_list.dart';
-import 'product_detail.dart';
-import 'admin_panel.dart';
-import 'database_functions.dart';
-import 'about_us.dart';
-import 'privacy_policy.dart';
-import 'carti_chatbot.dart';
-import 'package:flutter_dotenv/flutter_dotenv.dart';
-import 'customization.dart';
+import 'app_imports.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
-  await dotenv.load(fileName: "assets/.env");
+  await dotenv.load(fileName: "assets/.env"); // Loads environment variables
   runApp(const MainApp());
 }
 
@@ -32,7 +12,6 @@ class MainApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // ✅ WRAPPED with ValueListenableBuilder for global color updates
     return ValueListenableBuilder(
       valueListenable: AppColors.colorNotifier,
       builder: (context, value, child) {
@@ -42,58 +21,76 @@ class MainApp extends StatelessWidget {
           onGenerateRoute: (settings) {
             switch (settings.name) {
               case '/':
-                return MaterialPageRoute(builder: (_) => SplashScreen());
+                return _smoothFade(const SplashScreen(), settings);
               case '/home':
-                return PageRouteBuilder(
-                  pageBuilder: (_, __, ___) => HomeScreen(),
-                  transitionDuration: Duration(milliseconds: 900),
-                  transitionsBuilder: (_, animation, __, child) {
-                    return FadeTransition(opacity: animation, child: child);
-                  },
-                );
+                return _smoothFade(const HomeScreen(), settings);
               case '/login':
-                return MaterialPageRoute(builder: (_) => LoginScreen());
+                return _smoothFade(const LoginScreen(), settings);
               case '/signup':
-                return MaterialPageRoute(builder: (_) => SignUpScreen());
+                return _smoothFade(const SignUpScreen(), settings);
               case '/profile':
-                return MaterialPageRoute(builder: (_) => ProfilePage());
+                return _smoothFade(const ProfilePage(), settings);
               case '/category':
-                return MaterialPageRoute(builder: (_) => CategoriesPage());
+                return _smoothFade(const CategoriesPage(), settings);
               case '/products':
-                return MaterialPageRoute(builder: (_) => ProductsListPage());
+                return _smoothFade(const ProductsListPage(), settings);
               case '/product_detail':
                 final product = settings.arguments as Map<String, dynamic>;
-                return MaterialPageRoute(
-                  builder: (_) => ProductDetailPage(product: product),
+                return _smoothFade(
+                  ProductDetailPage(product: product),
+                  settings,
                 );
               case '/cart':
-                return MaterialPageRoute(builder: (_) => CartPage());
+                return _smoothFade(const CartPage(), settings);
               case '/rewards':
-                return MaterialPageRoute(builder: (_) => RewardsPage());
+                return _smoothFade(const RewardsPage(), settings);
               case '/checkout':
-                return MaterialPageRoute(builder: (_) => CheckoutPage());
+                return _smoothFade(const CheckoutPage(), settings);
               case '/admin':
-                return MaterialPageRoute(builder: (_) => AdminPanelPage());
+                return _smoothFade(const AdminPanelPage(), settings);
               case '/customization':
-                return MaterialPageRoute(builder: (_) => CustomizationPage());
+                return _smoothFade(const CustomizationPage(), settings);
               case '/about_us':
-                return MaterialPageRoute(builder: (_) => AboutUsPage());
+                return _smoothFade(AboutUsPage(), settings);
               case '/privacy_policy':
-                return MaterialPageRoute(builder: (_) => PrivacyPolicyPage());
+                return _smoothFade(PrivacyPolicyPage(), settings);
               case '/carti':
-                return MaterialPageRoute(builder: (_) => CartiChatbotPage());
+                return _smoothFade(const CartiChatbotPage(), settings);
               case '/category_products':
                 final args = settings.arguments as Map<String, dynamic>;
-                return MaterialPageRoute(
-                  builder: (_) => CategoryProductsPage(
+                return _smoothFade(
+                  CategoryProductsPage(
                     categoryId: args['categoryId'],
                     categoryName: args['categoryName'],
                     parentCategory: args['parentCategory'],
                   ),
+                  settings,
                 );
             }
             return null;
           },
+        );
+      },
+    );
+  }
+
+  // --- THE SMOOTH FADE HELPER ---
+  // This keeps your logic exactly the same but changes the animation style
+  Route _smoothFade(Widget page, RouteSettings settings) {
+    return PageRouteBuilder(
+      settings:
+          settings, // Ensures arguments like product data are passed correctly
+      pageBuilder: (context, animation, secondaryAnimation) => page,
+      transitionDuration: const Duration(
+        milliseconds: 600,
+      ), // Sweet spot for "Smooth"
+      transitionsBuilder: (context, animation, secondaryAnimation, child) {
+        return FadeTransition(
+          opacity: CurvedAnimation(
+            parent: animation,
+            curve: Curves.easeInOut, // Smooth start and smooth end
+          ),
+          child: child,
         );
       },
     );
@@ -118,7 +115,6 @@ class _HomeScreenState extends State<HomeScreen> {
   final TextEditingController _searchController = TextEditingController();
   bool isSearching = false;
 
-  // ✅ PAGE ID for color lookups
   final String pageId = 'HOME';
 
   @override
@@ -173,36 +169,36 @@ class _HomeScreenState extends State<HomeScreen> {
         filteredProducts = products
             .where(
               (product) =>
-          product['name'].toString().toLowerCase().contains(
-            query.toLowerCase(),
-          ) ||
-              (product['description'] ?? '')
-                  .toString()
-                  .toLowerCase()
-                  .contains(query.toLowerCase()),
-        )
+                  product['name'].toString().toLowerCase().contains(
+                    query.toLowerCase(),
+                  ) ||
+                  (product['description'] ?? '')
+                      .toString()
+                      .toLowerCase()
+                      .contains(query.toLowerCase()),
+            )
             .toList();
       }
     });
   }
 
-  // ✅ UPDATED: Added optional categoryId parameter
-  void _navigateToCategory(String categoryTitle, String parentCategory, {String? categoryId}) {
+  void _navigateToCategory(
+    String categoryTitle,
+    String parentCategory, {
+    String? categoryId,
+  }) {
     Map<String, dynamic> category = {};
 
-    // 1. If we have the ID directly (from Drawer), use it!
     if (categoryId != null) {
       category = {
         'id': categoryId,
         'title': categoryTitle,
-        'parentCategory': parentCategory
+        'parentCategory': parentCategory,
       };
-    }
-    // 2. Otherwise try to find it in the list (for hardcoded cards)
-    else {
+    } else {
       category = categories.firstWhere(
-            (cat) =>
-        cat['title'] == categoryTitle &&
+        (cat) =>
+            cat['title'] == categoryTitle &&
             cat['parentCategory'] == parentCategory,
         orElse: () => {},
       );
@@ -219,7 +215,6 @@ class _HomeScreenState extends State<HomeScreen> {
         },
       );
     } else {
-      // If it fails, try reloading categories for next time
       _loadCategories();
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
@@ -233,316 +228,333 @@ class _HomeScreenState extends State<HomeScreen> {
   IconData _getCategoryIcon(String categoryName) {
     final name = categoryName.toLowerCase();
     if (name.contains('shirt')) return Icons.checkroom_outlined;
-    if (name.contains('jean') || name.contains('pant')) return Icons.line_style_outlined;
+    if (name.contains('jean') || name.contains('pant'))
+      return Icons.line_style_outlined;
     if (name.contains('dress')) return Icons.dry_cleaning_outlined;
-    if (name.contains('eyewear') || name.contains('glass')) return Icons.visibility_outlined;
+    if (name.contains('eyewear') || name.contains('glass'))
+      return Icons.visibility_outlined;
     if (name.contains('accessories')) return Icons.watch_outlined;
-    if (name.contains('footwear') || name.contains('shoe')) return Icons.directions_walk_outlined;
+    if (name.contains('footwear') || name.contains('shoe'))
+      return Icons.directions_walk_outlined;
     return Icons.category_outlined;
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppColors.getBackgroundForPage(pageId), // ✅ UPDATED
+      backgroundColor: AppColors.getBackgroundForPage(pageId),
       drawer: Drawer(
-        backgroundColor: AppColors.getBackgroundForPage(pageId), // ✅ UPDATED
-        child: ListView(
-          padding: EdgeInsets.zero,
+        backgroundColor: AppColors.getBackgroundForPage(pageId),
+        child: Column(
           children: [
-            DrawerHeader(
-              decoration: BoxDecoration(color: AppColors.getAccentForPage(pageId)), // ✅ UPDATED
+            // 1. PREMIUM HEADER SECTION
+            Container(
+              width: double.infinity,
+              padding: const EdgeInsets.fromLTRB(20, 60, 20, 30),
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  colors: [
+                    AppColors.getAccentForPage(pageId),
+                    AppColors.getAccentForPage(pageId).withOpacity(0.8),
+                  ],
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                ),
+                borderRadius: const BorderRadius.only(
+                  bottomRight: Radius.circular(40),
+                ),
+              ),
               child: Column(
-                crossAxisAlignment: CrossAxisAlignment.center,
-                mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   Image.asset('assets/images/white-logo.png', height: 45),
-                  const SizedBox(height: 10),
-                  Text(
-                    'Cartify',
+                  const SizedBox(height: 12),
+                  const Text(
+                    'CARTIFY',
                     style: TextStyle(
                       fontFamily: 'IrishGrover',
-                      fontSize: 24,
+                      fontSize: 26,
                       color: Colors.white,
+                      letterSpacing: 1.5,
                     ),
                   ),
-                  if (isAdmin) ...[
-                    const SizedBox(height: 8),
+                  if (isAdmin)
                     Container(
-                      padding: EdgeInsets.symmetric(
+                      margin: const EdgeInsets.only(top: 10),
+                      padding: const EdgeInsets.symmetric(
                         horizontal: 12,
                         vertical: 4,
                       ),
                       decoration: BoxDecoration(
-                        color: Colors.white.withOpacity(0.3),
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      child: Text(
-                        'ADMIN',
-                        style: TextStyle(
-                          fontFamily: 'ADLaMDisplay',
-                          color: Colors.white,
-                          fontSize: 12,
+                        color: Colors.black.withOpacity(0.2),
+                        borderRadius: BorderRadius.circular(20),
+                        border: Border.all(
+                          color: Colors.white.withOpacity(0.4),
                         ),
                       ),
+                      child: const Text(
+                        'ADMINISTRATOR',
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontSize: 10,
+                          fontWeight: FontWeight.bold,
+                          fontFamily: 'ADLaMDisplay',
+                        ),
+                      ),
+                    ),
+                ],
+              ),
+            ),
+
+            // 2. SCROLLABLE NAVIGATION LIST
+            Expanded(
+              child: ListView(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 12,
+                  vertical: 15,
+                ),
+                physics: const BouncingScrollPhysics(),
+                children: [
+                  _buildDrawerSectionLabel('SHOPPING'),
+
+                  // Products Tile
+                  _buildModernTile(
+                    context,
+                    title: 'Products',
+                    icon: Icons.shopping_bag_outlined,
+                    pageId: pageId,
+                    onTap: () {
+                      Navigator.pop(context);
+                      Navigator.pushNamed(context, '/products');
+                    },
+                  ),
+
+                  // CATEGORIES (Keep original FutureBuilder logic)
+                  ExpansionTile(
+                    leading: Icon(
+                      Icons.grid_view_rounded,
+                      color: AppColors.getAccentForPage(pageId),
+                    ),
+                    collapsedIconColor: AppColors.getTextPrimaryForPage(pageId),
+                    title: Text(
+                      'Categories',
+                      style: TextStyle(
+                        fontFamily: 'ADLaMDisplay',
+                        fontSize: 16,
+                        color: AppColors.getTextPrimaryForPage(pageId),
+                      ),
+                    ),
+                    children: [
+                      FutureBuilder<List<Map<String, dynamic>>>(
+                        future: DatabaseService.instance.getCategories(),
+                        builder: (context, snapshot) {
+                          if (snapshot.connectionState ==
+                              ConnectionState.waiting) {
+                            return const Center(
+                              child: Padding(
+                                padding: EdgeInsets.all(8.0),
+                                child: CircularProgressIndicator(
+                                  strokeWidth: 2,
+                                ),
+                              ),
+                            );
+                          }
+                          if (!snapshot.hasData || snapshot.data!.isEmpty) {
+                            return const ListTile(
+                              title: Text(
+                                'No categories yet',
+                                style: TextStyle(fontSize: 12),
+                              ),
+                            );
+                          }
+
+                          final allCategories = snapshot.data!;
+                          final parentCategories = allCategories
+                              .where((cat) => cat['parentCategory'] == null)
+                              .toList();
+
+                          return Column(
+                            children: parentCategories.map((parentCat) {
+                              final parentTitle = parentCat['title'];
+                              final subcategories = allCategories
+                                  .where(
+                                    (cat) =>
+                                        cat['parentCategory'] == parentTitle,
+                                  )
+                                  .toList();
+
+                              return ExpansionTile(
+                                leading: Icon(
+                                  parentTitle == 'Men'
+                                      ? Icons.man_outlined
+                                      : parentTitle == 'Women'
+                                      ? Icons.woman_outlined
+                                      : Icons.child_care,
+                                  color: AppColors.getAccentForPage(pageId),
+                                ),
+                                title: Text(
+                                  parentTitle,
+                                  style: const TextStyle(
+                                    fontSize: 14,
+                                    fontFamily: 'ADLaMDisplay',
+                                  ),
+                                ),
+                                children: subcategories.map((subCat) {
+                                  return _buildCategoryItem(
+                                    context,
+                                    subCat['title'],
+                                    _getCategoryIcon(subCat['title']),
+                                    parentTitle,
+                                    subCat['id'],
+                                  );
+                                }).toList(),
+                              );
+                            }).toList(),
+                          );
+                        },
+                      ),
+                    ],
+                  ),
+
+                  const Divider(height: 30),
+                  _buildDrawerSectionLabel('ASSISTANT'),
+
+                  // AI Assistant Feature Card
+                  Container(
+                    margin: const EdgeInsets.symmetric(vertical: 5),
+                    decoration: BoxDecoration(
+                      color: AppColors.getAccentForPage(
+                        pageId,
+                      ).withOpacity(0.1),
+                      borderRadius: BorderRadius.circular(16),
+                    ),
+                    child: ListTile(
+                      leading: CircleAvatar(
+                        backgroundColor: AppColors.getAccentForPage(pageId),
+                        child: const Icon(
+                          Icons.smart_toy,
+                          color: Colors.white,
+                          size: 20,
+                        ),
+                      ),
+                      title: Text(
+                        'Cartify AI Assistant',
+                        style: TextStyle(
+                          fontFamily: 'ADLaMDisplay',
+                          fontWeight: FontWeight.bold,
+                          color: AppColors.getTextPrimaryForPage(pageId),
+                        ),
+                      ),
+                      subtitle: const Text(
+                        'Your shopping helper',
+                        style: TextStyle(fontSize: 11),
+                      ),
+                      onTap: () {
+                        Navigator.pop(context);
+                        Navigator.pushNamed(context, '/carti');
+                      },
+                    ),
+                  ),
+
+                  const Divider(height: 30),
+                  _buildDrawerSectionLabel('SETTINGS & INFO'),
+
+                  // Dark Mode Switch
+                  ListTile(
+                    leading: Icon(
+                      AppColors.isDarkMode ? Icons.dark_mode : Icons.light_mode,
+                      color: AppColors.getAccentForPage(pageId),
+                    ),
+                    title: Text(
+                      'Dark Mode',
+                      style: TextStyle(
+                        fontFamily: 'ADLaMDisplay',
+                        color: AppColors.getTextPrimaryForPage(pageId),
+                      ),
+                    ),
+                    trailing: Switch.adaptive(
+                      value: AppColors.isDarkMode,
+                      activeColor: AppColors.getAccentForPage(pageId),
+                      onChanged: (value) {
+                        setState(() {
+                          AppColors.toggleTheme();
+                        });
+                      },
+                    ),
+                  ),
+
+                  _buildModernTile(
+                    context,
+                    title: 'About Us',
+                    icon: Icons.storefront_outlined,
+                    pageId: pageId,
+                    onTap: () {
+                      Navigator.pop(context);
+                      Navigator.pushNamed(context, '/about_us');
+                    },
+                  ),
+
+                  _buildModernTile(
+                    context,
+                    title: 'Privacy Policy',
+                    icon: Icons.gpp_maybe_outlined,
+                    pageId: pageId,
+                    onTap: () {
+                      Navigator.pop(context);
+                      Navigator.pushNamed(context, '/privacy_policy');
+                    },
+                  ),
+
+                  if (isAdmin) ...[
+                    const Divider(height: 30),
+                    _buildDrawerSectionLabel('ADMIN'),
+                    _buildModernTile(
+                      context,
+                      title: 'Admin Panel',
+                      icon: Icons.admin_panel_settings_outlined,
+                      pageId: pageId,
+                      onTap: () {
+                        Navigator.pop(context);
+                        Navigator.pushNamed(context, '/admin');
+                      },
+                    ),
+                    _buildModernTile(
+                      context,
+                      title: 'Customize UI',
+                      icon: Icons.palette_outlined,
+                      pageId: pageId,
+                      onTap: () {
+                        Navigator.pop(context);
+                        Navigator.pushNamed(context, '/customization');
+                      },
                     ),
                   ],
                 ],
               ),
             ),
 
-            ListTile(
-              leading: Icon(
-                Icons.shopping_bag_outlined,
-                color: AppColors.getAccentForPage(pageId), // ✅ UPDATED
-              ),
-              title: Text(
-                'Products',
+            // FOOTER
+            Padding(
+              padding: const EdgeInsets.symmetric(vertical: 20),
+              child: Text(
+                'Version 1.0.2',
                 style: TextStyle(
+                  fontSize: 10,
+                  color: AppColors.getTextSecondaryForPage(
+                    pageId,
+                  ).withOpacity(0.5),
                   fontFamily: 'ADLaMDisplay',
-                  fontSize: 16,
-                  color: AppColors.getTextPrimaryForPage(pageId), // ✅ UPDATED
                 ),
-              ),
-              onTap: () {
-                Navigator.pop(context);
-                Navigator.pushNamed(context, '/products');
-              },
-            ),
-
-            ExpansionTile(
-              leading: Icon(
-                Icons.dashboard_customize_outlined,
-                color: AppColors.getAccentForPage(pageId), // ✅ UPDATED
-              ),
-              collapsedIconColor: AppColors.getTextPrimaryForPage(pageId), // ✅ UPDATED
-              title: Text(
-                'Categories',
-                style: TextStyle(
-                  fontFamily: 'ADLaMDisplay',
-                  fontSize: 16,
-                  color: AppColors.getTextPrimaryForPage(pageId), // ✅ UPDATED
-                ),
-              ),
-              children: [
-                FutureBuilder<List<Map<String, dynamic>>>(
-                  future: DatabaseService.instance.getCategories(),
-                  builder: (context, snapshot) {
-                    if (snapshot.connectionState == ConnectionState.waiting) {
-                      return Padding(
-                        padding: EdgeInsets.all(16),
-                        child: Center(
-                          child: CircularProgressIndicator(
-                            color: AppColors.getAccentForPage(pageId), // ✅ UPDATED
-                            strokeWidth: 2,
-                          ),
-                        ),
-                      );
-                    }
-
-                    if (!snapshot.hasData || snapshot.data!.isEmpty) {
-                      return ListTile(
-                        leading: Icon(Icons.info_outline, color: Colors.grey, size: 20),
-                        title: Text(
-                          'No categories yet',
-                          style: TextStyle(
-                            fontFamily: 'ADLaMDisplay',
-                            fontSize: 14,
-                            color: AppColors.getTextSecondaryForPage(pageId), // ✅ UPDATED
-                          ),
-                        ),
-                      );
-                    }
-
-                    final allCategories = snapshot.data!;
-                    final parentCategories = allCategories
-                        .where((cat) => cat['parentCategory'] == null)
-                        .toList();
-
-                    return Column(
-                      children: parentCategories.map((parentCat) {
-                        final parentTitle = parentCat['title'];
-                        final subcategories = allCategories
-                            .where((cat) => cat['parentCategory'] == parentTitle)
-                            .toList();
-
-                        return ExpansionTile(
-                          leading: Icon(
-                            parentTitle == 'Men'
-                                ? Icons.man_outlined
-                                : parentTitle == 'Women'
-                                ? Icons.woman_outlined
-                                : Icons.child_care, // Default/Kids icon
-                            color: AppColors.getAccentForPage(pageId), // ✅ UPDATED
-                          ),
-                          collapsedIconColor: AppColors.getTextPrimaryForPage(pageId), // ✅ UPDATED
-                          title: Text(
-                            parentTitle,
-                            style: TextStyle(
-                              fontFamily: 'ADLaMDisplay',
-                              fontSize: 15,
-                              color: AppColors.getTextPrimaryForPage(pageId), // ✅ UPDATED
-                            ),
-                          ),
-                          children: subcategories.map((subCat) {
-                            return _buildCategoryItem(
-                              context,
-                              subCat['title'],
-                              _getCategoryIcon(subCat['title']),
-                              parentTitle,
-                              subCat['id'], // ✅ FIXED: Passing the ID
-                            );
-                          }).toList(),
-                        );
-                      }).toList(),
-                    );
-                  },
-                ),
-              ],
-            ),
-
-            ListTile(
-              leading: Icon(
-                AppColors.isDarkMode ? Icons.dark_mode : Icons.light_mode,
-                color: AppColors.getAccentForPage(pageId), // ✅ UPDATED
-              ),
-              title: Text(
-                'Dark Mode',
-                style: TextStyle(
-                  fontFamily: 'ADLaMDisplay',
-                  fontSize: 16,
-                  color: AppColors.getTextPrimaryForPage(pageId), // ✅ UPDATED
-                ),
-              ),
-              trailing: Switch(
-                value: AppColors.isDarkMode,
-                onChanged: (value) {
-                  setState(() {
-                    AppColors.toggleTheme();
-                  });
-                },
-                activeColor: AppColors.getAccentForPage(pageId), // ✅ UPDATED
               ),
             ),
-            Divider(),
-
-            ListTile(
-              leading: Container(
-                padding: EdgeInsets.all(6),
-                decoration: BoxDecoration(
-                  color: AppColors.getAccentForPage(pageId).withOpacity(0.1), // ✅ UPDATED
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                child: Icon(Icons.smart_toy, color: AppColors.getAccentForPage(pageId)), // ✅ UPDATED
-              ),
-              title: Text(
-                'Cartify AI Assistant',
-                style: TextStyle(
-                  fontFamily: 'ADLaMDisplay',
-                  fontSize: 16,
-                  color: AppColors.getTextPrimaryForPage(pageId), // ✅ UPDATED
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
-              subtitle: Text(
-                'Your shopping helper',
-                style: TextStyle(
-                  fontFamily: 'ADLaMDisplay',
-                  fontSize: 12,
-                  color: AppColors.getTextSecondaryForPage(pageId), // ✅ UPDATED
-                ),
-              ),
-              onTap: () {
-                Navigator.pop(context);
-                Navigator.pushNamed(context, '/carti');
-              },
-            ),
-            Divider(),
-
-            ListTile(
-              leading: Icon(Icons.storefront_outlined, color: AppColors.getAccentForPage(pageId)), // ✅ UPDATED
-              title: Text(
-                'About Us',
-                style: TextStyle(
-                  fontFamily: 'ADLaMDisplay',
-                  fontSize: 16,
-                  color: AppColors.getTextPrimaryForPage(pageId), // ✅ UPDATED
-                ),
-              ),
-              onTap: () {
-                Navigator.pop(context);
-                Navigator.pushNamed(context, '/about_us');
-              },
-            ),
-
-            ListTile(
-              leading: Icon(Icons.gpp_maybe_outlined, color: AppColors.getAccentForPage(pageId)), // ✅ UPDATED
-              title: Text(
-                'Privacy Policy',
-                style: TextStyle(
-                  fontFamily: 'ADLaMDisplay',
-                  fontSize: 16,
-                  color: AppColors.getTextPrimaryForPage(pageId), // ✅ UPDATED
-                ),
-              ),
-              onTap: () {
-                Navigator.pop(context);
-                Navigator.pushNamed(context, '/privacy_policy');
-              },
-            ),
-            Divider(),
-
-            if (isAdmin)
-              ListTile(
-                leading: Icon(
-                  Icons.admin_panel_settings_outlined,
-                  color: AppColors.getAccentForPage(pageId), // ✅ UPDATED
-                ),
-                title: Text(
-                  'Admin Panel',
-                  style: TextStyle(
-                    fontFamily: 'ADLaMDisplay',
-                    fontSize: 16,
-                    color: AppColors.getTextPrimaryForPage(pageId), // ✅ UPDATED
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-                onTap: () {
-                  Navigator.pop(context);
-                  Navigator.pushNamed(context, '/admin');
-                },
-              ),
-
-            if (isAdmin)
-              ListTile(
-                leading: Icon(
-                  Icons.palette,
-                  color: AppColors.getAccentForPage(pageId), // ✅ UPDATED
-                ),
-                title: Text(
-                  'Customize',
-                  style: TextStyle(
-                    fontFamily: 'ADLaMDisplay',
-                    fontSize: 16,
-                    color: AppColors.getTextPrimaryForPage(pageId), // ✅ UPDATED
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-                onTap: () {
-                  Navigator.pop(context);
-                  Navigator.pushNamed(context, '/customization');
-                },
-              ),
           ],
         ),
       ),
       appBar: AppBar(
         elevation: 2,
-        backgroundColor: AppColors.getAccentForPage(pageId), // ✅ UPDATED
-        // REMOVE the flexibleSpace gradient completely
+        backgroundColor: AppColors.getAccentForPage(pageId),
         leading: Builder(
           builder: (context) => IconButton(
-            icon: Icon(Icons.menu, color: Colors.white), // CHANGED: White icon
+            icon: Icon(Icons.grid_view_rounded, color: Colors.white),
             onPressed: () {
               Scaffold.of(context).openDrawer();
             },
@@ -554,7 +566,7 @@ class _HomeScreenState extends State<HomeScreen> {
             Image.asset(
               AppColors.isDarkMode
                   ? 'assets/images/white-logo.png'
-                  : 'assets/images/white-logo.png', // CHANGED: Always white logo
+                  : 'assets/images/white-logo.png',
               height: 40,
             ),
             Text(
@@ -563,7 +575,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 fontFamily: 'IrishGrover',
                 fontSize: 20,
                 fontWeight: FontWeight.bold,
-                color: Colors.white, // CHANGED: White text
+                color: Colors.white,
               ),
             ),
           ],
@@ -573,7 +585,7 @@ class _HomeScreenState extends State<HomeScreen> {
           Padding(
             padding: const EdgeInsets.only(right: 10),
             child: IconButton(
-              icon: Icon(Icons.person_2_outlined, color: Colors.white), // CHANGED: White icon
+              icon: Icon(Icons.person_3_rounded, color: Colors.white),
               onPressed: () {
                 final user = FirebaseAuth.instance.currentUser;
                 if (user == null) {
@@ -595,9 +607,9 @@ class _HomeScreenState extends State<HomeScreen> {
               child: Container(
                 padding: EdgeInsets.symmetric(horizontal: 16),
                 decoration: BoxDecoration(
-                  color: AppColors.getCardForPage(pageId), // ✅ UPDATED
+                  color: AppColors.getCardForPage(pageId),
                   borderRadius: BorderRadius.circular(25),
-                  border: Border.all(color: AppColors.getBorderForPage(pageId)), // ✅ UPDATED
+                  border: Border.all(color: AppColors.getBorderForPage(pageId)),
                 ),
                 child: Row(
                   children: [
@@ -608,26 +620,32 @@ class _HomeScreenState extends State<HomeScreen> {
                         decoration: InputDecoration(
                           hintText: "Search products...",
                           hintStyle: TextStyle(
-                            color: AppColors.getTextSecondaryForPage(pageId), // ✅ UPDATED
+                            color: AppColors.getTextSecondaryForPage(pageId),
                             fontFamily: 'ADLaMDisplay',
                           ),
                           border: InputBorder.none,
                         ),
                         style: TextStyle(
-                          color: AppColors.getTextPrimaryForPage(pageId), // ✅ UPDATED
+                          color: AppColors.getTextPrimaryForPage(pageId),
                           fontFamily: 'ADLaMDisplay',
                         ),
                       ),
                     ),
                     if (_searchController.text.isNotEmpty)
                       IconButton(
-                        icon: Icon(Icons.clear, color: AppColors.getTextSecondaryForPage(pageId)), // ✅ UPDATED
+                        icon: Icon(
+                          Icons.clear,
+                          color: AppColors.getTextSecondaryForPage(pageId),
+                        ),
                         onPressed: () {
                           _searchController.clear();
                           _searchProducts('');
                         },
                       ),
-                    Icon(Icons.search, color: AppColors.getAccentForPage(pageId)), // ✅ UPDATED
+                    Icon(
+                      Icons.search,
+                      color: AppColors.getAccentForPage(pageId),
+                    ),
                   ],
                 ),
               ),
@@ -640,13 +658,13 @@ class _HomeScreenState extends State<HomeScreen> {
               Container(
                 width: double.infinity,
                 padding: EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-                color: AppColors.getCardForPage(pageId), // ✅ UPDATED
+                color: AppColors.getCardForPage(pageId),
                 child: Text(
                   "Categories",
                   style: TextStyle(
                     fontWeight: FontWeight.bold,
                     fontSize: 16,
-                    color: AppColors.getTextPrimaryForPage(pageId), // ✅ UPDATED
+                    color: AppColors.getTextPrimaryForPage(pageId),
                     fontFamily: 'IrishGrover',
                   ),
                 ),
@@ -688,7 +706,8 @@ class _HomeScreenState extends State<HomeScreen> {
                     ),
                     CategoryCard(
                       title: 'Accessories',
-                      image: 'assets/icons/categories_icon/accessories_icon.png',
+                      image:
+                          'assets/icons/categories_icon/accessories_icon.png',
                       onTap: () => _navigateToCategory('Accessories', 'Women'),
                     ),
                   ],
@@ -712,7 +731,7 @@ class _HomeScreenState extends State<HomeScreen> {
             Container(
               width: double.infinity,
               padding: EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-              color: AppColors.getCardForPage(pageId), // ✅ UPDATED
+              color: AppColors.getCardForPage(pageId),
               child: Text(
                 isSearching
                     ? "Search Results (${filteredProducts.length})"
@@ -720,7 +739,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 style: TextStyle(
                   fontWeight: FontWeight.bold,
                   fontSize: 16,
-                  color: AppColors.getTextPrimaryForPage(pageId), // ✅ UPDATED
+                  color: AppColors.getTextPrimaryForPage(pageId),
                   fontFamily: 'IrishGrover',
                 ),
               ),
@@ -730,86 +749,90 @@ class _HomeScreenState extends State<HomeScreen> {
               padding: const EdgeInsets.all(16.0),
               child: isLoadingProducts
                   ? Center(
-                child: Column(
-                  children: [
-                    SizedBox(height: 40),
-                    CircularProgressIndicator(color: AppColors.getAccentForPage(pageId)), // ✅ UPDATED
-                    SizedBox(height: 16),
-                    Text(
-                      'Loading products...',
-                      style: TextStyle(
-                        color: AppColors.getTextSecondaryForPage(pageId), // ✅ UPDATED
-                        fontFamily: 'ADLaMDisplay',
+                      child: Column(
+                        children: [
+                          SizedBox(height: 40),
+                          CircularProgressIndicator(
+                            color: AppColors.getAccentForPage(pageId),
+                          ),
+                          SizedBox(height: 16),
+                          Text(
+                            'Loading products...',
+                            style: TextStyle(
+                              color: AppColors.getTextSecondaryForPage(pageId),
+                              fontFamily: 'ADLaMDisplay',
+                            ),
+                          ),
+                        ],
                       ),
-                    ),
-                  ],
-                ),
-              )
+                    )
                   : filteredProducts.isEmpty
                   ? Center(
-                child: Column(
-                  children: [
-                    SizedBox(height: 40),
-                    Icon(Icons.search_off, size: 80, color: Colors.grey),
-                    SizedBox(height: 16),
-                    Text(
-                      isSearching
-                          ? 'No products found'
-                          : 'No products available',
-                      style: TextStyle(
-                        fontSize: 16,
-                        color: AppColors.getTextPrimaryForPage(pageId), // ✅ UPDATED
-                        fontFamily: 'IrishGrover',
-                      ),
-                    ),
-                    SizedBox(height: 8),
-                    Text(
-                      isSearching
-                          ? 'Try different keywords'
-                          : 'Products will appear here once added',
-                      style: TextStyle(
-                        color: Colors.grey,
-                        fontFamily: 'ADLaMDisplay',
-                      ),
-                    ),
-                    if (isSearching) ...[
-                      SizedBox(height: 16),
-                      ElevatedButton(
-                        onPressed: () {
-                          _searchController.clear();
-                          _searchProducts('');
-                        },
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: AppColors.getAccentForPage(pageId), // ✅ UPDATED
-                        ),
-                        child: Text(
-                          'Clear Search',
-                          style: TextStyle(
-                            color: Colors.white,
-                            fontFamily: 'ADLaMDisplay',
+                      child: Column(
+                        children: [
+                          SizedBox(height: 40),
+                          Icon(Icons.search_off, size: 80, color: Colors.grey),
+                          SizedBox(height: 16),
+                          Text(
+                            isSearching
+                                ? 'No products found'
+                                : 'No products available',
+                            style: TextStyle(
+                              fontSize: 16,
+                              color: AppColors.getTextPrimaryForPage(pageId),
+                              fontFamily: 'IrishGrover',
+                            ),
                           ),
-                        ),
+                          SizedBox(height: 8),
+                          Text(
+                            isSearching
+                                ? 'Try different keywords'
+                                : 'Products will appear here once added',
+                            style: TextStyle(
+                              color: Colors.grey,
+                              fontFamily: 'ADLaMDisplay',
+                            ),
+                          ),
+                          if (isSearching) ...[
+                            SizedBox(height: 16),
+                            ElevatedButton(
+                              onPressed: () {
+                                _searchController.clear();
+                                _searchProducts('');
+                              },
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: AppColors.getAccentForPage(
+                                  pageId,
+                                ),
+                              ),
+                              child: Text(
+                                'Clear Search',
+                                style: TextStyle(
+                                  color: Colors.white,
+                                  fontFamily: 'ADLaMDisplay',
+                                ),
+                              ),
+                            ),
+                          ],
+                        ],
                       ),
-                    ],
-                  ],
-                ),
-              )
+                    )
                   : GridView.builder(
-                shrinkWrap: true,
-                physics: const NeverScrollableScrollPhysics(),
-                itemCount: filteredProducts.length,
-                gridDelegate:
-                const SliverGridDelegateWithFixedCrossAxisCount(
-                  crossAxisCount: 2,
-                  crossAxisSpacing: 14,
-                  mainAxisSpacing: 20,
-                  childAspectRatio: 0.51,
-                ),
-                itemBuilder: (context, index) {
-                  final product = filteredProducts[index];
-                  return _buildProductCard(product);
-                },
-              ),
+                      shrinkWrap: true,
+                      physics: const NeverScrollableScrollPhysics(),
+                      itemCount: filteredProducts.length,
+                      gridDelegate:
+                          const SliverGridDelegateWithFixedCrossAxisCount(
+                            crossAxisCount: 2,
+                            crossAxisSpacing: 14,
+                            mainAxisSpacing: 20,
+                            childAspectRatio: 0.51,
+                          ),
+                      itemBuilder: (context, index) {
+                        final product = filteredProducts[index];
+                        return _buildProductCard(product);
+                      },
+                    ),
             ),
 
             if (isSearching && filteredProducts.isNotEmpty)
@@ -820,11 +843,14 @@ class _HomeScreenState extends State<HomeScreen> {
                     onPressed: () {
                       Navigator.pushNamed(context, '/products');
                     },
-                    icon: Icon(Icons.grid_view, color: AppColors.getAccentForPage(pageId)), // ✅ UPDATED
+                    icon: Icon(
+                      Icons.grid_view,
+                      color: AppColors.getAccentForPage(pageId),
+                    ),
                     label: Text(
                       'View All Products',
                       style: TextStyle(
-                        color: AppColors.getAccentForPage(pageId), // ✅ UPDATED
+                        color: AppColors.getAccentForPage(pageId),
                         fontFamily: 'ADLaMDisplay',
                         fontWeight: FontWeight.bold,
                       ),
@@ -837,7 +863,7 @@ class _HomeScreenState extends State<HomeScreen> {
       ),
       bottomNavigationBar: Container(
         decoration: BoxDecoration(
-          color: AppColors.getAccentForPage(pageId), // ✅ UPDATED
+          color: AppColors.getAccentForPage(pageId),
           borderRadius: BorderRadius.vertical(top: Radius.circular(25)),
           boxShadow: [
             BoxShadow(color: Colors.black26, spreadRadius: 1, blurRadius: 10),
@@ -846,12 +872,12 @@ class _HomeScreenState extends State<HomeScreen> {
         child: ClipRRect(
           borderRadius: BorderRadius.vertical(top: Radius.circular(15)),
           child: BottomNavigationBar(
-            backgroundColor: AppColors.getAccentBGForPage(pageId), // ✅ UPDATED
+            backgroundColor: AppColors.getAccentBGForPage(pageId),
             currentIndex: _currentIndex,
             showUnselectedLabels: false,
             showSelectedLabels: true,
-            selectedItemColor: AppColors.getTextPrimaryForPage(pageId), // ✅ UPDATED
-            unselectedItemColor: AppColors.getTextSecondaryForPage(pageId), // ✅ UPDATED
+            selectedItemColor: AppColors.getTextPrimaryForPage(pageId),
+            unselectedItemColor: AppColors.getTextSecondaryForPage(pageId),
             type: BottomNavigationBarType.fixed,
             selectedLabelStyle: TextStyle(fontFamily: 'ADLaMDisplay'),
             unselectedLabelStyle: TextStyle(fontFamily: 'ADLaMDisplay'),
@@ -871,9 +897,18 @@ class _HomeScreenState extends State<HomeScreen> {
             },
             items: [
               BottomNavigationBarItem(icon: Icon(Icons.home), label: "Home"),
-              BottomNavigationBarItem(icon: Icon(Icons.grid_view), label: "Categories"),
-              BottomNavigationBarItem(icon: Icon(Icons.shopping_cart), label: "Cart"),
-              BottomNavigationBarItem(icon: Icon(Icons.redeem), label: "Rewards"),
+              BottomNavigationBarItem(
+                icon: Icon(Icons.grid_view),
+                label: "Categories",
+              ),
+              BottomNavigationBarItem(
+                icon: Icon(Icons.shopping_cart),
+                label: "Cart",
+              ),
+              BottomNavigationBarItem(
+                icon: Icon(Icons.redeem),
+                label: "Rewards",
+              ),
             ],
           ),
         ),
@@ -881,22 +916,21 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  // ✅ UPDATED: Added categoryId parameter here too
   Widget _buildCategoryItem(
-      BuildContext context,
-      String title,
-      IconData icon,
-      String parentCategory,
-      String categoryId,
-      ) {
+    BuildContext context,
+    String title,
+    IconData icon,
+    String parentCategory,
+    String categoryId,
+  ) {
     return ListTile(
       contentPadding: EdgeInsets.only(left: 40),
-      leading: Icon(icon, color: AppColors.getAccentForPage(pageId), size: 20), // ✅ UPDATED
+      leading: Icon(icon, color: AppColors.getAccentForPage(pageId), size: 20),
       title: Text(
         title,
         style: TextStyle(
           fontFamily: 'ADLaMDisplay',
-          color: AppColors.getTextPrimaryForPage(pageId), // ✅ UPDATED
+          color: AppColors.getTextPrimaryForPage(pageId),
           fontSize: 14,
         ),
       ),
@@ -913,15 +947,11 @@ class _HomeScreenState extends State<HomeScreen> {
     // (This part doesn't need changing but included for context if needed)
     return GestureDetector(
       onTap: () {
-        Navigator.pushNamed(
-          context,
-          '/product_detail',
-          arguments: product,
-        );
+        Navigator.pushNamed(context, '/product_detail', arguments: product);
       },
       child: Container(
         decoration: BoxDecoration(
-          color: AppColors.getCardForPage(pageId), // ✅ UPDATED
+          color: AppColors.getCardForPage(pageId),
           borderRadius: BorderRadius.circular(20),
           boxShadow: [
             BoxShadow(
@@ -941,7 +971,9 @@ class _HomeScreenState extends State<HomeScreen> {
                   Container(
                     width: double.infinity,
                     decoration: BoxDecoration(
-                      color: AppColors.getBorderForPage(pageId).withOpacity(0.2), // ✅ UPDATED
+                      color: AppColors.getBorderForPage(
+                        pageId,
+                      ).withOpacity(0.2),
                       borderRadius: const BorderRadius.vertical(
                         top: Radius.circular(20),
                       ),
@@ -950,17 +982,24 @@ class _HomeScreenState extends State<HomeScreen> {
                       borderRadius: const BorderRadius.vertical(
                         top: Radius.circular(20),
                       ),
-                      child: product['imageUrl'] != null &&
-                          product['imageUrl'].isNotEmpty
+                      child:
+                          product['imageUrl'] != null &&
+                              product['imageUrl'].isNotEmpty
                           ? Image.network(
-                        product['imageUrl'],
-                        fit: BoxFit.cover,
-                        errorBuilder: (context, error, stackTrace) =>
-                        const Icon(Icons.broken_image,
-                            color: Colors.grey, size: 40),
-                      )
-                          : const Icon(Icons.image,
-                          size: 50, color: Colors.grey),
+                              product['imageUrl'],
+                              fit: BoxFit.cover,
+                              errorBuilder: (context, error, stackTrace) =>
+                                  const Icon(
+                                    Icons.broken_image,
+                                    color: Colors.grey,
+                                    size: 40,
+                                  ),
+                            )
+                          : const Icon(
+                              Icons.image,
+                              size: 50,
+                              color: Colors.grey,
+                            ),
                     ),
                   ),
                   Positioned(
@@ -968,7 +1007,9 @@ class _HomeScreenState extends State<HomeScreen> {
                     left: 10,
                     child: Container(
                       padding: const EdgeInsets.symmetric(
-                          horizontal: 8, vertical: 4),
+                        horizontal: 8,
+                        vertical: 4,
+                      ),
                       decoration: BoxDecoration(
                         color: Colors.white.withOpacity(0.9),
                         borderRadius: BorderRadius.circular(10),
@@ -1004,7 +1045,7 @@ class _HomeScreenState extends State<HomeScreen> {
                           style: TextStyle(
                             fontWeight: FontWeight.bold,
                             fontSize: 14,
-                            color: AppColors.getTextPrimaryForPage(pageId), // ✅ UPDATED
+                            color: AppColors.getTextPrimaryForPage(pageId),
                             fontFamily: 'ADLaMDisplay',
                           ),
                         ),
@@ -1013,7 +1054,9 @@ class _HomeScreenState extends State<HomeScreen> {
                           "Freshly Stocked",
                           style: TextStyle(
                             fontSize: 11,
-                            color: AppColors.getTextSecondaryForPage(pageId).withOpacity(0.7), // ✅ UPDATED
+                            color: AppColors.getTextSecondaryForPage(
+                              pageId,
+                            ).withOpacity(0.7),
                           ),
                         ),
                       ],
@@ -1032,12 +1075,12 @@ class _HomeScreenState extends State<HomeScreen> {
                                 );
                                 return;
                               }
-                              final success =
-                              await DatabaseService.instance.addToCart(
-                                userId: user.uid,
-                                productId: product['id'],
-                                quantity: 1,
-                              );
+                              final success = await DatabaseService.instance
+                                  .addToCart(
+                                    userId: user.uid,
+                                    productId: product['id'],
+                                    quantity: 1,
+                                  );
                               if (success) {
                                 ScaffoldMessenger.of(context).showSnackBar(
                                   SnackBar(content: Text("Added to cart")),
@@ -1046,16 +1089,19 @@ class _HomeScreenState extends State<HomeScreen> {
                             },
                             style: OutlinedButton.styleFrom(
                               side: BorderSide(
-                                  color: AppColors.getAccentForPage(pageId), width: 1), // ✅ UPDATED
+                                color: AppColors.getAccentForPage(pageId),
+                                width: 1,
+                              ),
                               shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(8)),
+                                borderRadius: BorderRadius.circular(8),
+                              ),
                               padding: EdgeInsets.zero,
                             ),
                             child: Text(
                               "Add to Cart",
                               style: TextStyle(
                                 fontSize: 12,
-                                color: AppColors.getAccentForPage(pageId), // ✅ UPDATED
+                                color: AppColors.getAccentForPage(pageId),
                                 fontFamily: 'ADLaMDisplay',
                               ),
                             ),
@@ -1077,11 +1123,14 @@ class _HomeScreenState extends State<HomeScreen> {
                               Navigator.pushNamed(context, '/checkout');
                             },
                             style: ElevatedButton.styleFrom(
-                              backgroundColor: AppColors.getAccentForPage(pageId), // ✅ UPDATED
+                              backgroundColor: AppColors.getAccentForPage(
+                                pageId,
+                              ),
                               foregroundColor: Colors.white,
                               elevation: 0,
                               shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(8)),
+                                borderRadius: BorderRadius.circular(8),
+                              ),
                               padding: EdgeInsets.zero,
                             ),
                             child: const Text(
@@ -1154,15 +1203,31 @@ class _AutoBannerState extends State<AutoBanner> {
   int _currentPage = 0;
   Timer? _timer;
 
-  final List<String> _images = [
-    'assets/images/banner1.jpg',
-    'assets/images/banner2.jpg',
-    'assets/images/banner3.jpg',
-  ];
+  // In _AutoBannerState class
+  List<String> _images = [];
 
   @override
   void initState() {
     super.initState();
+    _loadBanners();
+    _controller = PageController(initialPage: 0, viewportFraction: 0.85);
+    _startTimer();
+  }
+
+  Future<void> _loadBanners() async {
+    final banners = await BannerService.instance.getBanners();
+    setState(() {
+      if (banners.isNotEmpty) {
+        _images = banners;
+      } else {
+        // Default banners
+        _images = [
+          'assets/images/banner1.jpg',
+          'assets/images/banner2.jpg',
+          'assets/images/banner3.jpg',
+        ];
+      }
+    });
     _controller = PageController(initialPage: 0, viewportFraction: 0.85);
     _startTimer();
   }
@@ -1213,7 +1278,10 @@ class _AutoBannerState extends State<AutoBanner> {
               return AnimatedTransform(
                 scale: scale,
                 child: Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 0, vertical: 6),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 0,
+                    vertical: 6,
+                  ),
                   child: PhysicalModel(
                     color: Colors.transparent,
                     borderRadius: BorderRadius.circular(12),
@@ -1252,7 +1320,9 @@ class _AutoBannerState extends State<AutoBanner> {
             decoration: BoxDecoration(
               color: isActive ? Colors.white : Colors.white.withOpacity(0.5),
               borderRadius: BorderRadius.circular(2),
-              boxShadow: isActive ? [BoxShadow(color: Colors.black26, blurRadius: 4)] : [],
+              boxShadow: isActive
+                  ? [BoxShadow(color: Colors.black26, blurRadius: 4)]
+                  : [],
             ),
           );
         }),
@@ -1261,10 +1331,52 @@ class _AutoBannerState extends State<AutoBanner> {
   }
 }
 
+Widget _buildDrawerSectionLabel(String label) {
+  return Padding(
+    padding: const EdgeInsets.only(left: 16, top: 10, bottom: 8),
+    child: Text(
+      label,
+      style: const TextStyle(
+        fontSize: 11,
+        fontWeight: FontWeight.bold,
+        color: Colors.grey,
+        letterSpacing: 1.2,
+      ),
+    ),
+  );
+}
+
+Widget _buildModernTile(
+  BuildContext context, {
+  required String title,
+  required IconData icon,
+  required VoidCallback onTap,
+  required String pageId,
+}) {
+  return ListTile(
+    visualDensity: VisualDensity.compact,
+    leading: Icon(icon, color: AppColors.getAccentForPage(pageId), size: 22),
+    title: Text(
+      title,
+      style: TextStyle(
+        fontFamily: 'ADLaMDisplay',
+        fontSize: 15,
+        color: AppColors.getTextPrimaryForPage(pageId),
+      ),
+    ),
+    trailing: const Icon(Icons.chevron_right, size: 16, color: Colors.grey),
+    onTap: onTap,
+  );
+}
+
 class AnimatedTransform extends StatelessWidget {
   final double scale;
   final Widget child;
-  const AnimatedTransform({super.key, required this.scale, required this.child});
+  const AnimatedTransform({
+    super.key,
+    required this.scale,
+    required this.child,
+  });
 
   @override
   Widget build(BuildContext context) {

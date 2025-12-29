@@ -1,10 +1,5 @@
-import 'package:flutter/material.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:http/http.dart' as http;
-import 'dart:convert';
-import 'colors.dart';
-import 'database_functions.dart';
-import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'app_imports.dart';
 
 class CartiChatbotPage extends StatefulWidget {
   const CartiChatbotPage({super.key});
@@ -23,7 +18,6 @@ class _CartiChatbotPageState extends State<CartiChatbotPage> {
 
   final String apiKey = dotenv.env['GROQ_API_KEY'] ?? '';
 
-  // ✅ CONSTANT: Page ID for Colors
   final String pageId = 'CHATBOT';
 
   @override
@@ -58,12 +52,14 @@ class _CartiChatbotPageState extends State<CartiChatbotPage> {
     await Future.delayed(const Duration(milliseconds: 500));
     if (mounted) {
       setState(() {
-        _messages.add(ChatMessage(
-          text:
-          "Hi $userName! 👋 I'm Carti, your shopping assistant. How can I help you today?",
-          isUser: false,
-          timestamp: DateTime.now(),
-        ));
+        _messages.add(
+          ChatMessage(
+            text:
+                "Hi $userName! 👋 I'm Carti, your shopping assistant. How can I help you today?",
+            isUser: false,
+            timestamp: DateTime.now(),
+          ),
+        );
       });
     }
   }
@@ -81,7 +77,7 @@ class _CartiChatbotPageState extends State<CartiChatbotPage> {
 
       for (var category in categories) {
         context +=
-        "- ${category['title']} (Parent: ${category['parentCategory'] ?? 'None'})\n";
+            "- ${category['title']} (Parent: ${category['parentCategory'] ?? 'None'})\n";
       }
 
       context += "\nAVAILABLE PRODUCTS (${products.length} total):\n";
@@ -90,7 +86,7 @@ class _CartiChatbotPageState extends State<CartiChatbotPage> {
         // Limit to first 20 to avoid token limits
         context += "- ${product['name']} - Rs.${product['price']} ";
         context +=
-        "(Category: ${product['categoryId']}, Gender: ${product['gender'] ?? 'N/A'})\n";
+            "(Category: ${product['categoryId']}, Gender: ${product['gender'] ?? 'N/A'})\n";
       }
 
       if (products.length > 20) {
@@ -114,11 +110,9 @@ class _CartiChatbotPageState extends State<CartiChatbotPage> {
     if (message.trim().isEmpty) return;
 
     setState(() {
-      _messages.add(ChatMessage(
-        text: message,
-        isUser: true,
-        timestamp: DateTime.now(),
-      ));
+      _messages.add(
+        ChatMessage(text: message, isUser: true, timestamp: DateTime.now()),
+      );
       _isTyping = true;
     });
 
@@ -138,17 +132,10 @@ class _CartiChatbotPageState extends State<CartiChatbotPage> {
           'Authorization': 'Bearer $apiKey',
         },
         body: jsonEncode({
-          'model':
-          'llama-3.3-70b-versatile', // Active Groq model (recommended)
+          'model': 'llama-3.3-70b-versatile', // Active Groq model (recommended)
           'messages': [
-            {
-              'role': 'system',
-              'content': appContext,
-            },
-            {
-              'role': 'user',
-              'content': message,
-            }
+            {'role': 'system', 'content': appContext},
+            {'role': 'user', 'content': message},
           ],
           'temperature': 0.7,
           'max_tokens': 500,
@@ -161,11 +148,13 @@ class _CartiChatbotPageState extends State<CartiChatbotPage> {
 
         if (mounted) {
           setState(() {
-            _messages.add(ChatMessage(
-              text: aiResponse,
-              isUser: false,
-              timestamp: DateTime.now(),
-            ));
+            _messages.add(
+              ChatMessage(
+                text: aiResponse,
+                isUser: false,
+                timestamp: DateTime.now(),
+              ),
+            );
             _isTyping = false;
           });
           _scrollToBottom();
@@ -176,9 +165,9 @@ class _CartiChatbotPageState extends State<CartiChatbotPage> {
         try {
           final errorData = jsonDecode(response.body);
           errorMsg +=
-          "Error Type: ${errorData['error']?['type'] ?? 'Unknown'}\n";
+              "Error Type: ${errorData['error']?['type'] ?? 'Unknown'}\n";
           errorMsg +=
-          "Message: ${errorData['error']?['message'] ?? response.body}\n";
+              "Message: ${errorData['error']?['message'] ?? response.body}\n";
           errorMsg += "Code: ${errorData['error']?['code'] ?? 'N/A'}";
         } catch (e) {
           errorMsg += "Raw Response: ${response.body}";
@@ -189,12 +178,14 @@ class _CartiChatbotPageState extends State<CartiChatbotPage> {
       debugPrint('Chatbot Error: $e');
       if (mounted) {
         setState(() {
-          _messages.add(ChatMessage(
-            text:
-            "❌ ERROR DETAILS:\n\n$e\n\n💡 Possible fixes:\n• Check your Groq API key\n• Verify internet connection\n• Try again in a moment",
-            isUser: false,
-            timestamp: DateTime.now(),
-          ));
+          _messages.add(
+            ChatMessage(
+              text:
+                  "❌ ERROR DETAILS:\n\n$e\n\n💡 Possible fixes:\n• Check your Groq API key\n• Verify internet connection\n• Try again in a moment",
+              isUser: false,
+              timestamp: DateTime.now(),
+            ),
+          );
           _isTyping = false;
         });
       }
@@ -218,18 +209,18 @@ class _CartiChatbotPageState extends State<CartiChatbotPage> {
       padding: const EdgeInsets.only(right: 8),
       child: OutlinedButton.icon(
         onPressed: () => _sendMessage(text),
-        icon: Icon(icon, size: 16, color: AppColors.getAccentForPage(pageId)), // ✅ UPDATED
+        icon: Icon(icon, size: 16, color: AppColors.getAccentForPage(pageId)),
         label: Text(
           text,
           style: TextStyle(
-            color: AppColors.getAccentForPage(pageId), // ✅ UPDATED
+            color: AppColors.getAccentForPage(pageId),
             fontSize: 12,
             fontFamily: 'ADLaMDisplay',
           ),
         ),
         style: OutlinedButton.styleFrom(
           padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-          side: BorderSide(color: AppColors.getAccentForPage(pageId)), // ✅ UPDATED
+          side: BorderSide(color: AppColors.getAccentForPage(pageId)),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(20),
           ),
@@ -241,9 +232,9 @@ class _CartiChatbotPageState extends State<CartiChatbotPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppColors.getBackgroundForPage(pageId), // ✅ UPDATED
+      backgroundColor: AppColors.getBackgroundForPage(pageId),
       appBar: AppBar(
-        backgroundColor: AppColors.getAccentForPage(pageId), // ✅ UPDATED
+        backgroundColor: AppColors.getAccentForPage(pageId),
         title: Row(
           children: [
             Container(
@@ -252,8 +243,11 @@ class _CartiChatbotPageState extends State<CartiChatbotPage> {
                 color: Colors.white,
                 shape: BoxShape.circle,
               ),
-              child: Icon(Icons.smart_toy,
-                  color: AppColors.getAccentForPage(pageId), size: 24), // ✅ UPDATED
+              child: Icon(
+                Icons.smart_toy,
+                color: AppColors.getAccentForPage(pageId),
+                size: 24,
+              ),
             ),
             const SizedBox(width: 12),
             const Column(
@@ -287,8 +281,10 @@ class _CartiChatbotPageState extends State<CartiChatbotPage> {
             Container(
               padding: const EdgeInsets.all(12),
               decoration: BoxDecoration(
-                color: AppColors.getCardForPage(pageId), // ✅ UPDATED
-                border: Border(bottom: BorderSide(color: AppColors.getBorderForPage(pageId))), // ✅ UPDATED
+                color: AppColors.getCardForPage(pageId),
+                border: Border(
+                  bottom: BorderSide(color: AppColors.getBorderForPage(pageId)),
+                ),
               ),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -297,7 +293,7 @@ class _CartiChatbotPageState extends State<CartiChatbotPage> {
                     'Quick questions:',
                     style: TextStyle(
                       fontSize: 12,
-                      color: AppColors.getTextSecondaryForPage(pageId), // ✅ UPDATED
+                      color: AppColors.getTextSecondaryForPage(pageId),
                       fontFamily: 'ADLaMDisplay',
                     ),
                   ),
@@ -339,7 +335,7 @@ class _CartiChatbotPageState extends State<CartiChatbotPage> {
           Container(
             padding: const EdgeInsets.all(12),
             decoration: BoxDecoration(
-              color: AppColors.getCardForPage(pageId), // ✅ UPDATED
+              color: AppColors.getCardForPage(pageId),
               borderRadius: BorderRadius.circular(20),
             ),
             child: Row(
@@ -362,7 +358,9 @@ class _CartiChatbotPageState extends State<CartiChatbotPage> {
           height: 8,
           margin: const EdgeInsets.symmetric(horizontal: 2),
           decoration: BoxDecoration(
-            color: AppColors.getAccentForPage(pageId).withOpacity(0.3 + (0.7 * ((value + index * 0.3) % 1.0))), // ✅ UPDATED
+            color: AppColors.getAccentForPage(
+              pageId,
+            ).withOpacity(0.3 + (0.7 * ((value + index * 0.3) % 1.0))),
             shape: BoxShape.circle,
           ),
         );
@@ -377,8 +375,10 @@ class _CartiChatbotPageState extends State<CartiChatbotPage> {
     return Container(
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
-        color: AppColors.getCardForPage(pageId), // ✅ UPDATED
-        border: Border(top: BorderSide(color: AppColors.getBorderForPage(pageId))), // ✅ UPDATED
+        color: AppColors.getCardForPage(pageId),
+        border: Border(
+          top: BorderSide(color: AppColors.getBorderForPage(pageId)),
+        ),
       ),
       child: SafeArea(
         child: Row(
@@ -387,14 +387,14 @@ class _CartiChatbotPageState extends State<CartiChatbotPage> {
               child: Container(
                 padding: const EdgeInsets.symmetric(horizontal: 16),
                 decoration: BoxDecoration(
-                  color: Colors.black, // Kept black per previous design choice
+                  color: Colors.black,
                   borderRadius: BorderRadius.circular(24),
-                  border: Border.all(color: AppColors.getBorderForPage(pageId)), // ✅ UPDATED
+                  border: Border.all(color: AppColors.getBorderForPage(pageId)),
                 ),
                 child: TextField(
                   controller: _messageController,
                   style: TextStyle(
-                    color: Colors.white, // Kept white per previous design choice
+                    color: Colors.white,
                     fontFamily: 'ADLaMDisplay',
                   ),
                   decoration: InputDecoration(
@@ -409,7 +409,7 @@ class _CartiChatbotPageState extends State<CartiChatbotPage> {
             const SizedBox(width: 8),
             Container(
               decoration: BoxDecoration(
-                color: AppColors.getAccentForPage(pageId), // ✅ UPDATED
+                color: AppColors.getAccentForPage(pageId),
                 shape: BoxShape.circle,
               ),
               child: IconButton(
@@ -430,11 +430,12 @@ class _CartiChatbotPageState extends State<CartiChatbotPage> {
         margin: const EdgeInsets.only(bottom: 12),
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
         constraints: BoxConstraints(
-            maxWidth: MediaQuery.of(context).size.width * 0.75),
+          maxWidth: MediaQuery.of(context).size.width * 0.75,
+        ),
         decoration: BoxDecoration(
           color: message.isUser
-              ? AppColors.getAccentForPage(pageId) // ✅ UPDATED
-              : AppColors.getCardForPage(pageId), // ✅ UPDATED
+              ? AppColors.getAccentForPage(pageId)
+              : AppColors.getCardForPage(pageId),
           borderRadius: BorderRadius.only(
             topLeft: const Radius.circular(20),
             topRight: const Radius.circular(20),
@@ -451,7 +452,7 @@ class _CartiChatbotPageState extends State<CartiChatbotPage> {
           style: TextStyle(
             color: message.isUser
                 ? Colors.white
-                : AppColors.getTextPrimaryForPage(pageId), // ✅ UPDATED
+                : AppColors.getTextPrimaryForPage(pageId),
             fontFamily: 'ADLaMDisplay',
           ),
         ),
@@ -464,6 +465,9 @@ class ChatMessage {
   final String text;
   final bool isUser;
   final DateTime timestamp;
-  ChatMessage(
-      {required this.text, required this.isUser, required this.timestamp});
+  ChatMessage({
+    required this.text,
+    required this.isUser,
+    required this.timestamp,
+  });
 }

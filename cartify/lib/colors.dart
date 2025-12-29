@@ -1,8 +1,4 @@
-import 'package:flutter/material.dart';
-
-// ============================================================================
-// PAGE-SPECIFIC COLOR SYSTEM
-// ============================================================================
+import 'app_imports.dart';
 
 class PageColors {
   Color? accent;
@@ -49,13 +45,13 @@ class AppGradients {
       end: Alignment.bottomCenter,
       colors: AppColors.isDarkMode
           ? [
-        pageColors.gradientStart ?? Color(0xFF008080),
-        pageColors.gradientEnd ?? Color.fromARGB(255, 28, 28, 28)
-      ]
+              pageColors.gradientStart ?? Color(0xFF008080),
+              pageColors.gradientEnd ?? Color.fromARGB(255, 28, 28, 28),
+            ]
           : [
-        pageColors.gradientStart ?? Color(0xFF008080),
-        pageColors.gradientEnd ?? Color.fromARGB(255, 255, 255, 255)
-      ],
+              pageColors.gradientStart ?? Color(0xFF008080),
+              pageColors.gradientEnd ?? Color.fromARGB(255, 255, 255, 255),
+            ],
     );
   }
 
@@ -63,10 +59,8 @@ class AppGradients {
 }
 
 class AppColors {
-  // ✅ This notifier acts as the "Radio Station" telling the app to update
   static final ValueNotifier<int> colorNotifier = ValueNotifier(0);
 
-  // ✅ Call this function whenever you change a color to trigger a rebuild
   static void notifyListeners() {
     colorNotifier.value++;
   }
@@ -84,7 +78,7 @@ class AppColors {
     'PRODUCTS': PageColors(),
     'CHATBOT': PageColors(),
     'ADMIN': PageColors(),
-    'LOGIN': PageColors(), // ✅ ADDED: Controls Login, Signup, and Splash
+    'LOGIN': PageColors(),
     'ABOUT US': PageColors(),
     'PRIVACY POLICY': PageColors(),
   };

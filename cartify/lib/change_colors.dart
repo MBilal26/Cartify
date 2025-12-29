@@ -1,6 +1,4 @@
-import 'package:flutter/material.dart';
-import 'package:flutter_colorpicker/flutter_colorpicker.dart';
-import 'colors.dart';
+import 'app_imports.dart';
 
 class ChangeColorsPage extends StatefulWidget {
   final String pageName;
@@ -35,7 +33,8 @@ class _ChangeColorsPageState extends State<ChangeColorsPage> {
       },
       {
         'title': 'Background Color',
-        'currentColor': pageColors.background ??
+        'currentColor':
+            pageColors.background ??
             (AppColors.isDarkMode
                 ? Color.fromARGB(255, 28, 28, 28)
                 : Colors.white),
@@ -48,7 +47,8 @@ class _ChangeColorsPageState extends State<ChangeColorsPage> {
       },
       {
         'title': 'Text Color (Primary)',
-        'currentColor': pageColors.textPrimary ??
+        'currentColor':
+            pageColors.textPrimary ??
             (AppColors.isDarkMode ? Colors.white : Colors.black),
         'onColorChanged': (Color color) {
           setState(() {
@@ -59,7 +59,8 @@ class _ChangeColorsPageState extends State<ChangeColorsPage> {
       },
       {
         'title': 'Text Color (Secondary)',
-        'currentColor': pageColors.textSecondary ??
+        'currentColor':
+            pageColors.textSecondary ??
             (AppColors.isDarkMode
                 ? Color.fromARGB(255, 180, 180, 180)
                 : Color.fromARGB(255, 100, 100, 100)),
@@ -72,7 +73,8 @@ class _ChangeColorsPageState extends State<ChangeColorsPage> {
       },
       {
         'title': 'Card Color',
-        'currentColor': pageColors.card ??
+        'currentColor':
+            pageColors.card ??
             (AppColors.isDarkMode
                 ? Color.fromARGB(255, 40, 40, 40)
                 : Color(0xFFFFFFFF)),
@@ -85,7 +87,8 @@ class _ChangeColorsPageState extends State<ChangeColorsPage> {
       },
       {
         'title': 'Border Color',
-        'currentColor': pageColors.border ??
+        'currentColor':
+            pageColors.border ??
             (AppColors.isDarkMode
                 ? Color.fromARGB(255, 60, 60, 60)
                 : Color(0xFFE0E0E0)),
@@ -102,7 +105,8 @@ class _ChangeColorsPageState extends State<ChangeColorsPage> {
     if (widget.pageName == 'HOME') {
       options.add({
         'title': 'Bottom Nav Bar Color',
-        'currentColor': pageColors.accentBG ??
+        'currentColor':
+            pageColors.accentBG ??
             (AppColors.isDarkMode
                 ? Color(0xFF008080)
                 : Color.fromARGB(255, 255, 255, 255)),
@@ -128,7 +132,8 @@ class _ChangeColorsPageState extends State<ChangeColorsPage> {
       });
       options.add({
         'title': 'Gradient End Color',
-        'currentColor': pageColors.gradientEnd ??
+        'currentColor':
+            pageColors.gradientEnd ??
             (AppColors.isDarkMode
                 ? Color.fromARGB(255, 28, 28, 28)
                 : Colors.white),
@@ -141,7 +146,6 @@ class _ChangeColorsPageState extends State<ChangeColorsPage> {
       });
     }
 
-    // ✅ ADDED: Specific option for Admin Tabs
     if (widget.pageName == 'ADMIN') {
       options.add({
         'title': 'Tab Indicator/Text Color',
@@ -159,11 +163,11 @@ class _ChangeColorsPageState extends State<ChangeColorsPage> {
   }
 
   void _showColorPicker(
-      BuildContext context,
-      String title,
-      Color currentColor,
-      Function(Color) onColorChanged,
-      ) {
+    BuildContext context,
+    String title,
+    Color currentColor,
+    Function(Color) onColorChanged,
+  ) {
     Color pickerColor = currentColor;
 
     showDialog(
@@ -324,7 +328,9 @@ class _ChangeColorsPageState extends State<ChangeColorsPage> {
                 pageColors = AppColors.getPageColors(widget.pageName);
               });
               Navigator.pop(context);
-              _showSuccessSnackBar('Colors reset to default for ${widget.pageName}!');
+              _showSuccessSnackBar(
+                'Colors reset to default for ${widget.pageName}!',
+              );
             },
             child: Text(
               'Reset',
@@ -358,9 +364,7 @@ class _ChangeColorsPageState extends State<ChangeColorsPage> {
         backgroundColor: AppColors.success,
         duration: Duration(seconds: 2),
         behavior: SnackBarBehavior.floating,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(12),
-        ),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
       ),
     );
   }
@@ -411,8 +415,9 @@ class _ChangeColorsPageState extends State<ChangeColorsPage> {
                   Container(
                     padding: EdgeInsets.symmetric(horizontal: 16, vertical: 6),
                     decoration: BoxDecoration(
-                      color: AppColors.getAccentForPage(widget.pageName)
-                          .withOpacity(0.1),
+                      color: AppColors.getAccentForPage(
+                        widget.pageName,
+                      ).withOpacity(0.1),
                       borderRadius: BorderRadius.circular(20),
                       border: Border.all(
                         color: AppColors.getAccentForPage(widget.pageName),

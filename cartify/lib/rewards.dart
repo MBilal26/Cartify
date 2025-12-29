@@ -1,12 +1,8 @@
-import 'package:flutter/material.dart';
-import 'package:firebase_auth/firebase_auth.dart';
-import 'colors.dart';
-import 'database_functions.dart';
+import 'app_imports.dart';
 
 class RewardsPage extends StatelessWidget {
   const RewardsPage({super.key});
 
-  // ✅ CONSTANT: Page ID for Colors
   final String pageId = 'REWARDS';
 
   @override
@@ -14,262 +10,277 @@ class RewardsPage extends StatelessWidget {
     final userId = FirebaseAuth.instance.currentUser?.uid;
 
     return Scaffold(
-      backgroundColor: AppColors.getBackgroundForPage(pageId), // ✅ UPDATED
+      backgroundColor: AppColors.getBackgroundForPage(pageId),
 
       appBar: AppBar(
-        backgroundColor: AppColors.getAccentForPage(pageId), // ✅ UPDATED
-        title: Text(
-          'My Rewards',
-          style: TextStyle(color: Colors.white),
-        ),
+        backgroundColor: AppColors.getAccentForPage(pageId),
+        title: Text('My Rewards', style: TextStyle(color: Colors.white)),
         centerTitle: true,
         iconTheme: IconThemeData(color: Colors.white),
       ),
 
       body: userId == null
           ? Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(Icons.redeem, size: 80, color: Colors.grey),
-            SizedBox(height: 16),
-            Text(
-              'Please login to view your rewards',
-              style: TextStyle(
-                fontSize: 16,
-                color: AppColors.getTextPrimaryForPage(pageId), // ✅ UPDATED
-              ),
-            ),
-            SizedBox(height: 16),
-            ElevatedButton(
-              onPressed: () {
-                Navigator.pushNamed(context, '/login');
-              },
-              style: ElevatedButton.styleFrom(
-                backgroundColor: AppColors.getAccentForPage(pageId), // ✅ UPDATED
-              ),
-              child: Text('Login', style: TextStyle(color: Colors.white)),
-            ),
-          ],
-        ),
-      )
-          : StreamBuilder<int>(
-        stream: DatabaseService.instance.getRewardPointsStream(userId),
-        builder: (context, snapshot) {
-          if (snapshot.connectionState == ConnectionState.waiting) {
-            return Center(
-              child: CircularProgressIndicator(color: AppColors.getAccentForPage(pageId)), // ✅ UPDATED
-            );
-          }
-
-          if (snapshot.hasError) {
-            return Center(
-              child: Text(
-                'Error loading rewards: ${snapshot.error}',
-                style: TextStyle(color: AppColors.getTextPrimaryForPage(pageId)), // ✅ UPDATED
-              ),
-            );
-          }
-
-          final points = snapshot.data ?? 0;
-
-          return SingleChildScrollView(
-            child: Padding(
-              padding: const EdgeInsets.all(16),
               child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Container(
-                    width: double.infinity,
-                    padding: const EdgeInsets.all(20),
-                    decoration: BoxDecoration(
-                      gradient: LinearGradient(
-                        colors: [
-                          AppColors.getAccentForPage(pageId), // ✅ UPDATED
-                          AppColors.getAccentForPage(pageId).withOpacity(0.7), // ✅ UPDATED
-                        ],
-                        begin: Alignment.topLeft,
-                        end: Alignment.bottomRight,
-                      ),
-                      borderRadius: BorderRadius.circular(16),
-                      boxShadow: [
-                        BoxShadow(
-                          color: AppColors.getAccentForPage(pageId).withOpacity(0.3), // ✅ UPDATED
-                          blurRadius: 10,
-                          offset: Offset(0, 5),
-                        ),
-                      ],
-                    ),
-                    child: Column(
-                      children: [
-                        Icon(
-                          Icons.stars_rounded,
-                          color: Colors.white,
-                          size: 48,
-                        ),
-                        SizedBox(height: 8),
-                        Text(
-                          'Total Points',
-                          style: TextStyle(
-                            color: Colors.white70,
-                            fontSize: 16,
-                          ),
-                        ),
-                        SizedBox(height: 8),
-                        Text(
-                          '$points',
-                          style: TextStyle(
-                            color: Colors.white,
-                            fontSize: 48,
-                            fontWeight: FontWeight.bold,
-                            fontFamily: 'IrishGrover',
-                          ),
-                        ),
-                      ],
+                  Icon(Icons.redeem, size: 80, color: Colors.grey),
+                  SizedBox(height: 16),
+                  Text(
+                    'Please login to view your rewards',
+                    style: TextStyle(
+                      fontSize: 16,
+                      color: AppColors.getTextPrimaryForPage(pageId),
                     ),
                   ),
-
-                  const SizedBox(height: 24),
-
-                  Align(
-                    alignment: Alignment.centerLeft,
-                    child: Text(
-                      'How to Earn Points',
-                      style: TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold,
-                        color: AppColors.getTextPrimaryForPage(pageId), // ✅ UPDATED
-                      ),
+                  SizedBox(height: 16),
+                  ElevatedButton(
+                    onPressed: () {
+                      Navigator.pushNamed(context, '/login');
+                    },
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: AppColors.getAccentForPage(pageId),
                     ),
-                  ),
-
-                  const SizedBox(height: 12),
-
-                  _rewardTile(
-                    Icons.shopping_bag,
-                    'Place an Order',
-                    '+100 Points',
-                    Colors.green,
-                  ),
-                  _rewardTile(
-                    Icons.star,
-                    'Write a Review',
-                    '+50 Points',
-                    Colors.orange,
-                  ),
-                  _rewardTile(
-                    Icons.person_add,
-                    'Refer a Friend',
-                    '+200 Points',
-                    Colors.blue,
-                  ),
-
-                  const SizedBox(height: 24),
-
-                  Container(
-                    padding: EdgeInsets.all(16),
-                    decoration: BoxDecoration(
-                      color: AppColors.getCardForPage(pageId), // ✅ UPDATED
-                      borderRadius: BorderRadius.circular(12),
-                      border: Border.all(color: AppColors.getBorderForPage(pageId)), // ✅ UPDATED
-                    ),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Row(
-                          children: [
-                            Icon(
-                              Icons.info_outline,
-                              color: AppColors.getAccentForPage(pageId), // ✅ UPDATED
-                            ),
-                            SizedBox(width: 8),
-                            Text(
-                              'Rewards Information',
-                              style: TextStyle(
-                                fontWeight: FontWeight.bold,
-                                fontSize: 16,
-                                color: AppColors.getTextPrimaryForPage(pageId), // ✅ UPDATED
-                              ),
-                            ),
-                          ],
-                        ),
-                        SizedBox(height: 12),
-                        Text(
-                          '• 1000 points = Rs. 500 discount\n'
-                              '• Points can be redeemed at checkout\n'
-                              '• Points expire after 1 year\n'
-                              '• Earn more by shopping and referring friends',
-                          style: TextStyle(
-                            color: AppColors.getTextSecondaryForPage(pageId), // ✅ UPDATED
-                            height: 1.5,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-
-                  const SizedBox(height: 24),
-
-                  SizedBox(
-                    width: double.infinity,
-                    height: 48,
-                    child: ElevatedButton(
-                      onPressed: points >= 1000
-                          ? () {
-                        _showRedeemDialog(context, userId, points);
-                      }
-                          : null,
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: AppColors.getAccentForPage(pageId), // ✅ UPDATED
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                      ),
-                      child: Text(
-                        points >= 1000
-                            ? 'REDEEM REWARDS'
-                            : 'Need ${1000 - points} more points',
-                        style: TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.bold,
-                          fontFamily: 'ADLaMDisplay',
-                          color: Colors.white,
-                        ),
-                      ),
-                    ),
-                  ),
-
-                  const SizedBox(height: 16),
-
-                  SizedBox(
-                    width: double.infinity,
-                    height: 48,
-                    child: OutlinedButton(
-                      onPressed: () {
-                        _showOrderHistory(context, userId);
-                      },
-                      style: OutlinedButton.styleFrom(
-                        side: BorderSide(color: AppColors.getAccentForPage(pageId)), // ✅ UPDATED
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                      ),
-                      child: Text(
-                        'VIEW ORDER HISTORY',
-                        style: TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.bold,
-                          fontFamily: 'ADLaMDisplay',
-                          color: AppColors.getAccentForPage(pageId), // ✅ UPDATED
-                        ),
-                      ),
-                    ),
+                    child: Text('Login', style: TextStyle(color: Colors.white)),
                   ),
                 ],
               ),
+            )
+          : StreamBuilder<int>(
+              stream: DatabaseService.instance.getRewardPointsStream(userId),
+              builder: (context, snapshot) {
+                if (snapshot.connectionState == ConnectionState.waiting) {
+                  return Center(
+                    child: CircularProgressIndicator(
+                      color: AppColors.getAccentForPage(pageId),
+                    ),
+                  );
+                }
+
+                if (snapshot.hasError) {
+                  return Center(
+                    child: Text(
+                      'Error loading rewards: ${snapshot.error}',
+                      style: TextStyle(
+                        color: AppColors.getTextPrimaryForPage(pageId),
+                      ),
+                    ),
+                  );
+                }
+
+                final points = snapshot.data ?? 0;
+
+                return SingleChildScrollView(
+                  child: Padding(
+                    padding: const EdgeInsets.all(16),
+                    child: Column(
+                      children: [
+                        Container(
+                          width: double.infinity,
+                          padding: const EdgeInsets.all(20),
+                          decoration: BoxDecoration(
+                            gradient: LinearGradient(
+                              colors: [
+                                AppColors.getAccentForPage(pageId),
+                                AppColors.getAccentForPage(
+                                  pageId,
+                                ).withOpacity(0.7),
+                              ],
+                              begin: Alignment.topLeft,
+                              end: Alignment.bottomRight,
+                            ),
+                            borderRadius: BorderRadius.circular(16),
+                            boxShadow: [
+                              BoxShadow(
+                                color: AppColors.getAccentForPage(
+                                  pageId,
+                                ).withOpacity(0.3),
+                                blurRadius: 10,
+                                offset: Offset(0, 5),
+                              ),
+                            ],
+                          ),
+                          child: Column(
+                            children: [
+                              Icon(
+                                Icons.stars_rounded,
+                                color: Colors.white,
+                                size: 48,
+                              ),
+                              SizedBox(height: 8),
+                              Text(
+                                'Total Points',
+                                style: TextStyle(
+                                  color: Colors.white70,
+                                  fontSize: 16,
+                                ),
+                              ),
+                              SizedBox(height: 8),
+                              Text(
+                                '$points',
+                                style: TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 48,
+                                  fontWeight: FontWeight.bold,
+                                  fontFamily: 'IrishGrover',
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+
+                        const SizedBox(height: 24),
+
+                        Align(
+                          alignment: Alignment.centerLeft,
+                          child: Text(
+                            'How to Earn Points',
+                            style: TextStyle(
+                              fontSize: 18,
+                              fontWeight: FontWeight.bold,
+                              color: AppColors.getTextPrimaryForPage(pageId),
+                            ),
+                          ),
+                        ),
+
+                        const SizedBox(height: 12),
+
+                        _rewardTile(
+                          Icons.shopping_bag,
+                          'Place an Order',
+                          '+100 Points',
+                          Colors.green,
+                        ),
+                        _rewardTile(
+                          Icons.star,
+                          'Write a Review',
+                          '+50 Points',
+                          Colors.orange,
+                        ),
+                        _rewardTile(
+                          Icons.person_add,
+                          'Refer a Friend',
+                          '+200 Points',
+                          Colors.blue,
+                        ),
+
+                        const SizedBox(height: 24),
+
+                        Container(
+                          padding: EdgeInsets.all(16),
+                          decoration: BoxDecoration(
+                            color: AppColors.getCardForPage(pageId),
+                            borderRadius: BorderRadius.circular(12),
+                            border: Border.all(
+                              color: AppColors.getBorderForPage(pageId),
+                            ),
+                          ),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Row(
+                                children: [
+                                  Icon(
+                                    Icons.info_outline,
+                                    color: AppColors.getAccentForPage(pageId),
+                                  ),
+                                  SizedBox(width: 8),
+                                  Text(
+                                    'Rewards Information',
+                                    style: TextStyle(
+                                      fontWeight: FontWeight.bold,
+                                      fontSize: 16,
+                                      color: AppColors.getTextPrimaryForPage(
+                                        pageId,
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                              SizedBox(height: 12),
+                              Text(
+                                '• 1000 points = Rs. 500 discount\n'
+                                '• Points can be redeemed at checkout\n'
+                                '• Points expire after 1 year\n'
+                                '• Earn more by shopping and referring friends',
+                                style: TextStyle(
+                                  color: AppColors.getTextSecondaryForPage(
+                                    pageId,
+                                  ),
+                                  height: 1.5,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+
+                        const SizedBox(height: 24),
+
+                        SizedBox(
+                          width: double.infinity,
+                          height: 48,
+                          child: ElevatedButton(
+                            onPressed: points >= 1000
+                                ? () {
+                                    _showRedeemDialog(context, userId, points);
+                                  }
+                                : null,
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: AppColors.getAccentForPage(
+                                pageId,
+                              ),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                            ),
+                            child: Text(
+                              points >= 1000
+                                  ? 'REDEEM REWARDS'
+                                  : 'Need ${1000 - points} more points',
+                              style: TextStyle(
+                                fontSize: 16,
+                                fontWeight: FontWeight.bold,
+                                fontFamily: 'ADLaMDisplay',
+                                color: Colors.white,
+                              ),
+                            ),
+                          ),
+                        ),
+
+                        const SizedBox(height: 16),
+
+                        SizedBox(
+                          width: double.infinity,
+                          height: 48,
+                          child: OutlinedButton(
+                            onPressed: () {
+                              _showOrderHistory(context, userId);
+                            },
+                            style: OutlinedButton.styleFrom(
+                              side: BorderSide(
+                                color: AppColors.getAccentForPage(pageId),
+                              ),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                            ),
+                            child: Text(
+                              'VIEW ORDER HISTORY',
+                              style: TextStyle(
+                                fontSize: 16,
+                                fontWeight: FontWeight.bold,
+                                fontFamily: 'ADLaMDisplay',
+                                color: AppColors.getAccentForPage(pageId),
+                              ),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                );
+              },
             ),
-          );
-        },
-      ),
     );
   }
 
@@ -278,7 +289,7 @@ class RewardsPage extends StatelessWidget {
       margin: const EdgeInsets.only(bottom: 12),
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: AppColors.getCardForPage(pageId), // ✅ UPDATED
+        color: AppColors.getCardForPage(pageId),
         borderRadius: BorderRadius.circular(12),
         boxShadow: const [
           BoxShadow(color: Colors.black12, blurRadius: 4, offset: Offset(0, 2)),
@@ -301,7 +312,7 @@ class RewardsPage extends StatelessWidget {
               style: TextStyle(
                 fontWeight: FontWeight.w600,
                 fontSize: 15,
-                color: AppColors.getTextPrimaryForPage(pageId), // ✅ UPDATED
+                color: AppColors.getTextPrimaryForPage(pageId),
               ),
             ),
           ),
@@ -319,17 +330,17 @@ class RewardsPage extends StatelessWidget {
   }
 
   void _showRedeemDialog(
-      BuildContext context,
-      String userId,
-      int currentPoints,
-      ) {
+    BuildContext context,
+    String userId,
+    int currentPoints,
+  ) {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        backgroundColor: AppColors.getCardForPage(pageId), // ✅ UPDATED
+        backgroundColor: AppColors.getCardForPage(pageId),
         title: Text(
           'Redeem Rewards',
-          style: TextStyle(color: AppColors.getTextPrimaryForPage(pageId)), // ✅ UPDATED
+          style: TextStyle(color: AppColors.getTextPrimaryForPage(pageId)),
         ),
         content: Column(
           mainAxisSize: MainAxisSize.min,
@@ -337,12 +348,12 @@ class RewardsPage extends StatelessWidget {
           children: [
             Text(
               'You have $currentPoints points',
-              style: TextStyle(color: AppColors.getTextPrimaryForPage(pageId)), // ✅ UPDATED
+              style: TextStyle(color: AppColors.getTextPrimaryForPage(pageId)),
             ),
             SizedBox(height: 8),
             Text(
               'Redeem 1000 points for Rs. 500 discount?',
-              style: TextStyle(color: AppColors.getTextPrimaryForPage(pageId)), // ✅ UPDATED
+              style: TextStyle(color: AppColors.getTextPrimaryForPage(pageId)),
             ),
           ],
         ),
@@ -351,11 +362,13 @@ class RewardsPage extends StatelessWidget {
             onPressed: () => Navigator.pop(context),
             child: Text(
               'Cancel',
-              style: TextStyle(color: AppColors.getTextPrimaryForPage(pageId)), // ✅ UPDATED
+              style: TextStyle(color: AppColors.getTextPrimaryForPage(pageId)),
             ),
           ),
           ElevatedButton(
-            style: ElevatedButton.styleFrom(backgroundColor: AppColors.getAccentForPage(pageId)), // ✅ UPDATED
+            style: ElevatedButton.styleFrom(
+              backgroundColor: AppColors.getAccentForPage(pageId),
+            ),
             onPressed: () async {
               await DatabaseService.instance.updateRewardPoints(userId, -1000);
               await DatabaseService.instance.createRewardCoupon(userId);
@@ -383,7 +396,7 @@ class RewardsPage extends StatelessWidget {
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
-      backgroundColor: AppColors.getCardForPage(pageId), // ✅ UPDATED
+      backgroundColor: AppColors.getCardForPage(pageId),
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
       ),
@@ -397,7 +410,9 @@ class RewardsPage extends StatelessWidget {
             Container(
               padding: EdgeInsets.all(16),
               decoration: BoxDecoration(
-                border: Border(bottom: BorderSide(color: AppColors.getBorderForPage(pageId))), // ✅ UPDATED
+                border: Border(
+                  bottom: BorderSide(color: AppColors.getBorderForPage(pageId)),
+                ),
               ),
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -408,11 +423,14 @@ class RewardsPage extends StatelessWidget {
                       fontSize: 20,
                       fontWeight: FontWeight.bold,
                       fontFamily: 'IrishGrover',
-                      color: AppColors.getTextPrimaryForPage(pageId), // ✅ UPDATED
+                      color: AppColors.getTextPrimaryForPage(pageId),
                     ),
                   ),
                   IconButton(
-                    icon: Icon(Icons.close, color: AppColors.getTextPrimaryForPage(pageId)), // ✅ UPDATED
+                    icon: Icon(
+                      Icons.close,
+                      color: AppColors.getTextPrimaryForPage(pageId),
+                    ),
                     onPressed: () => Navigator.pop(context),
                   ),
                 ],
@@ -421,91 +439,99 @@ class RewardsPage extends StatelessWidget {
             Expanded(
               child: orders.isEmpty
                   ? Center(
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Icon(
-                      Icons.shopping_bag_outlined,
-                      size: 64,
-                      color: Colors.grey,
-                    ),
-                    SizedBox(height: 16),
-                    Text(
-                      'No orders yet',
-                      style: TextStyle(color: AppColors.getTextPrimaryForPage(pageId)), // ✅ UPDATED
-                    ),
-                  ],
-                ),
-              )
-                  : ListView.builder(
-                controller: scrollController,
-                padding: EdgeInsets.all(16),
-                itemCount: orders.length,
-                itemBuilder: (context, index) {
-                  final order = orders[index];
-                  final timestamp = order['timestamp'];
-                  final dateStr = timestamp != null
-                      ? timestamp.toDate().toString().split(' ')[0]
-                      : 'N/A';
-
-                  return Card(
-                    color: AppColors.getCardForPage(pageId), // ✅ UPDATED
-                    margin: EdgeInsets.only(bottom: 12),
-                    child: ListTile(
-                      leading: CircleAvatar(
-                        backgroundColor: AppColors.getAccentForPage(pageId), // ✅ UPDATED
-                        child: Icon(
-                          Icons.shopping_bag,
-                          color: Colors.white,
-                        ),
-                      ),
-                      title: Text(
-                        'Order #${order['orderId'].substring(0, 8)}',
-                        style: TextStyle(
-                          fontWeight: FontWeight.bold,
-                          color: AppColors.getTextPrimaryForPage(pageId), // ✅ UPDATED
-                        ),
-                      ),
-                      subtitle: Text(
-                        '$dateStr\n${order['items'].length} items',
-                        style: TextStyle(color: AppColors.getTextSecondaryForPage(pageId)), // ✅ UPDATED
-                      ),
-                      trailing: Column(
+                      child: Column(
                         mainAxisAlignment: MainAxisAlignment.center,
-                        crossAxisAlignment: CrossAxisAlignment.end,
                         children: [
-                          Text(
-                            'Rs. ${order['totalAmount']}',
-                            style: TextStyle(
-                              fontWeight: FontWeight.bold,
-                              color: AppColors.getAccentForPage(pageId), // ✅ UPDATED
-                            ),
+                          Icon(
+                            Icons.shopping_bag_outlined,
+                            size: 64,
+                            color: Colors.grey,
                           ),
-                          SizedBox(height: 4),
-                          Container(
-                            padding: EdgeInsets.symmetric(
-                              horizontal: 8,
-                              vertical: 2,
-                            ),
-                            decoration: BoxDecoration(
-                              color: Colors.orange.withOpacity(0.2),
-                              borderRadius: BorderRadius.circular(12),
-                            ),
-                            child: Text(
-                              order['status'] ?? 'pending',
-                              style: TextStyle(
-                                fontSize: 11,
-                                color: Colors.orange[800],
-                              ),
+                          SizedBox(height: 16),
+                          Text(
+                            'No orders yet',
+                            style: TextStyle(
+                              color: AppColors.getTextPrimaryForPage(pageId),
                             ),
                           ),
                         ],
                       ),
-                      isThreeLine: true,
+                    )
+                  : ListView.builder(
+                      controller: scrollController,
+                      padding: EdgeInsets.all(16),
+                      itemCount: orders.length,
+                      itemBuilder: (context, index) {
+                        final order = orders[index];
+                        final timestamp = order['timestamp'];
+                        final dateStr = timestamp != null
+                            ? timestamp.toDate().toString().split(' ')[0]
+                            : 'N/A';
+
+                        return Card(
+                          color: AppColors.getCardForPage(pageId),
+                          margin: EdgeInsets.only(bottom: 12),
+                          child: ListTile(
+                            leading: CircleAvatar(
+                              backgroundColor: AppColors.getAccentForPage(
+                                pageId,
+                              ),
+                              child: Icon(
+                                Icons.shopping_bag,
+                                color: Colors.white,
+                              ),
+                            ),
+                            title: Text(
+                              'Order #${order['orderId'].substring(0, 8)}',
+                              style: TextStyle(
+                                fontWeight: FontWeight.bold,
+                                color: AppColors.getTextPrimaryForPage(pageId),
+                              ),
+                            ),
+                            subtitle: Text(
+                              '$dateStr\n${order['items'].length} items',
+                              style: TextStyle(
+                                color: AppColors.getTextSecondaryForPage(
+                                  pageId,
+                                ),
+                              ),
+                            ),
+                            trailing: Column(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              crossAxisAlignment: CrossAxisAlignment.end,
+                              children: [
+                                Text(
+                                  'Rs. ${order['totalAmount']}',
+                                  style: TextStyle(
+                                    fontWeight: FontWeight.bold,
+                                    color: AppColors.getAccentForPage(pageId),
+                                  ),
+                                ),
+                                SizedBox(height: 4),
+                                Container(
+                                  padding: EdgeInsets.symmetric(
+                                    horizontal: 8,
+                                    vertical: 2,
+                                  ),
+                                  decoration: BoxDecoration(
+                                    color: Colors.orange.withOpacity(0.2),
+                                    borderRadius: BorderRadius.circular(12),
+                                  ),
+                                  child: Text(
+                                    order['status'] ?? 'pending',
+                                    style: TextStyle(
+                                      fontSize: 11,
+                                      color: Colors.orange[800],
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                            isThreeLine: true,
+                          ),
+                        );
+                      },
                     ),
-                  );
-                },
-              ),
             ),
           ],
         ),

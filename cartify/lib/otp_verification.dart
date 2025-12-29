@@ -1,10 +1,5 @@
-import 'dart:async';
-import 'dart:convert';
-import 'dart:math';
-import 'package:flutter/material.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:http/http.dart' as http;
-import 'colors.dart';
+import 'app_imports.dart';
 
 class OTPVerificationScreen extends StatefulWidget {
   final String email;

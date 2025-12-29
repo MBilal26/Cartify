@@ -1,8 +1,4 @@
-import 'package:flutter/material.dart';
-import 'package:firebase_auth/firebase_auth.dart';
-import 'colors.dart';
-import 'database_functions.dart';
-import 'map_address_picker.dart';
+import 'app_imports.dart';
 
 class CheckoutPage extends StatefulWidget {
   const CheckoutPage({super.key});
@@ -218,7 +214,7 @@ class _CheckoutPageState extends State<CheckoutPage> {
         items: orderItems,
         totalAmount: total,
         paymentDetails:
-        paymentDetails, // <--- Ensure your DatabaseService accepts this
+            paymentDetails, // <--- Ensure your DatabaseService accepts this
       );
 
       if (orderId != null) {
@@ -268,9 +264,9 @@ class _CheckoutPageState extends State<CheckoutPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppColors.getBackgroundForPage(pageId), // ✅ UPDATED
+      backgroundColor: AppColors.getBackgroundForPage(pageId),
       appBar: AppBar(
-        backgroundColor: AppColors.getAccentForPage(pageId), // ✅ UPDATED
+        backgroundColor: AppColors.getAccentForPage(pageId),
         title: Text(
           'Checkout',
           style: TextStyle(
@@ -284,384 +280,403 @@ class _CheckoutPageState extends State<CheckoutPage> {
       ),
       body: _isLoading
           ? Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            CircularProgressIndicator(color: AppColors.getAccentForPage(pageId)), // ✅ UPDATED
-            SizedBox(height: 16),
-            Text(
-              'Placing your order...',
-              style: TextStyle(
-                color: AppColors.getTextPrimaryForPage(pageId), // ✅ UPDATED
-                fontFamily: 'ADLaMDisplay',
-              ),
-            ),
-          ],
-        ),
-      )
-          : SingleChildScrollView(
-        padding: const EdgeInsets.all(16),
-        child: Form(
-          key: _formKey,
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                'Shipping Details',
-                style: TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.bold,
-                  color: AppColors.getTextPrimaryForPage(pageId), // ✅ UPDATED
-                  fontFamily: 'ADLaMDisplay',
-                ),
-              ),
-              const SizedBox(height: 18),
-              _buildTextField(
-                nameController,
-                'Full Name',
-                Icons.person_outline,
-              ),
-              const SizedBox(height: 16),
-              _buildTextField(
-                phoneController,
-                'Phone Number',
-                Icons.phone_outlined,
-                keyboardType: TextInputType.phone,
-              ),
-              const SizedBox(height: 16),
-
-              // Address field with map button
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  TextFormField(
-                    controller: addressController,
-                    maxLines: 3,
-                    style: TextStyle(
-                      color: AppColors.getTextPrimaryForPage(pageId), // ✅ UPDATED
-                      fontFamily: 'ADLaMDisplay',
-                    ),
-                    decoration: InputDecoration(
-                      labelText: 'Delivery Address',
-                      prefixIcon: Icon(
-                        Icons.home_outlined,
-                        color: AppColors.getAccentForPage(pageId), // ✅ UPDATED
-                      ),
-                      labelStyle: TextStyle(
-                        color: AppColors.getTextSecondaryForPage(pageId), // ✅ UPDATED
-                        fontFamily: 'ADLaMDisplay',
-                      ),
-                      border: OutlineInputBorder(),
-                      enabledBorder: OutlineInputBorder(
-                        borderSide: BorderSide(color: AppColors.getBorderForPage(pageId)), // ✅ UPDATED
-                      ),
-                    ),
-                    validator: (value) =>
-                    value!.isEmpty ? 'This field is required' : null,
+                  CircularProgressIndicator(
+                    color: AppColors.getAccentForPage(pageId),
                   ),
-                  SizedBox(height: 8),
-                  SizedBox(
-                    width: double.infinity,
-                    child: OutlinedButton.icon(
-                      onPressed: _selectAddressFromMap,
-                      icon: Icon(
-                        Icons.map_outlined,
-                        color: AppColors.getAccentForPage(pageId), // ✅ UPDATED
-                      ),
-                      label: Text(
-                        'Select Address from Map',
-                        style: TextStyle(
-                          color: AppColors.getAccentForPage(pageId), // ✅ UPDATED
-                          fontFamily: 'ADLaMDisplay',
-                        ),
-                      ),
-                      style: OutlinedButton.styleFrom(
-                        padding: EdgeInsets.symmetric(vertical: 12),
-                        side: BorderSide(color: AppColors.getAccentForPage(pageId)), // ✅ UPDATED
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(8),
-                        ),
-                      ),
+                  SizedBox(height: 16),
+                  Text(
+                    'Placing your order...',
+                    style: TextStyle(
+                      color: AppColors.getTextPrimaryForPage(pageId),
+                      fontFamily: 'ADLaMDisplay',
                     ),
                   ),
                 ],
               ),
-
-              const SizedBox(height: 24),
-              Text(
-                'Payment Method',
-                style: TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.bold,
-                  color: AppColors.getTextPrimaryForPage(pageId), // ✅ UPDATED
-                  fontFamily: 'ADLaMDisplay',
-                ),
-              ),
-              const SizedBox(height: 8),
-
-              // Cash on Delivery
-              RadioListTile(
-                value: 'Cash on Delivery',
-                groupValue: paymentMethod,
-                title: Text(
-                  'Cash on Delivery',
-                  style: TextStyle(
-                    color: AppColors.getTextPrimaryForPage(pageId), // ✅ UPDATED
-                    fontFamily: 'ADLaMDisplay',
-                  ),
-                ),
-                onChanged: (value) =>
-                    setState(() => paymentMethod = value!),
-                activeColor: AppColors.getAccentForPage(pageId), // ✅ UPDATED
-              ),
-
-              // Card Payment
-              RadioListTile(
-                value: 'Card Payment',
-                groupValue: paymentMethod,
-                title: Text(
-                  'Card Payment',
-                  style: TextStyle(
-                    color: AppColors.getTextPrimaryForPage(pageId), // ✅ UPDATED
-                    fontFamily: 'ADLaMDisplay',
-                  ),
-                ),
-                onChanged: (value) =>
-                    setState(() => paymentMethod = value!),
-                activeColor: AppColors.getAccentForPage(pageId), // ✅ UPDATED
-              ),
-
-              // Pay by Wallet - NEW
-              RadioListTile(
-                value: 'Pay by Wallet',
-                groupValue: paymentMethod,
-                title: Row(
+            )
+          : SingleChildScrollView(
+              padding: const EdgeInsets.all(16),
+              child: Form(
+                key: _formKey,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      'Pay by Wallet',
+                      'Shipping Details',
                       style: TextStyle(
-                        color: AppColors.getTextPrimaryForPage(pageId), // ✅ UPDATED
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                        color: AppColors.getTextPrimaryForPage(pageId),
                         fontFamily: 'ADLaMDisplay',
                       ),
                     ),
-                    Spacer(),
-                    if (isLoadingWallet)
-                      SizedBox(
-                        width: 16,
-                        height: 16,
-                        child: CircularProgressIndicator(
-                          strokeWidth: 2,
-                          color: AppColors.getAccentForPage(pageId), // ✅ UPDATED
-                        ),
-                      )
-                    else
-                      Container(
-                        padding: EdgeInsets.symmetric(
-                          horizontal: 10,
-                          vertical: 4,
-                        ),
-                        decoration: BoxDecoration(
-                          color: walletBalance > 0
-                              ? AppColors.getAccentForPage(pageId).withOpacity(0.1) // ✅ UPDATED
-                              : Colors.red.withOpacity(0.1),
-                          borderRadius: BorderRadius.circular(8),
-                        ),
-                        child: Text(
-                          'Rs. ${walletBalance.toStringAsFixed(2)}',
+                    const SizedBox(height: 18),
+                    _buildTextField(
+                      nameController,
+                      'Full Name',
+                      Icons.person_outline,
+                    ),
+                    const SizedBox(height: 16),
+                    _buildTextField(
+                      phoneController,
+                      'Phone Number',
+                      Icons.phone_outlined,
+                      keyboardType: TextInputType.phone,
+                    ),
+                    const SizedBox(height: 16),
+
+                    // Address field with map button
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        TextFormField(
+                          controller: addressController,
+                          maxLines: 3,
                           style: TextStyle(
-                            color: walletBalance > 0
-                                ? AppColors.getAccentForPage(pageId) // ✅ UPDATED
-                                : Colors.red,
-                            fontWeight: FontWeight.bold,
-                            fontSize: 12,
+                            color: AppColors.getTextPrimaryForPage(pageId),
                             fontFamily: 'ADLaMDisplay',
                           ),
-                        ),
-                      ),
-                  ],
-                ),
-                onChanged: (value) =>
-                    setState(() => paymentMethod = value!),
-                activeColor: AppColors.getAccentForPage(pageId), // ✅ UPDATED
-              ),
-
-              // Card Details Section
-              if (paymentMethod == 'Card Payment') ...[
-                const SizedBox(height: 16),
-                Container(
-                  padding: EdgeInsets.all(16),
-                  decoration: BoxDecoration(
-                    color: AppColors.getCardForPage(pageId), // ✅ UPDATED
-                    borderRadius: BorderRadius.circular(12),
-                    border: Border.all(
-                      color: AppColors.getAccentForPage(pageId).withOpacity(0.5), // ✅ UPDATED
-                    ),
-                  ),
-                  child: Column(
-                    children: [
-                      _buildTextField(
-                        cardNumberController,
-                        'Card Number',
-                        Icons.credit_card,
-                        keyboardType: TextInputType.number,
-                      ),
-                      const SizedBox(height: 12),
-                      Row(
-                        children: [
-                          Expanded(
-                            child: _buildTextField(
-                              expiryController,
-                              'MM/YY',
-                              Icons.calendar_today,
-                              keyboardType: TextInputType.datetime,
+                          decoration: InputDecoration(
+                            labelText: 'Delivery Address',
+                            prefixIcon: Icon(
+                              Icons.home_outlined,
+                              color: AppColors.getAccentForPage(pageId),
+                            ),
+                            labelStyle: TextStyle(
+                              color: AppColors.getTextSecondaryForPage(pageId),
+                              fontFamily: 'ADLaMDisplay',
+                            ),
+                            border: OutlineInputBorder(),
+                            enabledBorder: OutlineInputBorder(
+                              borderSide: BorderSide(
+                                color: AppColors.getBorderForPage(pageId),
+                              ),
                             ),
                           ),
-                          const SizedBox(width: 12),
-                          Expanded(
-                            child: _buildTextField(
-                              cvvController,
-                              'CVV',
-                              Icons.lock_outline,
-                              keyboardType: TextInputType.number,
-                              obscureText: true,
+                          validator: (value) =>
+                              value!.isEmpty ? 'This field is required' : null,
+                        ),
+                        SizedBox(height: 8),
+                        SizedBox(
+                          width: double.infinity,
+                          child: OutlinedButton.icon(
+                            onPressed: _selectAddressFromMap,
+                            icon: Icon(
+                              Icons.map_outlined,
+                              color: AppColors.getAccentForPage(pageId),
+                            ),
+                            label: Text(
+                              'Select Address from Map',
+                              style: TextStyle(
+                                color: AppColors.getAccentForPage(pageId),
+                                fontFamily: 'ADLaMDisplay',
+                              ),
+                            ),
+                            style: OutlinedButton.styleFrom(
+                              padding: EdgeInsets.symmetric(vertical: 12),
+                              side: BorderSide(
+                                color: AppColors.getAccentForPage(pageId),
+                              ),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(8),
+                              ),
                             ),
                           ),
-                        ],
-                      ),
-                    ],
-                  ),
-                ),
-              ],
-
-              // Wallet Info Banner - NEW
-              if (paymentMethod == 'Pay by Wallet') ...[
-                const SizedBox(height: 16),
-                Container(
-                  padding: EdgeInsets.all(12),
-                  decoration: BoxDecoration(
-                    color: walletBalance > 0
-                        ? AppColors.getAccentForPage(pageId).withOpacity(0.1) // ✅ UPDATED
-                        : Colors.red.withOpacity(0.1),
-                    borderRadius: BorderRadius.circular(12),
-                    border: Border.all(
-                      color: walletBalance > 0
-                          ? AppColors.getAccentForPage(pageId).withOpacity(0.3) // ✅ UPDATED
-                          : Colors.red.withOpacity(0.3),
-                    ),
-                  ),
-                  child: Row(
-                    children: [
-                      Icon(
-                        walletBalance > 0
-                            ? Icons.account_balance_wallet
-                            : Icons.warning_amber_rounded,
-                        color: walletBalance > 0
-                            ? AppColors.getAccentForPage(pageId) // ✅ UPDATED
-                            : Colors.red,
-                      ),
-                      SizedBox(width: 12),
-                      Expanded(
-                        child: Text(
-                          walletBalance > 0
-                              ? 'Payment will be deducted from your wallet balance'
-                              : 'Insufficient wallet balance. Please add money to your wallet or choose another payment method.',
-                          style: TextStyle(
-                            color: walletBalance > 0
-                                ? AppColors.getTextPrimaryForPage(pageId) // ✅ UPDATED
-                                : Colors.red,
-                            fontSize: 13,
-                            fontFamily: 'ADLaMDisplay',
-                          ),
                         ),
+                      ],
+                    ),
+
+                    const SizedBox(height: 24),
+                    Text(
+                      'Payment Method',
+                      style: TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                        color: AppColors.getTextPrimaryForPage(pageId),
+                        fontFamily: 'ADLaMDisplay',
                       ),
-                    ],
-                  ),
-                ),
-                if (walletBalance <= 0) ...[
-                  SizedBox(height: 12),
-                  SizedBox(
-                    width: double.infinity,
-                    child: OutlinedButton.icon(
-                      onPressed: () {
-                        Navigator.pushNamed(context, '/profile');
-                      },
-                      icon: Icon(Icons.add, color: AppColors.getAccentForPage(pageId)), // ✅ UPDATED
-                      label: Text(
-                        'Add Money to Wallet',
+                    ),
+                    const SizedBox(height: 8),
+
+                    // Cash on Delivery
+                    RadioListTile(
+                      value: 'Cash on Delivery',
+                      groupValue: paymentMethod,
+                      title: Text(
+                        'Cash on Delivery',
                         style: TextStyle(
-                          color: AppColors.getAccentForPage(pageId), // ✅ UPDATED
+                          color: AppColors.getTextPrimaryForPage(pageId),
                           fontFamily: 'ADLaMDisplay',
                         ),
                       ),
-                      style: OutlinedButton.styleFrom(
-                        padding: EdgeInsets.symmetric(vertical: 12),
-                        side: BorderSide(color: AppColors.getAccentForPage(pageId)), // ✅ UPDATED
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(8),
+                      onChanged: (value) =>
+                          setState(() => paymentMethod = value!),
+                      activeColor: AppColors.getAccentForPage(pageId),
+                    ),
+
+                    // Card Payment
+                    RadioListTile(
+                      value: 'Card Payment',
+                      groupValue: paymentMethod,
+                      title: Text(
+                        'Card Payment',
+                        style: TextStyle(
+                          color: AppColors.getTextPrimaryForPage(pageId),
+                          fontFamily: 'ADLaMDisplay',
+                        ),
+                      ),
+                      onChanged: (value) =>
+                          setState(() => paymentMethod = value!),
+                      activeColor: AppColors.getAccentForPage(pageId),
+                    ),
+
+                    // Pay by Wallet - NEW
+                    RadioListTile(
+                      value: 'Pay by Wallet',
+                      groupValue: paymentMethod,
+                      title: Row(
+                        children: [
+                          Text(
+                            'Pay by Wallet',
+                            style: TextStyle(
+                              color: AppColors.getTextPrimaryForPage(pageId),
+                              fontFamily: 'ADLaMDisplay',
+                            ),
+                          ),
+                          Spacer(),
+                          if (isLoadingWallet)
+                            SizedBox(
+                              width: 16,
+                              height: 16,
+                              child: CircularProgressIndicator(
+                                strokeWidth: 2,
+                                color: AppColors.getAccentForPage(pageId),
+                              ),
+                            )
+                          else
+                            Container(
+                              padding: EdgeInsets.symmetric(
+                                horizontal: 10,
+                                vertical: 4,
+                              ),
+                              decoration: BoxDecoration(
+                                color: walletBalance > 0
+                                    ? AppColors.getAccentForPage(
+                                        pageId,
+                                      ).withOpacity(0.1)
+                                    : Colors.red.withOpacity(0.1),
+                                borderRadius: BorderRadius.circular(8),
+                              ),
+                              child: Text(
+                                'Rs. ${walletBalance.toStringAsFixed(2)}',
+                                style: TextStyle(
+                                  color: walletBalance > 0
+                                      ? AppColors.getAccentForPage(pageId)
+                                      : Colors.red,
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 12,
+                                  fontFamily: 'ADLaMDisplay',
+                                ),
+                              ),
+                            ),
+                        ],
+                      ),
+                      onChanged: (value) =>
+                          setState(() => paymentMethod = value!),
+                      activeColor: AppColors.getAccentForPage(pageId),
+                    ),
+
+                    // Card Details Section
+                    if (paymentMethod == 'Card Payment') ...[
+                      const SizedBox(height: 16),
+                      Container(
+                        padding: EdgeInsets.all(16),
+                        decoration: BoxDecoration(
+                          color: AppColors.getCardForPage(pageId),
+                          borderRadius: BorderRadius.circular(12),
+                          border: Border.all(
+                            color: AppColors.getAccentForPage(
+                              pageId,
+                            ).withOpacity(0.5),
+                          ),
+                        ),
+                        child: Column(
+                          children: [
+                            _buildTextField(
+                              cardNumberController,
+                              'Card Number',
+                              Icons.credit_card,
+                              keyboardType: TextInputType.number,
+                            ),
+                            const SizedBox(height: 12),
+                            Row(
+                              children: [
+                                Expanded(
+                                  child: _buildTextField(
+                                    expiryController,
+                                    'MM/YY',
+                                    Icons.calendar_today,
+                                    keyboardType: TextInputType.datetime,
+                                  ),
+                                ),
+                                const SizedBox(width: 12),
+                                Expanded(
+                                  child: _buildTextField(
+                                    cvvController,
+                                    'CVV',
+                                    Icons.lock_outline,
+                                    keyboardType: TextInputType.number,
+                                    obscureText: true,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+
+                    // Wallet Info Banner - NEW
+                    if (paymentMethod == 'Pay by Wallet') ...[
+                      const SizedBox(height: 16),
+                      Container(
+                        padding: EdgeInsets.all(12),
+                        decoration: BoxDecoration(
+                          color: walletBalance > 0
+                              ? AppColors.getAccentForPage(
+                                  pageId,
+                                ).withOpacity(0.1)
+                              : Colors.red.withOpacity(0.1),
+                          borderRadius: BorderRadius.circular(12),
+                          border: Border.all(
+                            color: walletBalance > 0
+                                ? AppColors.getAccentForPage(
+                                    pageId,
+                                  ).withOpacity(0.3)
+                                : Colors.red.withOpacity(0.3),
+                          ),
+                        ),
+                        child: Row(
+                          children: [
+                            Icon(
+                              walletBalance > 0
+                                  ? Icons.account_balance_wallet
+                                  : Icons.warning_amber_rounded,
+                              color: walletBalance > 0
+                                  ? AppColors.getAccentForPage(pageId)
+                                  : Colors.red,
+                            ),
+                            SizedBox(width: 12),
+                            Expanded(
+                              child: Text(
+                                walletBalance > 0
+                                    ? 'Payment will be deducted from your wallet balance'
+                                    : 'Insufficient wallet balance. Please add money to your wallet or choose another payment method.',
+                                style: TextStyle(
+                                  color: walletBalance > 0
+                                      ? AppColors.getTextPrimaryForPage(pageId)
+                                      : Colors.red,
+                                  fontSize: 13,
+                                  fontFamily: 'ADLaMDisplay',
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      if (walletBalance <= 0) ...[
+                        SizedBox(height: 12),
+                        SizedBox(
+                          width: double.infinity,
+                          child: OutlinedButton.icon(
+                            onPressed: () {
+                              Navigator.pushNamed(context, '/profile');
+                            },
+                            icon: Icon(
+                              Icons.add,
+                              color: AppColors.getAccentForPage(pageId),
+                            ),
+                            label: Text(
+                              'Add Money to Wallet',
+                              style: TextStyle(
+                                color: AppColors.getAccentForPage(pageId),
+                                fontFamily: 'ADLaMDisplay',
+                              ),
+                            ),
+                            style: OutlinedButton.styleFrom(
+                              padding: EdgeInsets.symmetric(vertical: 12),
+                              side: BorderSide(
+                                color: AppColors.getAccentForPage(pageId),
+                              ),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(8),
+                              ),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ],
+
+                    const SizedBox(height: 24),
+                    _buildOrderSummary(),
+                    const SizedBox(height: 24),
+                    SizedBox(
+                      width: double.infinity,
+                      child: ElevatedButton(
+                        onPressed: _isLoading ? null : _placeOrder,
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: AppColors.getAccentForPage(pageId),
+                          padding: const EdgeInsets.symmetric(vertical: 14),
+                        ),
+                        child: Text(
+                          'PLACE ORDER',
+                          style: TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold,
+                            fontFamily: 'ADLaMDisplay',
+                            color: Colors.white,
+                          ),
                         ),
                       ),
                     ),
-                  ),
-                ],
-              ],
-
-              const SizedBox(height: 24),
-              _buildOrderSummary(),
-              const SizedBox(height: 24),
-              SizedBox(
-                width: double.infinity,
-                child: ElevatedButton(
-                  onPressed: _isLoading ? null : _placeOrder,
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: AppColors.getAccentForPage(pageId), // ✅ UPDATED
-                    padding: const EdgeInsets.symmetric(vertical: 14),
-                  ),
-                  child: Text(
-                    'PLACE ORDER',
-                    style: TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.bold,
-                      fontFamily: 'ADLaMDisplay',
-                      color: Colors.white,
-                    ),
-                  ),
+                  ],
                 ),
               ),
-            ],
-          ),
-        ),
-      ),
+            ),
     );
   }
 
   // Helper Widget for TextFields
   Widget _buildTextField(
-      TextEditingController controller,
-      String label,
-      IconData icon, {
-        TextInputType keyboardType = TextInputType.text,
-        int maxLines = 1,
-        bool obscureText = false,
-      }) {
+    TextEditingController controller,
+    String label,
+    IconData icon, {
+    TextInputType keyboardType = TextInputType.text,
+    int maxLines = 1,
+    bool obscureText = false,
+  }) {
     return TextFormField(
       controller: controller,
       keyboardType: keyboardType,
       maxLines: maxLines,
       obscureText: obscureText,
       style: TextStyle(
-        color: AppColors.getTextPrimaryForPage(pageId), // ✅ UPDATED
+        color: AppColors.getTextPrimaryForPage(pageId),
         fontFamily: 'ADLaMDisplay',
       ),
       decoration: InputDecoration(
         labelText: label,
-        prefixIcon: Icon(icon, color: AppColors.getAccentForPage(pageId)), // ✅ UPDATED
+        prefixIcon: Icon(icon, color: AppColors.getAccentForPage(pageId)),
         labelStyle: TextStyle(
-          color: AppColors.getTextSecondaryForPage(pageId), // ✅ UPDATED
+          color: AppColors.getTextSecondaryForPage(pageId),
           fontFamily: 'ADLaMDisplay',
         ),
         border: OutlineInputBorder(),
         enabledBorder: OutlineInputBorder(
-          borderSide: BorderSide(color: AppColors.getBorderForPage(pageId)), // ✅ UPDATED
+          borderSide: BorderSide(color: AppColors.getBorderForPage(pageId)),
         ),
       ),
       validator: (value) => value!.isEmpty ? 'This field is required' : null,
@@ -674,7 +689,9 @@ class _CheckoutPageState extends State<CheckoutPage> {
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting) {
           return Center(
-            child: CircularProgressIndicator(color: AppColors.getAccentForPage(pageId)), // ✅ UPDATED
+            child: CircularProgressIndicator(
+              color: AppColors.getAccentForPage(pageId),
+            ),
           );
         }
         if (snapshot.hasData && snapshot.data!.isNotEmpty) {
@@ -686,9 +703,9 @@ class _CheckoutPageState extends State<CheckoutPage> {
           return Container(
             padding: EdgeInsets.all(16),
             decoration: BoxDecoration(
-              color: AppColors.getCardForPage(pageId), // ✅ UPDATED
+              color: AppColors.getCardForPage(pageId),
               borderRadius: BorderRadius.circular(12),
-              border: Border.all(color: AppColors.getBorderForPage(pageId)), // ✅ UPDATED
+              border: Border.all(color: AppColors.getBorderForPage(pageId)),
             ),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -698,13 +715,13 @@ class _CheckoutPageState extends State<CheckoutPage> {
                   style: TextStyle(
                     fontSize: 16,
                     fontWeight: FontWeight.bold,
-                    color: AppColors.getTextPrimaryForPage(pageId), // ✅ UPDATED
+                    color: AppColors.getTextPrimaryForPage(pageId),
                     fontFamily: 'ADLaMDisplay',
                   ),
                 ),
                 SizedBox(height: 12),
                 ...items.map(
-                      (item) => Padding(
+                  (item) => Padding(
                     padding: EdgeInsets.symmetric(vertical: 4),
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -712,14 +729,14 @@ class _CheckoutPageState extends State<CheckoutPage> {
                         Text(
                           '${item['name']} x${item['quantity']}',
                           style: TextStyle(
-                            color: AppColors.getTextPrimaryForPage(pageId), // ✅ UPDATED
+                            color: AppColors.getTextPrimaryForPage(pageId),
                             fontFamily: 'ADLaMDisplay',
                           ),
                         ),
                         Text(
                           'Rs. ${item['price'] * item['quantity']}',
                           style: TextStyle(
-                            color: AppColors.getTextPrimaryForPage(pageId), // ✅ UPDATED
+                            color: AppColors.getTextPrimaryForPage(pageId),
                             fontFamily: 'ADLaMDisplay',
                           ),
                         ),
@@ -727,7 +744,7 @@ class _CheckoutPageState extends State<CheckoutPage> {
                     ),
                   ),
                 ),
-                Divider(height: 20, color: AppColors.getBorderForPage(pageId)), // ✅ UPDATED
+                Divider(height: 20, color: AppColors.getBorderForPage(pageId)),
                 SizedBox(height: 8),
                 _buildCouponInput(),
 
@@ -740,14 +757,14 @@ class _CheckoutPageState extends State<CheckoutPage> {
                       'Subtotal',
                       style: TextStyle(
                         fontFamily: 'ADLaMDisplay',
-                        color: AppColors.getTextPrimaryForPage(pageId), // ✅ UPDATED
+                        color: AppColors.getTextPrimaryForPage(pageId),
                       ),
                     ),
                     Text(
                       'Rs. $subtotal',
                       style: TextStyle(
                         fontFamily: 'ADLaMDisplay',
-                        color: AppColors.getTextPrimaryForPage(pageId), // ✅ UPDATED
+                        color: AppColors.getTextPrimaryForPage(pageId),
                       ),
                     ),
                   ],
@@ -787,7 +804,7 @@ class _CheckoutPageState extends State<CheckoutPage> {
                         fontSize: 18,
                         fontWeight: FontWeight.bold,
                         fontFamily: 'ADLaMDisplay',
-                        color: AppColors.getTextPrimaryForPage(pageId), // ✅ UPDATED
+                        color: AppColors.getTextPrimaryForPage(pageId),
                       ),
                     ),
                     Text(
@@ -795,7 +812,7 @@ class _CheckoutPageState extends State<CheckoutPage> {
                       style: TextStyle(
                         fontSize: 18,
                         fontWeight: FontWeight.bold,
-                        color: AppColors.getAccentForPage(pageId), // ✅ UPDATED
+                        color: AppColors.getAccentForPage(pageId),
                         fontFamily: 'ADLaMDisplay',
                       ),
                     ),
@@ -870,17 +887,16 @@ class _CheckoutPageState extends State<CheckoutPage> {
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(10),
-        border: Border.all(color: AppColors.getBorderForPage(pageId)), // ✅ UPDATED
+        border: Border.all(color: AppColors.getBorderForPage(pageId)),
       ),
       child: Row(
         children: [
-          Icon(Icons.local_offer, color: AppColors.getAccentForPage(pageId)), // ✅ UPDATED
+          Icon(Icons.local_offer, color: AppColors.getAccentForPage(pageId)),
           const SizedBox(width: 8),
           Expanded(
             child: TextField(
               style: TextStyle(
-                color:
-                AppColors.getTextPrimaryForPage(pageId), // ✅ UPDATED
+                color: AppColors.getTextPrimaryForPage(pageId),
                 fontFamily: 'ADLaMDisplay',
                 fontSize: 16,
               ),
@@ -896,7 +912,7 @@ class _CheckoutPageState extends State<CheckoutPage> {
             child: Text(
               'APPLY',
               style: TextStyle(
-                color: AppColors.getAccentForPage(pageId), // ✅ UPDATED
+                color: AppColors.getAccentForPage(pageId),
                 fontWeight: FontWeight.bold,
                 fontFamily: 'ADLaMDisplay',
               ),
@@ -912,7 +928,7 @@ class _CheckoutPageState extends State<CheckoutPage> {
       context: context,
       barrierDismissible: false,
       builder: (_) => AlertDialog(
-        backgroundColor: AppColors.getCardForPage(pageId), // ✅ UPDATED
+        backgroundColor: AppColors.getCardForPage(pageId),
         title: Row(
           children: [
             Icon(Icons.check_circle, color: AppColors.success, size: 28),
@@ -920,7 +936,7 @@ class _CheckoutPageState extends State<CheckoutPage> {
             Text(
               'Order Placed',
               style: TextStyle(
-                color: AppColors.getTextPrimaryForPage(pageId), // ✅ UPDATED
+                color: AppColors.getTextPrimaryForPage(pageId),
                 fontFamily: 'ADLaMDisplay',
               ),
             ),
@@ -933,7 +949,7 @@ class _CheckoutPageState extends State<CheckoutPage> {
             Text(
               'Your order has been placed successfully!',
               style: TextStyle(
-                color: AppColors.getTextPrimaryForPage(pageId), // ✅ UPDATED
+                color: AppColors.getTextPrimaryForPage(pageId),
                 fontFamily: 'ADLaMDisplay',
               ),
             ),
@@ -942,14 +958,14 @@ class _CheckoutPageState extends State<CheckoutPage> {
               'Order ID: $orderId',
               style: TextStyle(
                 fontWeight: FontWeight.bold,
-                color: AppColors.getTextPrimaryForPage(pageId), // ✅ UPDATED
+                color: AppColors.getTextPrimaryForPage(pageId),
                 fontFamily: 'ADLaMDisplay',
               ),
             ),
             Text(
               'Total Amount: Rs. $total',
               style: TextStyle(
-                color: AppColors.getTextPrimaryForPage(pageId), // ✅ UPDATED
+                color: AppColors.getTextPrimaryForPage(pageId),
                 fontFamily: 'ADLaMDisplay',
               ),
             ),
@@ -958,14 +974,14 @@ class _CheckoutPageState extends State<CheckoutPage> {
               Container(
                 padding: EdgeInsets.all(8),
                 decoration: BoxDecoration(
-                  color: AppColors.getAccentForPage(pageId).withOpacity(0.1), // ✅ UPDATED
+                  color: AppColors.getAccentForPage(pageId).withOpacity(0.1),
                   borderRadius: BorderRadius.circular(8),
                 ),
                 child: Row(
                   children: [
                     Icon(
                       Icons.account_balance_wallet,
-                      color: AppColors.getAccentForPage(pageId), // ✅ UPDATED
+                      color: AppColors.getAccentForPage(pageId),
                       size: 20,
                     ),
                     SizedBox(width: 8),
@@ -973,7 +989,7 @@ class _CheckoutPageState extends State<CheckoutPage> {
                       child: Text(
                         'Paid via Wallet',
                         style: TextStyle(
-                          color: AppColors.getAccentForPage(pageId), // ✅ UPDATED
+                          color: AppColors.getAccentForPage(pageId),
                           fontWeight: FontWeight.bold,
                           fontFamily: 'ADLaMDisplay',
                           fontSize: 12,
@@ -1017,7 +1033,7 @@ class _CheckoutPageState extends State<CheckoutPage> {
             child: Text(
               'OK',
               style: TextStyle(
-                color: AppColors.getAccentForPage(pageId), // ✅ UPDATED
+                color: AppColors.getAccentForPage(pageId),
                 fontFamily: 'ADLaMDisplay',
               ),
             ),

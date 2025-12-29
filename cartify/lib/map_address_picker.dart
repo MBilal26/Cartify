@@ -1,12 +1,10 @@
-import 'package:flutter/material.dart';
+
 import 'package:flutter_map/flutter_map.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:http/http.dart' as http;
-import 'dart:convert';
-import 'colors.dart';
+import 'app_imports.dart';
 
-// NEW FILE: Map-based address picker using OpenStreetMap (Free, no credit card needed)
 class MapAddressPickerPage extends StatefulWidget {
   final String? currentAddress;
 
@@ -78,7 +76,7 @@ class _MapAddressPickerPageState extends State<MapAddressPickerPage> {
     }
   }
 
-  // Convert coordinates to readable address using Nominatim (OpenStreetMap's free geocoding service)
+  // OpenStreetMap's free geocoding service
   Future<void> _getAddressFromCoordinates(double lat, double lon) async {
     setState(() => isLoadingAddress = true);
 

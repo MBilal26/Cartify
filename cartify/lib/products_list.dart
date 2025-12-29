@@ -1,7 +1,4 @@
-import 'package:flutter/material.dart';
-import 'package:firebase_auth/firebase_auth.dart';
-import 'colors.dart';
-import 'database_functions.dart';
+import 'app_imports.dart';
 
 class ProductsListPage extends StatefulWidget {
   const ProductsListPage({super.key});
@@ -24,7 +21,6 @@ class _ProductsListPageState extends State<ProductsListPage> {
   bool isLoading = true;
   String searchQuery = '';
 
-  // ✅ CONSTANT: Page ID for Colors
   final String pageId = 'PRODUCTS';
 
   @override
@@ -52,7 +48,8 @@ class _ProductsListPageState extends State<ProductsListPage> {
     setState(() {
       // Step 1: Filter by search query
       var tempProducts = allProducts.where((product) {
-        final matchesSearch = searchQuery.isEmpty ||
+        final matchesSearch =
+            searchQuery.isEmpty ||
             product['name'].toString().toLowerCase().contains(
               searchQuery.toLowerCase(),
             );
@@ -75,17 +72,25 @@ class _ProductsListPageState extends State<ProductsListPage> {
 
       // Step 4: Sort products
       if (sortBy == 'A->Z') {
-        tempProducts.sort((a, b) =>
-            (a['name'] ?? '').toString().compareTo((b['name'] ?? '').toString()));
+        tempProducts.sort(
+          (a, b) => (a['name'] ?? '').toString().compareTo(
+            (b['name'] ?? '').toString(),
+          ),
+        );
       } else if (sortBy == 'Z->A') {
-        tempProducts.sort((a, b) =>
-            (b['name'] ?? '').toString().compareTo((a['name'] ?? '').toString()));
+        tempProducts.sort(
+          (a, b) => (b['name'] ?? '').toString().compareTo(
+            (a['name'] ?? '').toString(),
+          ),
+        );
       } else if (sortBy == 'Low to High') {
         tempProducts.sort(
-                (a, b) => (a['price'] ?? 0).compareTo(b['price'] ?? 0));
+          (a, b) => (a['price'] ?? 0).compareTo(b['price'] ?? 0),
+        );
       } else if (sortBy == 'High to Low') {
         tempProducts.sort(
-                (a, b) => (b['price'] ?? 0).compareTo(a['price'] ?? 0));
+          (a, b) => (b['price'] ?? 0).compareTo(a['price'] ?? 0),
+        );
       }
 
       filteredProducts = tempProducts;
@@ -95,7 +100,7 @@ class _ProductsListPageState extends State<ProductsListPage> {
   void _showFilterOptions() {
     showModalBottomSheet(
       context: context,
-      backgroundColor: AppColors.getCardForPage(pageId), // ✅ UPDATED
+      backgroundColor: AppColors.getCardForPage(pageId),
       isScrollControlled: true,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
@@ -131,7 +136,7 @@ class _ProductsListPageState extends State<ProductsListPage> {
                         fontSize: 20,
                         fontWeight: FontWeight.bold,
                         fontFamily: 'IrishGrover',
-                        color: AppColors.getTextPrimaryForPage(pageId), // ✅ UPDATED
+                        color: AppColors.getTextPrimaryForPage(pageId),
                       ),
                     ),
                     Row(
@@ -148,23 +153,24 @@ class _ProductsListPageState extends State<ProductsListPage> {
                           child: Text(
                             'Clear All',
                             style: TextStyle(
-                              color: AppColors.getAccentForPage(pageId), // ✅ UPDATED
+                              color: AppColors.getAccentForPage(pageId),
                               fontFamily: 'ADLaMDisplay',
                               fontSize: 13,
                             ),
                           ),
                         ),
                         IconButton(
-                          icon: Icon(Icons.close,
-                              color: AppColors.getTextPrimaryForPage(pageId)), // ✅ UPDATED
+                          icon: Icon(
+                            Icons.close,
+                            color: AppColors.getTextPrimaryForPage(pageId),
+                          ),
                           onPressed: () => Navigator.pop(context),
                         ),
                       ],
                     ),
                   ],
                 ),
-                Divider(color: AppColors.getBorderForPage(pageId)), // ✅ UPDATED
-
+                Divider(color: AppColors.getBorderForPage(pageId)),
                 // Content
                 Expanded(
                   child: SingleChildScrollView(
@@ -181,7 +187,7 @@ class _ProductsListPageState extends State<ProductsListPage> {
                             fontSize: 16,
                             fontWeight: FontWeight.bold,
                             fontFamily: 'IrishGrover',
-                            color: AppColors.getTextPrimaryForPage(pageId), // ✅ UPDATED
+                            color: AppColors.getTextPrimaryForPage(pageId),
                           ),
                         ),
                         SizedBox(height: 12),
@@ -206,23 +212,26 @@ class _ProductsListPageState extends State<ProductsListPage> {
                             fontSize: 16,
                             fontWeight: FontWeight.bold,
                             fontFamily: 'IrishGrover',
-                            color: AppColors.getTextPrimaryForPage(pageId), // ✅ UPDATED
+                            color: AppColors.getTextPrimaryForPage(pageId),
                           ),
                         ),
                         SizedBox(height: 12),
 
                         _parentCategoryOption(
-                            'All', Icons.grid_view, setModalState),
+                          'All',
+                          Icons.grid_view,
+                          setModalState,
+                        ),
 
                         ...categories
                             .where((cat) => cat['parentCategory'] == null)
                             .map((parentCat) {
-                          return _parentCategoryOption(
-                            parentCat['title'],
-                            Icons.person,
-                            setModalState,
-                          );
-                        }),
+                              return _parentCategoryOption(
+                                parentCat['title'],
+                                Icons.person,
+                                setModalState,
+                              );
+                            }),
 
                         SizedBox(height: 24),
 
@@ -237,7 +246,9 @@ class _ProductsListPageState extends State<ProductsListPage> {
                                   fontSize: 16,
                                   fontWeight: FontWeight.bold,
                                   fontFamily: 'IrishGrover',
-                                  color: AppColors.getTextPrimaryForPage(pageId), // ✅ UPDATED
+                                  color: AppColors.getTextPrimaryForPage(
+                                    pageId,
+                                  ),
                                 ),
                               ),
                               if (selectedSubCategories.isNotEmpty)
@@ -250,7 +261,7 @@ class _ProductsListPageState extends State<ProductsListPage> {
                                   child: Text(
                                     'Select All',
                                     style: TextStyle(
-                                      color: AppColors.getAccentForPage(pageId), // ✅ UPDATED
+                                      color: AppColors.getAccentForPage(pageId),
                                       fontSize: 12,
                                     ),
                                   ),
@@ -260,16 +271,19 @@ class _ProductsListPageState extends State<ProductsListPage> {
                           SizedBox(height: 12),
 
                           ...categories
-                              .where((cat) =>
-                          cat['parentCategory'] == selectedParentCategory)
+                              .where(
+                                (cat) =>
+                                    cat['parentCategory'] ==
+                                    selectedParentCategory,
+                              )
                               .map((subCat) {
-                            return _subCategoryOption(
-                              subCat['title'],
-                              subCat['id'],
-                              Icons.category_outlined,
-                              setModalState,
-                            );
-                          }),
+                                return _subCategoryOption(
+                                  subCat['title'],
+                                  subCat['id'],
+                                  Icons.category_outlined,
+                                  setModalState,
+                                );
+                              }),
                         ],
 
                         SizedBox(height: 80),
@@ -282,15 +296,19 @@ class _ProductsListPageState extends State<ProductsListPage> {
                 Container(
                   padding: EdgeInsets.symmetric(vertical: 16),
                   decoration: BoxDecoration(
-                    color: AppColors.getCardForPage(pageId), // ✅ UPDATED
-                    border: Border(top: BorderSide(color: AppColors.getBorderForPage(pageId))), // ✅ UPDATED
+                    color: AppColors.getCardForPage(pageId),
+                    border: Border(
+                      top: BorderSide(
+                        color: AppColors.getBorderForPage(pageId),
+                      ),
+                    ),
                   ),
                   child: SizedBox(
                     width: double.infinity,
                     height: 48,
                     child: ElevatedButton(
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: AppColors.getAccentForPage(pageId), // ✅ UPDATED
+                        backgroundColor: AppColors.getAccentForPage(pageId),
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(12),
                         ),
@@ -343,19 +361,21 @@ class _ProductsListPageState extends State<ProductsListPage> {
       label: Text(
         sortOption,
         style: TextStyle(
-          color: isSelected ? Colors.white : AppColors.getTextPrimaryForPage(pageId), // ✅ UPDATED
+          color: isSelected
+              ? Colors.white
+              : AppColors.getTextPrimaryForPage(pageId),
           fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
           fontFamily: 'ADLaMDisplay',
           fontSize: 13,
         ),
       ),
       selected: isSelected,
-      selectedColor: AppColors.getAccentForPage(pageId), // ✅ UPDATED
-      backgroundColor: AppColors.getBackgroundForPage(pageId), // ✅ UPDATED
+      selectedColor: AppColors.getAccentForPage(pageId),
+      backgroundColor: AppColors.getBackgroundForPage(pageId),
       side: BorderSide(
         color: isSelected
-            ? AppColors.getAccentForPage(pageId) // ✅ UPDATED
-            : AppColors.getBorderForPage(pageId), // ✅ UPDATED
+            ? AppColors.getAccentForPage(pageId)
+            : AppColors.getBorderForPage(pageId),
         width: 1,
       ),
       onSelected: (selected) {
@@ -368,10 +388,10 @@ class _ProductsListPageState extends State<ProductsListPage> {
   }
 
   Widget _parentCategoryOption(
-      String title,
-      IconData icon,
-      StateSetter setModalState,
-      ) {
+    String title,
+    IconData icon,
+    StateSetter setModalState,
+  ) {
     final isSelected = selectedParentCategory == title;
 
     return InkWell(
@@ -388,13 +408,13 @@ class _ProductsListPageState extends State<ProductsListPage> {
         margin: EdgeInsets.only(bottom: 6),
         decoration: BoxDecoration(
           color: isSelected
-              ? AppColors.getAccentForPage(pageId).withOpacity(0.1) // ✅ UPDATED
+              ? AppColors.getAccentForPage(pageId).withOpacity(0.1)
               : Colors.transparent,
           borderRadius: BorderRadius.circular(10),
           border: Border.all(
             color: isSelected
-                ? AppColors.getAccentForPage(pageId) // ✅ UPDATED
-                : AppColors.getBorderForPage(pageId), // ✅ UPDATED
+                ? AppColors.getAccentForPage(pageId)
+                : AppColors.getBorderForPage(pageId),
             width: isSelected ? 1.5 : 1,
           ),
         ),
@@ -403,8 +423,8 @@ class _ProductsListPageState extends State<ProductsListPage> {
             Icon(
               icon,
               color: isSelected
-                  ? AppColors.getAccentForPage(pageId) // ✅ UPDATED
-                  : AppColors.getTextSecondaryForPage(pageId), // ✅ UPDATED
+                  ? AppColors.getAccentForPage(pageId)
+                  : AppColors.getTextSecondaryForPage(pageId),
               size: 20,
             ),
             SizedBox(width: 12),
@@ -415,15 +435,19 @@ class _ProductsListPageState extends State<ProductsListPage> {
                   fontSize: 14,
                   fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
                   color: isSelected
-                      ? AppColors.getAccentForPage(pageId) // ✅ UPDATED
-                      : AppColors.getTextPrimaryForPage(pageId), // ✅ UPDATED
+                      ? AppColors.getAccentForPage(pageId)
+                      : AppColors.getTextPrimaryForPage(pageId),
                   fontFamily: 'ADLaMDisplay',
                 ),
                 overflow: TextOverflow.ellipsis,
               ),
             ),
             if (isSelected)
-              Icon(Icons.check_circle, color: AppColors.getAccentForPage(pageId), size: 20), // ✅ UPDATED
+              Icon(
+                Icons.check_circle,
+                color: AppColors.getAccentForPage(pageId),
+                size: 20,
+              ),
           ],
         ),
       ),
@@ -431,11 +455,11 @@ class _ProductsListPageState extends State<ProductsListPage> {
   }
 
   Widget _subCategoryOption(
-      String title,
-      String categoryId,
-      IconData icon,
-      StateSetter setModalState,
-      ) {
+    String title,
+    String categoryId,
+    IconData icon,
+    StateSetter setModalState,
+  ) {
     final isSelected = selectedSubCategories.contains(categoryId);
 
     return InkWell(
@@ -454,13 +478,13 @@ class _ProductsListPageState extends State<ProductsListPage> {
         margin: EdgeInsets.only(bottom: 6),
         decoration: BoxDecoration(
           color: isSelected
-              ? AppColors.getAccentForPage(pageId).withOpacity(0.1) // ✅ UPDATED
+              ? AppColors.getAccentForPage(pageId).withOpacity(0.1)
               : Colors.transparent,
           borderRadius: BorderRadius.circular(10),
           border: Border.all(
             color: isSelected
-                ? AppColors.getAccentForPage(pageId) // ✅ UPDATED
-                : AppColors.getBorderForPage(pageId), // ✅ UPDATED
+                ? AppColors.getAccentForPage(pageId)
+                : AppColors.getBorderForPage(pageId),
             width: isSelected ? 1.5 : 1,
           ),
         ),
@@ -469,8 +493,8 @@ class _ProductsListPageState extends State<ProductsListPage> {
             Icon(
               isSelected ? Icons.check_box : Icons.check_box_outline_blank,
               color: isSelected
-                  ? AppColors.getAccentForPage(pageId) // ✅ UPDATED
-                  : AppColors.getTextSecondaryForPage(pageId), // ✅ UPDATED
+                  ? AppColors.getAccentForPage(pageId)
+                  : AppColors.getTextSecondaryForPage(pageId),
               size: 20,
             ),
             SizedBox(width: 12),
@@ -481,8 +505,8 @@ class _ProductsListPageState extends State<ProductsListPage> {
                   fontSize: 14,
                   fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
                   color: isSelected
-                      ? AppColors.getAccentForPage(pageId) // ✅ UPDATED
-                      : AppColors.getTextPrimaryForPage(pageId), // ✅ UPDATED
+                      ? AppColors.getAccentForPage(pageId)
+                      : AppColors.getTextPrimaryForPage(pageId),
                   fontFamily: 'ADLaMDisplay',
                 ),
                 overflow: TextOverflow.ellipsis,
@@ -497,9 +521,9 @@ class _ProductsListPageState extends State<ProductsListPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppColors.getBackgroundForPage(pageId), // ✅ UPDATED
+      backgroundColor: AppColors.getBackgroundForPage(pageId),
       appBar: AppBar(
-        backgroundColor: AppColors.getAccentForPage(pageId), // ✅ UPDATED
+        backgroundColor: AppColors.getAccentForPage(pageId),
         elevation: 0,
         leading: IconButton(
           icon: Icon(Icons.chevron_left, color: Colors.white),
@@ -552,49 +576,55 @@ class _ProductsListPageState extends State<ProductsListPage> {
             padding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
             child: TextField(
               style: TextStyle(
-                color: AppColors.getTextPrimaryForPage(pageId), // ✅ UPDATED
+                color: AppColors.getTextPrimaryForPage(pageId),
                 fontFamily: 'ADLaMDisplay',
                 fontSize: 14,
               ),
               decoration: InputDecoration(
                 hintText: 'Search products...',
                 hintStyle: TextStyle(
-                  color: AppColors.getTextSecondaryForPage(pageId), // ✅ UPDATED
+                  color: AppColors.getTextSecondaryForPage(pageId),
                   fontFamily: 'ADLaMDisplay',
                   fontSize: 14,
                 ),
-                prefixIcon: Icon(Icons.search,
-                    color: AppColors.getAccentForPage(pageId)), // ✅ UPDATED
+                prefixIcon: Icon(
+                  Icons.search,
+                  color: AppColors.getAccentForPage(pageId),
+                ),
                 suffixIcon: searchQuery.isNotEmpty
                     ? IconButton(
-                  icon: Icon(Icons.clear,
-                      color: AppColors.getTextSecondaryForPage(
-                          pageId)), // ✅ UPDATED
-                  onPressed: () {
-                    setState(() {
-                      searchQuery = '';
-                    });
-                    _filterAndSortProducts();
-                  },
-                )
+                        icon: Icon(
+                          Icons.clear,
+                          color: AppColors.getTextSecondaryForPage(pageId),
+                        ),
+                        onPressed: () {
+                          setState(() {
+                            searchQuery = '';
+                          });
+                          _filterAndSortProducts();
+                        },
+                      )
                     : null,
                 filled: true,
-                fillColor: AppColors.getCardForPage(pageId), // ✅ UPDATED
+                fillColor: AppColors.getCardForPage(pageId),
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(12),
                   borderSide: BorderSide(
-                      color: AppColors.getBorderForPage(pageId)), // ✅ UPDATED
+                    color: AppColors.getBorderForPage(pageId),
+                  ),
                 ),
                 enabledBorder: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(12),
                   borderSide: BorderSide(
-                      color: AppColors.getBorderForPage(pageId)), // ✅ UPDATED
+                    color: AppColors.getBorderForPage(pageId),
+                  ),
                 ),
                 focusedBorder: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(12),
                   borderSide: BorderSide(
-                      color: AppColors.getAccentForPage(pageId),
-                      width: 2), // ✅ UPDATED
+                    color: AppColors.getAccentForPage(pageId),
+                    width: 2,
+                  ),
                 ),
                 contentPadding: EdgeInsets.symmetric(
                   horizontal: 16,
@@ -625,16 +655,16 @@ class _ProductsListPageState extends State<ProductsListPage> {
                       Padding(
                         padding: EdgeInsets.only(right: 8),
                         child: Chip(
-                          backgroundColor: AppColors.getAccentForPage(pageId)
-                              .withOpacity(0.1), // ✅ UPDATED
+                          backgroundColor: AppColors.getAccentForPage(
+                            pageId,
+                          ).withOpacity(0.1),
                           side: BorderSide(
-                              color: AppColors.getAccentForPage(
-                                  pageId)), // ✅ UPDATED
+                            color: AppColors.getAccentForPage(pageId),
+                          ),
                           label: Text(
                             'Sort: $sortBy',
                             style: TextStyle(
-                              color: AppColors.getAccentForPage(
-                                  pageId), // ✅ UPDATED
+                              color: AppColors.getAccentForPage(pageId),
                               fontFamily: 'ADLaMDisplay',
                               fontSize: 11,
                               fontWeight: FontWeight.bold,
@@ -643,8 +673,7 @@ class _ProductsListPageState extends State<ProductsListPage> {
                           deleteIcon: Icon(
                             Icons.close,
                             size: 16,
-                            color: AppColors.getAccentForPage(
-                                pageId), // ✅ UPDATED
+                            color: AppColors.getAccentForPage(pageId),
                           ),
                           onDeleted: () {
                             setState(() {
@@ -658,16 +687,16 @@ class _ProductsListPageState extends State<ProductsListPage> {
                       Padding(
                         padding: EdgeInsets.only(right: 8),
                         child: Chip(
-                          backgroundColor: AppColors.getAccentForPage(pageId)
-                              .withOpacity(0.1), // ✅ UPDATED
+                          backgroundColor: AppColors.getAccentForPage(
+                            pageId,
+                          ).withOpacity(0.1),
                           side: BorderSide(
-                              color: AppColors.getAccentForPage(
-                                  pageId)), // ✅ UPDATED
+                            color: AppColors.getAccentForPage(pageId),
+                          ),
                           label: Text(
                             selectedParentCategory,
                             style: TextStyle(
-                              color: AppColors.getAccentForPage(
-                                  pageId), // ✅ UPDATED
+                              color: AppColors.getAccentForPage(pageId),
                               fontFamily: 'ADLaMDisplay',
                               fontSize: 11,
                               fontWeight: FontWeight.bold,
@@ -676,8 +705,7 @@ class _ProductsListPageState extends State<ProductsListPage> {
                           deleteIcon: Icon(
                             Icons.close,
                             size: 16,
-                            color: AppColors.getAccentForPage(
-                                pageId), // ✅ UPDATED
+                            color: AppColors.getAccentForPage(pageId),
                           ),
                           onDeleted: () {
                             setState(() {
@@ -692,16 +720,16 @@ class _ProductsListPageState extends State<ProductsListPage> {
                       Padding(
                         padding: EdgeInsets.only(right: 8),
                         child: Chip(
-                          backgroundColor: AppColors.getAccentForPage(pageId)
-                              .withOpacity(0.1), // ✅ UPDATED
+                          backgroundColor: AppColors.getAccentForPage(
+                            pageId,
+                          ).withOpacity(0.1),
                           side: BorderSide(
-                              color: AppColors.getAccentForPage(
-                                  pageId)), // ✅ UPDATED
+                            color: AppColors.getAccentForPage(pageId),
+                          ),
                           label: Text(
                             '${selectedSubCategories.length} sub-categories',
                             style: TextStyle(
-                              color: AppColors.getAccentForPage(
-                                  pageId), // ✅ UPDATED
+                              color: AppColors.getAccentForPage(pageId),
                               fontFamily: 'ADLaMDisplay',
                               fontSize: 11,
                               fontWeight: FontWeight.bold,
@@ -710,8 +738,7 @@ class _ProductsListPageState extends State<ProductsListPage> {
                           deleteIcon: Icon(
                             Icons.close,
                             size: 16,
-                            color: AppColors.getAccentForPage(
-                                pageId), // ✅ UPDATED
+                            color: AppColors.getAccentForPage(pageId),
                           ),
                           onDeleted: () {
                             setState(() {
@@ -724,8 +751,7 @@ class _ProductsListPageState extends State<ProductsListPage> {
                     Text(
                       '${filteredProducts.length} products',
                       style: TextStyle(
-                        color: AppColors.getTextSecondaryForPage(
-                            pageId), // ✅ UPDATED
+                        color: AppColors.getTextSecondaryForPage(pageId),
                         fontSize: 13,
                         fontFamily: 'ADLaMDisplay',
                       ),
@@ -739,87 +765,88 @@ class _ProductsListPageState extends State<ProductsListPage> {
           Expanded(
             child: isLoading
                 ? Center(
-              child: CircularProgressIndicator(
-                  color: AppColors.getAccentForPage(pageId)), // ✅ UPDATED
-            )
+                    child: CircularProgressIndicator(
+                      color: AppColors.getAccentForPage(pageId),
+                    ),
+                  )
                 : filteredProducts.isEmpty
                 ? Center(
-              child: SingleChildScrollView(
-                padding: EdgeInsets.all(32),
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Icon(
-                      Icons.shopping_bag_outlined,
-                      size: 80,
-                      color: Colors.grey,
-                    ),
-                    SizedBox(height: 16),
-                    Text(
-                      'No products found',
-                      style: TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold,
-                        color: AppColors.getTextPrimaryForPage(
-                            pageId), // ✅ UPDATED
-                        fontFamily: 'IrishGrover',
+                    child: SingleChildScrollView(
+                      padding: EdgeInsets.all(32),
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Icon(
+                            Icons.shopping_bag_outlined,
+                            size: 80,
+                            color: Colors.grey,
+                          ),
+                          SizedBox(height: 16),
+                          Text(
+                            'No products found',
+                            style: TextStyle(
+                              fontSize: 18,
+                              fontWeight: FontWeight.bold,
+                              color: AppColors.getTextPrimaryForPage(pageId),
+                              fontFamily: 'IrishGrover',
+                            ),
+                          ),
+                          SizedBox(height: 8),
+                          Text(
+                            searchQuery.isNotEmpty
+                                ? 'Try a different search term'
+                                : 'Try adjusting your filters',
+                            style: TextStyle(
+                              color: Colors.grey,
+                              fontFamily: 'ADLaMDisplay',
+                              fontSize: 14,
+                            ),
+                            textAlign: TextAlign.center,
+                          ),
+                          Padding(
+                            padding: EdgeInsets.only(top: 16),
+                            child: TextButton.icon(
+                              onPressed: () {
+                                setState(() {
+                                  selectedParentCategory = 'All';
+                                  selectedSubCategories.clear();
+                                  sortBy = 'All';
+                                  searchQuery = '';
+                                });
+                                _filterAndSortProducts();
+                              },
+                              icon: Icon(Icons.clear_all),
+                              label: Text('Clear all filters'),
+                              style: TextButton.styleFrom(
+                                foregroundColor: AppColors.getAccentForPage(
+                                  pageId,
+                                ),
+                              ),
+                            ),
+                          ),
+                        ],
                       ),
                     ),
-                    SizedBox(height: 8),
-                    Text(
-                      searchQuery.isNotEmpty
-                          ? 'Try a different search term'
-                          : 'Try adjusting your filters',
-                      style: TextStyle(
-                        color: Colors.grey,
-                        fontFamily: 'ADLaMDisplay',
-                        fontSize: 14,
-                      ),
-                      textAlign: TextAlign.center,
-                    ),
-                    Padding(
-                      padding: EdgeInsets.only(top: 16),
-                      child: TextButton.icon(
-                        onPressed: () {
-                          setState(() {
-                            selectedParentCategory = 'All';
-                            selectedSubCategories.clear();
-                            sortBy = 'All';
-                            searchQuery = '';
-                          });
-                          _filterAndSortProducts();
-                        },
-                        icon: Icon(Icons.clear_all),
-                        label: Text('Clear all filters'),
-                        style: TextButton.styleFrom(
-                          foregroundColor:
-                          AppColors.getAccentForPage(pageId), // ✅ UPDATED
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            )
+                  )
                 : RefreshIndicator(
-              onRefresh: _loadData,
-              color: AppColors.getAccentForPage(pageId), // ✅ UPDATED
-              child: GridView.builder(
-                padding: const EdgeInsets.all(16),
-                itemCount: filteredProducts.length,
-                gridDelegate:
-                const SliverGridDelegateWithFixedCrossAxisCount(
-                  crossAxisCount: 2,
-                  crossAxisSpacing: 12,
-                  mainAxisSpacing: 12,
-                  childAspectRatio: 0.58,
-                ),
-                itemBuilder: (context, index) {
-                  final product = filteredProducts[index];
-                  return _buildProductCard(product);
-                },
-              ),
-            ),
+                    onRefresh: _loadData,
+                    color: AppColors.getAccentForPage(pageId),
+                    child: GridView.builder(
+                      padding: const EdgeInsets.all(16),
+                      itemCount: filteredProducts.length,
+                      gridDelegate:
+                          const SliverGridDelegateWithFixedCrossAxisCount(
+                            crossAxisCount: 2,
+                            crossAxisSpacing: 12,
+                            mainAxisSpacing: 12,
+                            childAspectRatio: 0.58,
+                          ),
+                      itemBuilder: (context, index) {
+                        final product = filteredProducts[index];
+                        return _buildProductCard(product);
+                      },
+                    ),
+                  ),
           ),
         ],
       ),
@@ -833,10 +860,9 @@ class _ProductsListPageState extends State<ProductsListPage> {
       },
       child: Container(
         decoration: BoxDecoration(
-          color: AppColors.getCardForPage(pageId), // ✅ UPDATED
+          color: AppColors.getCardForPage(pageId),
           borderRadius: BorderRadius.circular(19),
-          border: Border.all(
-              color: AppColors.getBorderForPage(pageId)), // ✅ UPDATED
+          border: Border.all(color: AppColors.getBorderForPage(pageId)),
           boxShadow: [
             BoxShadow(
               color: Colors.black.withOpacity(0.05),
@@ -853,25 +879,27 @@ class _ProductsListPageState extends State<ProductsListPage> {
               Container(
                 height: 140,
                 decoration: BoxDecoration(
-                    color: AppColors.getBorderForPage(pageId)), // ✅ UPDATED
-                child: product['imageUrl'] != null &&
-                    product['imageUrl'].isNotEmpty
-                    ? Image.network(
-                  product['imageUrl'],
-                  fit: BoxFit.cover,
-                  errorBuilder: (context, error, stackTrace) {
-                    return Center(
-                      child: Icon(
-                        Icons.image,
-                        size: 50,
-                        color: Colors.grey,
-                      ),
-                    );
-                  },
-                )
-                    : Center(
-                  child: Icon(Icons.image, size: 50, color: Colors.grey),
+                  color: AppColors.getBorderForPage(pageId),
                 ),
+                child:
+                    product['imageUrl'] != null &&
+                        product['imageUrl'].isNotEmpty
+                    ? Image.network(
+                        product['imageUrl'],
+                        fit: BoxFit.cover,
+                        errorBuilder: (context, error, stackTrace) {
+                          return Center(
+                            child: Icon(
+                              Icons.image,
+                              size: 50,
+                              color: Colors.grey,
+                            ),
+                          );
+                        },
+                      )
+                    : Center(
+                        child: Icon(Icons.image, size: 50, color: Colors.grey),
+                      ),
               ),
               Expanded(
                 child: Padding(
@@ -886,8 +914,7 @@ class _ProductsListPageState extends State<ProductsListPage> {
                         style: TextStyle(
                           fontWeight: FontWeight.bold,
                           fontSize: 13,
-                          color: AppColors.getTextPrimaryForPage(
-                              pageId), // ✅ UPDATED
+                          color: AppColors.getTextPrimaryForPage(pageId),
                           fontFamily: 'ADLaMDisplay',
                           height: 1.2,
                         ),
@@ -910,8 +937,7 @@ class _ProductsListPageState extends State<ProductsListPage> {
                         height: 32,
                         child: ElevatedButton(
                           style: ElevatedButton.styleFrom(
-                            backgroundColor: AppColors.getAccentForPage(
-                                pageId), // ✅ UPDATED
+                            backgroundColor: AppColors.getAccentForPage(pageId),
                             padding: EdgeInsets.zero,
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(8),

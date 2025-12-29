@@ -1,8 +1,4 @@
-import 'package:flutter/material.dart';
-import 'package:firebase_auth/firebase_auth.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
-import 'colors.dart';
-import 'database_functions.dart';
+import 'app_imports.dart';
 
 class ProductDetailPage extends StatefulWidget {
   final Map<String, dynamic> product;
@@ -19,8 +15,6 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
   int quantity = 1;
   String? categoryName;
   bool isLoading = true;
-
-  // ✅ CONSTANT: Use 'PRODUCTS' colors for detail page
   final String pageId = 'PRODUCTS';
 
   @override
@@ -45,7 +39,7 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
     if (widget.product['categoryId'] != null) {
       final categories = await DatabaseService.instance.getCategories();
       final category = categories.firstWhere(
-            (cat) => cat['id'] == widget.product['categoryId'],
+        (cat) => cat['id'] == widget.product['categoryId'],
         orElse: () => {},
       );
 
@@ -202,54 +196,58 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
     final product = widget.product;
 
     return Scaffold(
-      backgroundColor: AppColors.getBackgroundForPage(pageId), // ✅ UPDATED
+      backgroundColor: AppColors.getBackgroundForPage(pageId),
       bottomNavigationBar: _buildBottomAction(product),
       body: isLoading
-          ? Center(child: CircularProgressIndicator(color: AppColors.getAccentForPage(pageId))) // ✅ UPDATED
+          ? Center(
+              child: CircularProgressIndicator(
+                color: AppColors.getAccentForPage(pageId),
+              ),
+            )
           : CustomScrollView(
-        physics: const BouncingScrollPhysics(),
-        slivers: [
-          _buildSliverAppBar(product),
-          SliverToBoxAdapter(
-            child: Container(
-              padding: const EdgeInsets.symmetric(
-                horizontal: 20,
-                vertical: 24,
-              ),
-              decoration: BoxDecoration(
-                color: AppColors.getBackgroundForPage(pageId), // ✅ UPDATED
-                borderRadius: const BorderRadius.only(
-                  topLeft: Radius.circular(30),
-                  topRight: Radius.circular(30),
+              physics: const BouncingScrollPhysics(),
+              slivers: [
+                _buildSliverAppBar(product),
+                SliverToBoxAdapter(
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 20,
+                      vertical: 24,
+                    ),
+                    decoration: BoxDecoration(
+                      color: AppColors.getBackgroundForPage(pageId),
+                      borderRadius: const BorderRadius.only(
+                        topLeft: Radius.circular(30),
+                        topRight: Radius.circular(30),
+                      ),
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        _buildHeader(product),
+                        const SizedBox(height: 24),
+                        const Divider(),
+                        _buildSectionTitle('About this product'),
+                        const SizedBox(height: 8),
+                        _buildDescription(product),
+                        const SizedBox(height: 24),
+                        _buildSectionTitle('Select Quantity'),
+                        const SizedBox(height: 12),
+                        _buildQuantitySelector(),
+                        const SizedBox(height: 32),
+                        const Divider(),
+                        _buildSectionTitle('Ratings & Reviews'),
+                        const SizedBox(height: 16),
+                        _buildReviewStream(),
+                        const SizedBox(height: 12),
+                        _buildAddReviewButton(),
+                        const SizedBox(height: 40),
+                      ],
+                    ),
+                  ),
                 ),
-              ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  _buildHeader(product),
-                  const SizedBox(height: 24),
-                  const Divider(),
-                  _buildSectionTitle('About this product'),
-                  const SizedBox(height: 8),
-                  _buildDescription(product),
-                  const SizedBox(height: 24),
-                  _buildSectionTitle('Select Quantity'),
-                  const SizedBox(height: 12),
-                  _buildQuantitySelector(),
-                  const SizedBox(height: 32),
-                  const Divider(),
-                  _buildSectionTitle('Ratings & Reviews'),
-                  const SizedBox(height: 16),
-                  _buildReviewStream(),
-                  const SizedBox(height: 12),
-                  _buildAddReviewButton(),
-                  const SizedBox(height: 40),
-                ],
-              ),
+              ],
             ),
-          ),
-        ],
-      ),
     );
   }
 
@@ -257,7 +255,7 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
     return SliverAppBar(
       expandedHeight: MediaQuery.of(context).size.height * 0.45,
       pinned: true,
-      backgroundColor: AppColors.getBackgroundForPage(pageId), // ✅ UPDATED
+      backgroundColor: AppColors.getBackgroundForPage(pageId),
       leading: Padding(
         padding: const EdgeInsets.all(8.0),
         child: CircleAvatar(
@@ -274,9 +272,9 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
           child: product['imageUrl'] != null && product['imageUrl'].isNotEmpty
               ? Image.network(product['imageUrl'], fit: BoxFit.cover)
               : Container(
-            color: AppColors.getBorderForPage(pageId), // ✅ UPDATED
-            child: const Icon(Icons.image, size: 80),
-          ),
+                  color: AppColors.getBorderForPage(pageId),
+                  child: const Icon(Icons.image, size: 80),
+                ),
         ),
       ),
     );
@@ -301,13 +299,15 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
                       ),
                       margin: const EdgeInsets.only(bottom: 8),
                       decoration: BoxDecoration(
-                        color: AppColors.getAccentForPage(pageId).withOpacity(0.1), // ✅ UPDATED
+                        color: AppColors.getAccentForPage(
+                          pageId,
+                        ).withOpacity(0.1),
                         borderRadius: BorderRadius.circular(8),
                       ),
                       child: Text(
                         categoryName!.toUpperCase(),
                         style: TextStyle(
-                          color: AppColors.getAccentForPage(pageId), // ✅ UPDATED
+                          color: AppColors.getAccentForPage(pageId),
                           fontWeight: FontWeight.bold,
                           fontSize: 10,
                           fontFamily: 'ADLaMDisplay',
@@ -320,7 +320,7 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
                       fontSize: 24,
                       fontWeight: FontWeight.bold,
                       fontFamily: 'IrishGrover',
-                      color: AppColors.getTextPrimaryForPage(pageId), // ✅ UPDATED
+                      color: AppColors.getTextPrimaryForPage(pageId),
                     ),
                     maxLines: 2,
                     overflow: TextOverflow.ellipsis,
@@ -340,7 +340,7 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
       decoration: BoxDecoration(
-        color: AppColors.getAccentForPage(pageId), // ✅ UPDATED
+        color: AppColors.getAccentForPage(pageId),
         borderRadius: BorderRadius.circular(12),
       ),
       child: Text(
@@ -360,7 +360,7 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
       product['description'] ?? 'No description available.',
       style: TextStyle(
         fontSize: 14,
-        color: AppColors.getTextSecondaryForPage(pageId), // ✅ UPDATED
+        color: AppColors.getTextSecondaryForPage(pageId),
         height: 1.5,
         fontFamily: 'ADLaMDisplay',
       ),
@@ -371,9 +371,9 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
     return Container(
       width: 140,
       decoration: BoxDecoration(
-        color: AppColors.getCardForPage(pageId), // ✅ UPDATED
+        color: AppColors.getCardForPage(pageId),
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: AppColors.getBorderForPage(pageId)), // ✅ UPDATED
+        border: Border.all(color: AppColors.getBorderForPage(pageId)),
       ),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceEvenly,
@@ -384,7 +384,7 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
             }),
             icon: Icon(
               Icons.remove_circle_outline,
-              color: AppColors.getAccentForPage(pageId), // ✅ UPDATED
+              color: AppColors.getAccentForPage(pageId),
               size: 20,
             ),
           ),
@@ -394,14 +394,14 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
               fontSize: 16,
               fontWeight: FontWeight.bold,
               fontFamily: 'ADLaMDisplay',
-              color: AppColors.getTextPrimaryForPage(pageId), // ✅ UPDATED
+              color: AppColors.getTextPrimaryForPage(pageId),
             ),
           ),
           IconButton(
             onPressed: () => setState(() => quantity++),
             icon: Icon(
               Icons.add_circle_outline,
-              color: AppColors.getAccentForPage(pageId), // ✅ UPDATED
+              color: AppColors.getAccentForPage(pageId),
               size: 20,
             ),
           ),
@@ -422,7 +422,9 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
           return Center(
             child: Padding(
               padding: const EdgeInsets.all(20.0),
-              child: CircularProgressIndicator(color: AppColors.getAccentForPage(pageId)), // ✅ UPDATED
+              child: CircularProgressIndicator(
+                color: AppColors.getAccentForPage(pageId),
+              ),
             ),
           );
         }
@@ -432,19 +434,23 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
           return Container(
             padding: EdgeInsets.all(12),
             decoration: BoxDecoration(
-              color: AppColors.getCardForPage(pageId), // ✅ UPDATED
+              color: AppColors.getCardForPage(pageId),
               borderRadius: BorderRadius.circular(12),
-              border: Border.all(color: AppColors.getBorderForPage(pageId)), // ✅ UPDATED
+              border: Border.all(color: AppColors.getBorderForPage(pageId)),
             ),
             child: Column(
               children: [
-                Icon(Icons.info_outline, color: AppColors.getAccentForPage(pageId), size: 40), // ✅ UPDATED
+                Icon(
+                  Icons.info_outline,
+                  color: AppColors.getAccentForPage(pageId),
+                  size: 40,
+                ),
                 SizedBox(height: 8),
                 Text(
                   'Reviews are loading...',
                   style: TextStyle(
                     fontFamily: 'ADLaMDisplay',
-                    color: AppColors.getTextPrimaryForPage(pageId), // ✅ UPDATED
+                    color: AppColors.getTextPrimaryForPage(pageId),
                     fontWeight: FontWeight.bold,
                   ),
                 ),
@@ -454,7 +460,7 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
                   textAlign: TextAlign.center,
                   style: TextStyle(
                     fontFamily: 'ADLaMDisplay',
-                    color: AppColors.getTextSecondaryForPage(pageId), // ✅ UPDATED
+                    color: AppColors.getTextSecondaryForPage(pageId),
                     fontSize: 12,
                   ),
                 ),
@@ -467,15 +473,15 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
           return Container(
             padding: EdgeInsets.all(16),
             decoration: BoxDecoration(
-              color: AppColors.getCardForPage(pageId), // ✅ UPDATED
+              color: AppColors.getCardForPage(pageId),
               borderRadius: BorderRadius.circular(12),
-              border: Border.all(color: AppColors.getBorderForPage(pageId)), // ✅ UPDATED
+              border: Border.all(color: AppColors.getBorderForPage(pageId)),
             ),
             child: Row(
               children: [
                 Icon(
                   Icons.rate_review,
-                  color: AppColors.getTextSecondaryForPage(pageId), // ✅ UPDATED
+                  color: AppColors.getTextSecondaryForPage(pageId),
                   size: 40,
                 ),
                 SizedBox(width: 12),
@@ -489,7 +495,7 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
                           fontWeight: FontWeight.bold,
                           fontSize: 14,
                           fontFamily: 'ADLaMDisplay',
-                          color: AppColors.getTextPrimaryForPage(pageId), // ✅ UPDATED
+                          color: AppColors.getTextPrimaryForPage(pageId),
                         ),
                       ),
                       SizedBox(height: 4),
@@ -498,7 +504,7 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
                         style: TextStyle(
                           fontSize: 12,
                           fontFamily: 'ADLaMDisplay',
-                          color: AppColors.getTextSecondaryForPage(pageId), // ✅ UPDATED
+                          color: AppColors.getTextSecondaryForPage(pageId),
                         ),
                       ),
                     ],
@@ -516,7 +522,7 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
               padding: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
               margin: EdgeInsets.only(bottom: 12),
               decoration: BoxDecoration(
-                color: AppColors.getAccentForPage(pageId).withOpacity(0.1), // ✅ UPDATED
+                color: AppColors.getAccentForPage(pageId).withOpacity(0.1),
                 borderRadius: BorderRadius.circular(8),
               ),
               child: Row(
@@ -528,7 +534,7 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
                     style: TextStyle(
                       fontWeight: FontWeight.bold,
                       fontFamily: 'ADLaMDisplay',
-                      color: AppColors.getTextPrimaryForPage(pageId), // ✅ UPDATED
+                      color: AppColors.getTextPrimaryForPage(pageId),
                     ),
                   ),
                 ],
@@ -566,13 +572,13 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
 
         if (difference.inDays > 0) {
           dateStr =
-          '${difference.inDays} day${difference.inDays > 1 ? 's' : ''} ago';
+              '${difference.inDays} day${difference.inDays > 1 ? 's' : ''} ago';
         } else if (difference.inHours > 0) {
           dateStr =
-          '${difference.inHours} hour${difference.inHours > 1 ? 's' : ''} ago';
+              '${difference.inHours} hour${difference.inHours > 1 ? 's' : ''} ago';
         } else if (difference.inMinutes > 0) {
           dateStr =
-          '${difference.inMinutes} minute${difference.inMinutes > 1 ? 's' : ''} ago';
+              '${difference.inMinutes} minute${difference.inMinutes > 1 ? 's' : ''} ago';
         }
       } catch (e) {
         print('Error parsing timestamp: $e');
@@ -582,9 +588,9 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
     return Container(
       padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
-        color: AppColors.getCardForPage(pageId), // ✅ UPDATED
+        color: AppColors.getCardForPage(pageId),
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: AppColors.getBorderForPage(pageId)), // ✅ UPDATED
+        border: Border.all(color: AppColors.getBorderForPage(pageId)),
         boxShadow: [
           BoxShadow(
             color: Colors.black.withOpacity(0.03),
@@ -600,13 +606,15 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
             children: [
               // Avatar
               CircleAvatar(
-                backgroundColor: AppColors.getAccentForPage(pageId).withOpacity(0.2), // ✅ UPDATED
+                backgroundColor: AppColors.getAccentForPage(
+                  pageId,
+                ).withOpacity(0.2),
                 radius: 18,
                 child: Text(
                   (data['userName'] ?? 'A')[0].toUpperCase(),
                   style: TextStyle(
                     fontWeight: FontWeight.bold,
-                    color: AppColors.getAccentForPage(pageId), // ✅ UPDATED
+                    color: AppColors.getAccentForPage(pageId),
                     fontFamily: 'ADLaMDisplay',
                   ),
                 ),
@@ -622,7 +630,7 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
                         fontWeight: FontWeight.bold,
                         fontSize: 14,
                         fontFamily: 'ADLaMDisplay',
-                        color: AppColors.getTextPrimaryForPage(pageId), // ✅ UPDATED
+                        color: AppColors.getTextPrimaryForPage(pageId),
                       ),
                       overflow: TextOverflow.ellipsis,
                     ),
@@ -631,7 +639,7 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
                       style: TextStyle(
                         fontSize: 11,
                         fontFamily: 'ADLaMDisplay',
-                        color: AppColors.getTextSecondaryForPage(pageId), // ✅ UPDATED
+                        color: AppColors.getTextSecondaryForPage(pageId),
                       ),
                     ),
                   ],
@@ -641,7 +649,7 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
               Row(
                 children: List.generate(
                   5,
-                      (i) => Icon(
+                  (i) => Icon(
                     Icons.star,
                     size: 16,
                     color: i < (data['rating'] ?? 0)
@@ -658,7 +666,7 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
             Text(
               data['comment'],
               style: TextStyle(
-                color: AppColors.getTextPrimaryForPage(pageId), // ✅ UPDATED
+                color: AppColors.getTextPrimaryForPage(pageId),
                 fontSize: 13,
                 fontFamily: 'ADLaMDisplay',
                 height: 1.4,
@@ -679,7 +687,7 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
         bottom: MediaQuery.of(context).padding.bottom + 12,
       ),
       decoration: BoxDecoration(
-        color: AppColors.getBackgroundForPage(pageId), // ✅ UPDATED
+        color: AppColors.getBackgroundForPage(pageId),
         boxShadow: [
           BoxShadow(
             color: Colors.black12,
@@ -699,7 +707,7 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
                 style: TextStyle(
                   fontWeight: FontWeight.w500,
                   fontFamily: 'ADLaMDisplay',
-                  color: AppColors.getTextPrimaryForPage(pageId), // ✅ UPDATED
+                  color: AppColors.getTextPrimaryForPage(pageId),
                 ),
               ),
               Text(
@@ -707,7 +715,7 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
                 style: TextStyle(
                   fontSize: 18,
                   fontWeight: FontWeight.bold,
-                  color: AppColors.getAccentForPage(pageId), // ✅ UPDATED
+                  color: AppColors.getAccentForPage(pageId),
                   fontFamily: 'IrishGrover',
                 ),
               ),
@@ -722,7 +730,7 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
                   onPressed: _addToCart,
                   style: OutlinedButton.styleFrom(
                     padding: const EdgeInsets.symmetric(vertical: 14),
-                    side: BorderSide(color: AppColors.getAccentForPage(pageId)), // ✅ UPDATED
+                    side: BorderSide(color: AppColors.getAccentForPage(pageId)),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(10),
                     ),
@@ -732,7 +740,7 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
                       'ADD TO CART',
                       style: TextStyle(
                         fontFamily: 'ADLaMDisplay',
-                        color: AppColors.getAccentForPage(pageId), // ✅ UPDATED
+                        color: AppColors.getAccentForPage(pageId),
                         fontWeight: FontWeight.bold,
                       ),
                     ),
@@ -745,7 +753,7 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
                 child: ElevatedButton(
                   onPressed: _buyNow,
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: AppColors.getAccentForPage(pageId), // ✅ UPDATED
+                    backgroundColor: AppColors.getAccentForPage(pageId),
                     foregroundColor: Colors.white,
                     padding: const EdgeInsets.symmetric(vertical: 14),
                     shape: RoundedRectangleBorder(
@@ -794,7 +802,7 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
         fontSize: 16,
         fontWeight: FontWeight.bold,
         fontFamily: 'IrishGrover',
-        color: AppColors.getTextPrimaryForPage(pageId), // ✅ UPDATED
+        color: AppColors.getTextPrimaryForPage(pageId),
       ),
     );
   }
@@ -804,13 +812,17 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
       width: double.infinity,
       child: TextButton.icon(
         onPressed: _showReviewDialog,
-        icon: Icon(Icons.rate_review, size: 18, color: AppColors.getAccentForPage(pageId)), // ✅ UPDATED
+        icon: Icon(
+          Icons.rate_review,
+          size: 18,
+          color: AppColors.getAccentForPage(pageId),
+        ),
         label: Text(
           "Write a Review",
           style: TextStyle(
             fontSize: 13,
             fontFamily: 'ADLaMDisplay',
-            color: AppColors.getAccentForPage(pageId), // ✅ UPDATED
+            color: AppColors.getAccentForPage(pageId),
           ),
         ),
       ),
@@ -829,7 +841,7 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
-      backgroundColor: AppColors.getCardForPage(pageId), // ✅ UPDATED
+      backgroundColor: AppColors.getCardForPage(pageId),
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
       ),
@@ -850,7 +862,7 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
                   fontWeight: FontWeight.bold,
                   fontSize: 18,
                   fontFamily: 'IrishGrover',
-                  color: AppColors.getTextPrimaryForPage(pageId), // ✅ UPDATED
+                  color: AppColors.getTextPrimaryForPage(pageId),
                 ),
               ),
               const SizedBox(height: 12),
@@ -858,7 +870,7 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: List.generate(
                   5,
-                      (i) => IconButton(
+                  (i) => IconButton(
                     icon: Icon(
                       Icons.star,
                       color: i < rating ? Colors.orange : Colors.grey,
@@ -874,20 +886,22 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
                 maxLines: 3,
                 style: TextStyle(
                   fontFamily: 'ADLaMDisplay',
-                  color: AppColors.getTextPrimaryForPage(pageId), // ✅ UPDATED
+                  color: AppColors.getTextPrimaryForPage(pageId),
                 ),
                 decoration: InputDecoration(
                   hintText: "Write your experience...",
                   hintStyle: TextStyle(
                     fontFamily: 'ADLaMDisplay',
-                    color: AppColors.getTextSecondaryForPage(pageId), // ✅ UPDATED
+                    color: AppColors.getTextSecondaryForPage(pageId),
                   ),
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(12),
                   ),
                   enabledBorder: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(12),
-                    borderSide: BorderSide(color: AppColors.getBorderForPage(pageId)), // ✅ UPDATED
+                    borderSide: BorderSide(
+                      color: AppColors.getBorderForPage(pageId),
+                    ),
                   ),
                 ),
               ),
@@ -896,7 +910,7 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
                 width: double.infinity,
                 child: ElevatedButton(
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: AppColors.getAccentForPage(pageId), // ✅ UPDATED
+                    backgroundColor: AppColors.getAccentForPage(pageId),
                     padding: EdgeInsets.symmetric(vertical: 14),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(12),

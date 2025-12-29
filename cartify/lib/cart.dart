@@ -1,7 +1,4 @@
-import 'package:flutter/material.dart';
-import 'package:firebase_auth/firebase_auth.dart';
-import 'colors.dart';
-import 'database_functions.dart';
+import 'app_imports.dart';
 
 class CartPage extends StatefulWidget {
   const CartPage({super.key});
@@ -12,7 +9,7 @@ class CartPage extends StatefulWidget {
 
 class _CartPageState extends State<CartPage> {
   String? userId;
-  final String pageId = 'CART'; // ✅ CONSTANT for this page
+  final String pageId = 'CART';
 
   @override
   void initState() {
@@ -23,27 +20,27 @@ class _CartPageState extends State<CartPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppColors.getBackgroundForPage(pageId), // ✅ UPDATED
+      backgroundColor: AppColors.getBackgroundForPage(pageId),
       appBar: AppBar(
         elevation: 0,
-        backgroundColor: AppColors.getAccentForPage(pageId), // ✅ UPDATED
+        backgroundColor: AppColors.getAccentForPage(pageId),
         title: Text(
           'My Cart',
           style: TextStyle(
             fontWeight: FontWeight.bold,
             fontSize: 24,
             fontFamily: 'IrishGrover',
-            color: Colors.white, // Kept white per your previous preference
+            color: Colors.white,
           ),
         ),
         centerTitle: true,
-        iconTheme: IconThemeData(color: Colors.white), // Kept white
+        iconTheme: IconThemeData(color: Colors.white),
       ),
       body: userId == null ? _buildLoginPrompt() : _buildCartStream(),
     );
   }
 
-  // --- 1. Login Prompt (When user is not signed in) ---
+  // 1. Login Prompt
   Widget _buildLoginPrompt() {
     return Center(
       child: Padding(
@@ -63,7 +60,7 @@ class _CartPageState extends State<CartPage> {
                 fontSize: 20,
                 fontWeight: FontWeight.bold,
                 fontFamily: 'ADLaMDisplay',
-                color: AppColors.getTextPrimaryForPage(pageId), // ✅ UPDATED
+                color: AppColors.getTextPrimaryForPage(pageId),
               ),
             ),
             const SizedBox(height: 8),
@@ -71,7 +68,7 @@ class _CartPageState extends State<CartPage> {
               'Please login to see items you have added to your cart and start shopping.',
               textAlign: TextAlign.center,
               style: TextStyle(
-                color: AppColors.getTextSecondaryForPage(pageId), // ✅ UPDATED
+                color: AppColors.getTextSecondaryForPage(pageId),
                 fontSize: 14,
               ),
             ),
@@ -81,8 +78,7 @@ class _CartPageState extends State<CartPage> {
               child: ElevatedButton(
                 onPressed: () => Navigator.pushNamed(context, '/login'),
                 style: ElevatedButton.styleFrom(
-                  backgroundColor:
-                  AppColors.getAccentForPage(pageId), // ✅ UPDATED
+                  backgroundColor: AppColors.getAccentForPage(pageId),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(30),
                   ),
@@ -111,7 +107,8 @@ class _CartPageState extends State<CartPage> {
         if (snapshot.connectionState == ConnectionState.waiting) {
           return Center(
             child: CircularProgressIndicator(
-                color: AppColors.getAccentForPage(pageId)), // ✅ UPDATED
+              color: AppColors.getAccentForPage(pageId),
+            ),
           );
         }
 
@@ -129,7 +126,8 @@ class _CartPageState extends State<CartPage> {
             if (productSnapshot.connectionState == ConnectionState.waiting) {
               return Center(
                 child: CircularProgressIndicator(
-                    color: AppColors.getAccentForPage(pageId)), // ✅ UPDATED
+                  color: AppColors.getAccentForPage(pageId),
+                ),
               );
             }
 
@@ -157,13 +155,13 @@ class _CartPageState extends State<CartPage> {
     );
   }
 
-  // --- 3. Individual Product Card in Cart ---
+  // 3. Individual Product Card in Cart
   Widget _buildCartItem(Map<String, dynamic> item) {
     return Container(
       margin: const EdgeInsets.only(bottom: 16),
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
-        color: AppColors.getCardForPage(pageId), // ✅ UPDATED
+        color: AppColors.getCardForPage(pageId),
         borderRadius: BorderRadius.circular(20),
         boxShadow: [
           BoxShadow(
@@ -180,18 +178,17 @@ class _CartPageState extends State<CartPage> {
             borderRadius: BorderRadius.circular(15),
             child: item['imageUrl'] != null && item['imageUrl'].isNotEmpty
                 ? Image.network(
-              item['imageUrl'],
-              width: 90,
-              height: 90,
-              fit: BoxFit.cover,
-            )
+                    item['imageUrl'],
+                    width: 90,
+                    height: 90,
+                    fit: BoxFit.cover,
+                  )
                 : Container(
-              width: 90,
-              height: 90,
-              color: AppColors.getBorderForPage(pageId)
-                  .withOpacity(0.3), // ✅ UPDATED
-              child: const Icon(Icons.image, color: Colors.grey),
-            ),
+                    width: 90,
+                    height: 90,
+                    color: AppColors.getBorderForPage(pageId).withOpacity(0.3),
+                    child: const Icon(Icons.image, color: Colors.grey),
+                  ),
           ),
           const SizedBox(width: 16),
           // Product Details
@@ -211,8 +208,7 @@ class _CartPageState extends State<CartPage> {
                           fontWeight: FontWeight.bold,
                           fontSize: 16,
                           fontFamily: 'ADLaMDisplay',
-                          color: AppColors.getTextPrimaryForPage(
-                              pageId), // ✅ UPDATED
+                          color: AppColors.getTextPrimaryForPage(pageId),
                         ),
                       ),
                     ),
@@ -234,7 +230,7 @@ class _CartPageState extends State<CartPage> {
                 Text(
                   'Rs. ${item['price']}',
                   style: TextStyle(
-                    color: AppColors.getAccentForPage(pageId), // ✅ UPDATED
+                    color: AppColors.getAccentForPage(pageId),
                     fontWeight: FontWeight.bold,
                     fontSize: 15,
                   ),
@@ -250,8 +246,7 @@ class _CartPageState extends State<CartPage> {
                         vertical: 2,
                       ),
                       decoration: BoxDecoration(
-                        color: AppColors.getBackgroundForPage(
-                            pageId), // ✅ UPDATED
+                        color: AppColors.getBackgroundForPage(pageId),
                         borderRadius: BorderRadius.circular(25),
                       ),
                       child: Row(
@@ -272,8 +267,7 @@ class _CartPageState extends State<CartPage> {
                               style: TextStyle(
                                 fontWeight: FontWeight.bold,
                                 fontSize: 14,
-                                color: AppColors.getTextPrimaryForPage(
-                                    pageId), // ✅ UPDATED
+                                color: AppColors.getTextPrimaryForPage(pageId),
                               ),
                             ),
                           ),
@@ -304,12 +298,9 @@ class _CartPageState extends State<CartPage> {
         padding: const EdgeInsets.all(6),
         decoration: BoxDecoration(
           shape: BoxShape.circle,
-          color: AppColors.getAccentForPage(pageId)
-              .withOpacity(0.1), // ✅ UPDATED
+          color: AppColors.getAccentForPage(pageId).withOpacity(0.1),
         ),
-        child: Icon(icon,
-            size: 16,
-            color: AppColors.getAccentForPage(pageId)), // ✅ UPDATED
+        child: Icon(icon, size: 16, color: AppColors.getAccentForPage(pageId)),
       ),
     );
   }
@@ -319,7 +310,7 @@ class _CartPageState extends State<CartPage> {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 20),
       decoration: BoxDecoration(
-        color: AppColors.getCardForPage(pageId), // ✅ UPDATED
+        color: AppColors.getCardForPage(pageId),
         borderRadius: const BorderRadius.vertical(top: Radius.circular(30)),
         boxShadow: [
           BoxShadow(
@@ -349,7 +340,7 @@ class _CartPageState extends State<CartPage> {
                   style: TextStyle(
                     fontSize: 24,
                     fontWeight: FontWeight.bold,
-                    color: AppColors.getAccentForPage(pageId), // ✅ UPDATED
+                    color: AppColors.getAccentForPage(pageId),
                     fontFamily: 'ADLaMDisplay',
                   ),
                 ),
@@ -362,8 +353,7 @@ class _CartPageState extends State<CartPage> {
               child: ElevatedButton(
                 onPressed: () => Navigator.pushNamed(context, '/checkout'),
                 style: ElevatedButton.styleFrom(
-                  backgroundColor:
-                  AppColors.getAccentForPage(pageId), // ✅ UPDATED
+                  backgroundColor: AppColors.getAccentForPage(pageId),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(15),
                   ),
@@ -403,8 +393,7 @@ class _CartPageState extends State<CartPage> {
             style: TextStyle(
               fontSize: 20,
               fontFamily: 'IrishGrover',
-              color: AppColors.getTextPrimaryForPage(pageId)
-                  .withOpacity(0.6), // ✅ UPDATED
+              color: AppColors.getTextPrimaryForPage(pageId).withOpacity(0.6),
             ),
           ),
           const SizedBox(height: 24),
@@ -413,7 +402,7 @@ class _CartPageState extends State<CartPage> {
             child: Text(
               'Start Shopping',
               style: TextStyle(
-                color: AppColors.getAccentForPage(pageId), // ✅ UPDATED
+                color: AppColors.getAccentForPage(pageId),
                 fontWeight: FontWeight.bold,
               ),
             ),
@@ -423,10 +412,10 @@ class _CartPageState extends State<CartPage> {
     );
   }
 
-  // --- Helper: Fetch Product Data for Cart IDs ---
+  // Helper: Fetch Product Data for Cart IDs
   Future<List<Map<String, dynamic>>> _getCartItemsWithProducts(
-      List<Map<String, dynamic>> cartItems,
-      ) async {
+    List<Map<String, dynamic>> cartItems,
+  ) async {
     List<Map<String, dynamic>> itemsWithProducts = [];
 
     for (var cartItem in cartItems) {
@@ -446,7 +435,7 @@ class _CartPageState extends State<CartPage> {
     return itemsWithProducts;
   }
 
-  // --- Helper: Total Calculation ---
+  //Helper: Total Calculation
   int _calculateTotal(List<Map<String, dynamic>> items) {
     return items.fold(0, (sum, item) {
       int price = (item['price'] is int)
