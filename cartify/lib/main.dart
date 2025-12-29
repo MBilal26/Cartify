@@ -391,11 +391,19 @@ class _HomeScreenState extends State<HomeScreen> {
                                       : Icons.child_care,
                                   color: AppColors.getAccentForPage(pageId),
                                 ),
+                                iconColor: AppColors.getTextPrimaryForPage(
+                                  pageId,
+                                ),
+                                collapsedIconColor:
+                                    AppColors.getTextPrimaryForPage(pageId),
                                 title: Text(
                                   parentTitle,
-                                  style: const TextStyle(
+                                  style: TextStyle(
                                     fontSize: 14,
                                     fontFamily: 'ADLaMDisplay',
+                                    color: AppColors.getTextPrimaryForPage(
+                                      pageId,
+                                    ),
                                   ),
                                 ),
                                 children: subcategories.map((subCat) {
@@ -936,7 +944,6 @@ class _HomeScreenState extends State<HomeScreen> {
       ),
       onTap: () {
         Navigator.pop(context);
-        // ✅ FIXED: Pass the specific ID so we don't rely on stale lookups
         _navigateToCategory(title, parentCategory, categoryId: categoryId);
       },
     );
