@@ -20,6 +20,7 @@ class _ProfilePageState extends State<ProfilePage> {
   String? userId;
   bool _isLoading = true;
   double walletBalance = 0.0;
+  bool isEmailVerified = false;
 
   final String pageId = 'PROFILE';
 
@@ -44,6 +45,7 @@ class _ProfilePageState extends State<ProfilePage> {
             userName = userData['name'] ?? 'User';
             userEmail = userData['email'] ?? '';
             userAddress = userData['address'];
+            isEmailVerified = userData['emailVerified'] ?? false;
             walletBalance = balance;
             _isLoading = false;
           });
@@ -64,6 +66,7 @@ class _ProfilePageState extends State<ProfilePage> {
         setState(() {
           userName = "Guest";
           userEmail = "Not logged in";
+          isEmailVerified = false;
           _isLoading = false;
         });
       }
@@ -983,22 +986,51 @@ class _ProfilePageState extends State<ProfilePage> {
                                   ),
                                 ],
                               ),
-                              child: CircleAvatar(
-                                radius: 42,
-                                backgroundColor: AppColors.getBackgroundForPage(
-                                  pageId,
-                                ),
-                                child: Text(
-                                  userName.isNotEmpty
-                                      ? userName[0].toUpperCase()
-                                      : 'U',
-                                  style: TextStyle(
-                                    fontSize: 32,
-                                    fontWeight: FontWeight.bold,
-                                    color: AppColors.getAccentForPage(pageId),
-                                    fontFamily: 'IrishGrover',
+                              child: Stack(
+                                children: [
+                                  CircleAvatar(
+                                    radius: 42,
+                                    backgroundColor:
+                                        AppColors.getBackgroundForPage(pageId),
+                                    child: Text(
+                                      userName.isNotEmpty
+                                          ? userName[0].toUpperCase()
+                                          : 'U',
+                                      style: TextStyle(
+                                        fontSize: 32,
+                                        fontWeight: FontWeight.bold,
+                                        color: AppColors.getAccentForPage(
+                                          pageId,
+                                        ),
+                                        fontFamily: 'IrishGrover',
+                                      ),
+                                    ),
                                   ),
-                                ),
+                                  Positioned(
+                                    bottom: 0,
+                                    right: 0,
+                                    child: Container(
+                                      padding: const EdgeInsets.all(4),
+                                      decoration: BoxDecoration(
+                                        color: isEmailVerified
+                                            ? AppColors.success
+                                            : AppColors.error,
+                                        shape: BoxShape.circle,
+                                        border: Border.all(
+                                          color: Colors.white,
+                                          width: 2,
+                                        ),
+                                      ),
+                                      child: Icon(
+                                        isEmailVerified
+                                            ? Icons.check
+                                            : Icons.close,
+                                        color: Colors.white,
+                                        size: 16,
+                                      ),
+                                    ),
+                                  ),
+                                ],
                               ),
                             ),
                             SizedBox(height: 12),

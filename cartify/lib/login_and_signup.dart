@@ -38,11 +38,63 @@ class _SplashScreenState extends State<SplashScreen>
 
     _controller.forward();
 
-    Timer(const Duration(seconds: 4), () {
+    _checkAuthAndNavigate();
+  }
+
+  Future<void> _checkAuthAndNavigate() async {
+    // Wait for splash animation
+    await Future.delayed(const Duration(seconds: 4));
+
+    if (!mounted) return;
+
+    // Check if user is logged in
+    final user = FirebaseAuth.instance.currentUser;
+
+    if (user == null) {
+      // No user logged in, go to home (guest mode)
+      Navigator.pushReplacementNamed(context, '/home');
+      return;
+    }
+
+    try {
+      // Check if email is verified in Firestore
+      final userDoc = await FirebaseFirestore.instance
+          .collection('users')
+          .doc(user.uid)
+          .get();
+
+      final isEmailVerified = userDoc.data()?['emailVerified'] ?? false;
+
+      if (!isEmailVerified) {
+        // Email not verified, navigate to OTP screen
+        final userEmail = userDoc.data()?['email'] ?? user.email ?? '';
+        if (mounted) {
+          Navigator.pushAndRemoveUntil(
+            context,
+            MaterialPageRoute(
+              builder: (context) => OTPVerificationScreen(
+                email: userEmail,
+                userId: user.uid,
+                isNewUser: false,
+              ),
+            ),
+            (route) => false,
+          );
+        }
+      } else {
+        // Email verified, proceed to home
+        if (mounted) {
+          Navigator.pushReplacementNamed(context, '/home');
+        }
+      }
+    } catch (e) {
+      // Error checking verification status, log out user and go to home
+      print('Error checking email verification: $e');
+      await FirebaseAuth.instance.signOut();
       if (mounted) {
         Navigator.pushReplacementNamed(context, '/home');
       }
-    });
+    }
   }
 
   @override

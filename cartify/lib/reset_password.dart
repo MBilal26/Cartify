@@ -1,5 +1,6 @@
-import 'package:http/http.dart' as http;
 import 'app_imports.dart';
+import 'utils/otp_utils.dart';
+import 'utils/email_service.dart';
 
 class ForgotPasswordScreen extends StatefulWidget {
   const ForgotPasswordScreen({super.key});
@@ -69,7 +70,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
       final userId = usersSnapshot.docs.first.id;
 
       // Generate OTP
-      final otp = _generateOTP();
+      final otp = OTPUtils.generateOTP();
 
       // Store OTP in Firestore
       await FirebaseFirestore.instance
@@ -87,7 +88,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
           });
 
       // Send OTP email
-      await _sendOTPEmail(otp, emailController.text.trim());
+      await EmailService.sendPasswordResetOTP(otp, emailController.text.trim());
 
       setState(() {
         _isLoading = false;
@@ -114,34 +115,6 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
           backgroundColor: AppColors.error,
         ),
       );
-    }
-  }
-
-  String _generateOTP() {
-    final random = Random();
-    return List.generate(6, (_) => random.nextInt(10)).join();
-  }
-
-  Future<void> _sendOTPEmail(String otp, String email) async {
-    final url = Uri.parse('https://api.emailjs.com/api/v1.0/email/send');
-
-    try {
-      final response = await http.post(
-        url,
-        headers: {'Content-Type': 'application/json'},
-        body: json.encode({
-          'service_id': 'service_igjgdas',
-          'template_id': 'template_ay2511u',
-          'user_id': 'RJ-0Lqr3XZZjw4y1K',
-          'template_params': {'user_email': email.trim(), 'otp_code': otp},
-        }),
-      );
-
-      if (response.statusCode != 200) {
-        throw Exception(response.body);
-      }
-    } catch (e) {
-      rethrow;
     }
   }
 
@@ -439,18 +412,13 @@ class _PasswordResetOTPScreenState extends State<PasswordResetOTPScreen> {
     });
   }
 
-  String _generateOTP() {
-    final random = Random();
-    return List.generate(6, (_) => random.nextInt(10)).join();
-  }
-
   Future<void> _resendOTP() async {
     setState(() {
       _isResending = true;
     });
 
     try {
-      final otp = _generateOTP();
+      final otp = OTPUtils.generateOTP();
 
       await FirebaseFirestore.instance
           .collection('password_reset_otp')
@@ -466,7 +434,7 @@ class _PasswordResetOTPScreenState extends State<PasswordResetOTPScreen> {
             'verified': false,
           });
 
-      await _sendOTPEmail(otp);
+      await EmailService.sendPasswordResetOTP(otp, widget.email);
 
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -490,32 +458,6 @@ class _PasswordResetOTPScreenState extends State<PasswordResetOTPScreen> {
       setState(() {
         _isResending = false;
       });
-    }
-  }
-
-  Future<void> _sendOTPEmail(String otp) async {
-    final url = Uri.parse('https://api.emailjs.com/api/v1.0/email/send');
-
-    try {
-      final response = await http.post(
-        url,
-        headers: {'Content-Type': 'application/json'},
-        body: json.encode({
-          'service_id': 'service_igjgdas',
-          'template_id': 'template_awim1ts',
-          'user_id': 'RJ-0Lqr3XZZjw4y1K',
-          'template_params': {
-            'user_email': widget.email.trim(),
-            'otp_code': otp,
-          },
-        }),
-      );
-
-      if (response.statusCode != 200) {
-        throw Exception(response.body);
-      }
-    } catch (e) {
-      rethrow;
     }
   }
 

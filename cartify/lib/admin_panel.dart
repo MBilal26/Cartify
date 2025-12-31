@@ -42,15 +42,19 @@ class _AdminPanelPageState extends State<AdminPanelPage>
     super.dispose();
   }
 
-  Future<void> _loadData() async {
-    setState(() => isLoading = true);
+  Future<void> _loadData({bool showLoading = true}) async {
+    if (showLoading) setState(() => isLoading = true);
     products = await DatabaseService.instance.getAllProducts();
     categories = await DatabaseService.instance.getCategories();
     orders = await _getAllOrders();
     coupons = await DatabaseService.instance.getAllCoupons();
     users = await _getAllUsers();
     _calculateAnalytics();
-    setState(() => isLoading = false);
+    if (showLoading) {
+      setState(() => isLoading = false);
+    } else {
+      if (mounted) setState(() {});
+    }
   }
 
   void _calculateAnalytics() {
@@ -78,7 +82,7 @@ class _AdminPanelPageState extends State<AdminPanelPage>
     try {
       final snapshot = await FirebaseFirestore.instance
           .collection('orders')
-          .orderBy('timestamp', descending: true)
+          .orderBy('createdAt', descending: true)
           .get();
 
       return snapshot.docs.map((doc) {
@@ -222,7 +226,7 @@ class _AdminPanelPageState extends State<AdminPanelPage>
 
   Widget _buildAnalyticsTab() {
     return RefreshIndicator(
-      onRefresh: _loadData,
+      onRefresh: () => _loadData(showLoading: false),
       color: AppColors.getAccentForPage(pageId),
       child: SingleChildScrollView(
         physics: AlwaysScrollableScrollPhysics(),
@@ -789,6 +793,71 @@ class _AdminPanelPageState extends State<AdminPanelPage>
             ),
           ],
         ),
+      ),
+    );
+  }
+
+  void _showAddCategoryDialog({bool isParent = true, String? parentCategory}) {
+    final nameController = TextEditingController();
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        backgroundColor: AppColors.getCardForPage(pageId),
+        title: Text(
+          isParent
+              ? 'Add New Parent Category'
+              : 'Add Sub-Category to $parentCategory',
+          style: TextStyle(
+            color: AppColors.getTextPrimaryForPage(pageId),
+            fontFamily: 'IrishGrover',
+            fontSize: 16,
+          ),
+        ),
+        content: TextField(
+          controller: nameController,
+          decoration: InputDecoration(
+            labelText: 'Category Name',
+            labelStyle: TextStyle(
+              color: AppColors.getTextSecondaryForPage(pageId),
+            ),
+            border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+          ),
+          style: TextStyle(color: AppColors.getTextPrimaryForPage(pageId)),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: Text(
+              'Cancel',
+              style: TextStyle(color: AppColors.getAccentForPage(pageId)),
+            ),
+          ),
+          ElevatedButton(
+            style: ElevatedButton.styleFrom(
+              backgroundColor: AppColors.getAccentForPage(pageId),
+            ),
+            onPressed: () async {
+              if (nameController.text.trim().isNotEmpty) {
+                await DatabaseService.instance.addCategory(
+                  title: nameController.text.trim(),
+                  parentCategory: isParent ? null : parentCategory,
+                );
+                Navigator.pop(context);
+                // Refresh data silently to update dropdowns
+                _loadData(showLoading: false);
+                // Close the product dialog if open? No, we want to stay there.
+                // The parent builder needs to rebuild. We might need to close and reopen product dialog or use StatefulBuilder inside product dialog.
+                // Since _showAddEditProductDialog uses StatefulBuilder, we need to trigger ITS state somehow or just rely on global state if it reads from 'categories'.
+                // 'categories' is a member of AdminPanelPage. So calling _loadData updates 'categories'.
+                // But the Dialog's StatefulBuilder uses 'categories' from the closure?
+                // Actually, 'categories' is a class member. The dialog uses it.
+                // However, the Dialog's StatefulBuilder needs to run 'setDialogState'.
+                // We'll handle this in the Product Dialog by passing a callback or reloading.
+              }
+            },
+            child: Text('Add', style: TextStyle(color: Colors.white)),
+          ),
+        ],
       ),
     );
   }
@@ -1787,7 +1856,7 @@ class _AdminPanelPageState extends State<AdminPanelPage>
           backgroundColor: AppColors.success,
         ),
       );
-      _loadData();
+      _loadData(showLoading: false);
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
@@ -1895,7 +1964,7 @@ class _AdminPanelPageState extends State<AdminPanelPage>
                     backgroundColor: AppColors.success,
                   ),
                 );
-                _loadData();
+                _loadData(showLoading: false);
               } catch (e) {
                 ScaffoldMessenger.of(context).showSnackBar(
                   SnackBar(
@@ -2071,138 +2140,175 @@ class _AdminPanelPageState extends State<AdminPanelPage>
                   SizedBox(height: 12),
 
                   // 1. PARENT CATEGORY DROPDOWN
-                  DropdownButtonFormField<String>(
-                    value: selectedParentCategory,
-                    dropdownColor: AppColors.getCardForPage(pageId),
-                    isExpanded: true,
-                    style: TextStyle(
-                      color: AppColors.getTextPrimaryForPage(pageId),
-                      fontFamily: 'ADLaMDisplay',
-                      fontSize: 14,
-                    ),
-                    decoration: InputDecoration(
-                      labelText: 'Parent Category *',
-                      labelStyle: TextStyle(
-                        color: AppColors.getTextSecondaryForPage(pageId),
-                        fontFamily: 'ADLaMDisplay',
-                        fontSize: 13,
-                      ),
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      enabledBorder: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(12),
-                        borderSide: BorderSide(
-                          color: AppColors.getBorderForPage(pageId),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: DropdownButtonFormField<String>(
+                          value: selectedParentCategory,
+                          dropdownColor: AppColors.getCardForPage(pageId),
+                          isExpanded: true,
+                          style: TextStyle(
+                            color: AppColors.getTextPrimaryForPage(pageId),
+                            fontFamily: 'ADLaMDisplay',
+                            fontSize: 14,
+                          ),
+                          decoration: InputDecoration(
+                            labelText: 'Parent Category *',
+                            labelStyle: TextStyle(
+                              color: AppColors.getTextSecondaryForPage(pageId),
+                              fontFamily: 'ADLaMDisplay',
+                              fontSize: 13,
+                            ),
+                            border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            enabledBorder: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(12),
+                              borderSide: BorderSide(
+                                color: AppColors.getBorderForPage(pageId),
+                              ),
+                            ),
+                            contentPadding: EdgeInsets.symmetric(
+                              horizontal: 12,
+                              vertical: 12,
+                            ),
+                          ),
+                          items: parentCategories.isEmpty
+                              ? [
+                                  DropdownMenuItem<String>(
+                                    value: null,
+                                    child: Text('No parent categories found'),
+                                  ),
+                                ]
+                              : parentCategories
+                                    .map(
+                                      (cat) => DropdownMenuItem<String>(
+                                        value: cat['title'],
+                                        child: Text(cat['title']),
+                                      ),
+                                    )
+                                    .toList(),
+                          onChanged: (value) {
+                            setDialogState(() {
+                              selectedParentCategory = value;
+                              availableSubCategories = categories
+                                  .where(
+                                    (cat) => cat['parentCategory'] == value,
+                                  )
+                                  .toList();
+                              selectedSubCategoryId = null;
+                            });
+                          },
                         ),
                       ),
-                      contentPadding: EdgeInsets.symmetric(
-                        horizontal: 12,
-                        vertical: 12,
+                      IconButton(
+                        icon: Icon(
+                          Icons.add_circle,
+                          color: AppColors.getAccentForPage(pageId),
+                        ),
+                        tooltip: 'Add Parent Category',
+                        onPressed: () => _showAddCategoryDialog(isParent: true),
                       ),
-                    ),
-                    items: parentCategories.isEmpty
-                        ? [
-                            DropdownMenuItem<String>(
-                              value: null,
-                              child: Text('No parent categories found'),
-                            ),
-                          ]
-                        : parentCategories
-                              .map(
-                                (cat) => DropdownMenuItem<String>(
-                                  value: cat['title'],
-                                  child: Text(cat['title']),
-                                ),
-                              )
-                              .toList(),
-                    onChanged: (value) {
-                      setDialogState(() {
-                        selectedParentCategory = value;
-                        // Filter sub-categories based on selected parent
-                        availableSubCategories = categories
-                            .where((cat) => cat['parentCategory'] == value)
-                            .toList();
-                        // Reset sub-category selection
-                        selectedSubCategoryId = null;
-                      });
-                    },
+                    ],
                   ),
                   SizedBox(height: 12),
 
+                  SizedBox(height: 12),
+
                   // 2. SUB-CATEGORY DROPDOWN
-                  DropdownButtonFormField<String>(
-                    value: selectedSubCategoryId,
-                    dropdownColor: AppColors.getCardForPage(pageId),
-                    isExpanded: true,
-                    style: TextStyle(
-                      color: AppColors.getTextPrimaryForPage(pageId),
-                      fontFamily: 'ADLaMDisplay',
-                      fontSize: 14,
-                    ),
-                    decoration: InputDecoration(
-                      labelText: 'Sub-Category *',
-                      labelStyle: TextStyle(
-                        color: AppColors.getTextSecondaryForPage(pageId),
-                        fontFamily: 'ADLaMDisplay',
-                        fontSize: 13,
-                      ),
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      enabledBorder: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(12),
-                        borderSide: BorderSide(
-                          color: AppColors.getBorderForPage(pageId),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: DropdownButtonFormField<String>(
+                          value: selectedSubCategoryId,
+                          dropdownColor: AppColors.getCardForPage(pageId),
+                          isExpanded: true,
+                          style: TextStyle(
+                            color: AppColors.getTextPrimaryForPage(pageId),
+                            fontFamily: 'ADLaMDisplay',
+                            fontSize: 14,
+                          ),
+                          decoration: InputDecoration(
+                            labelText: 'Sub-Category *',
+                            labelStyle: TextStyle(
+                              color: AppColors.getTextSecondaryForPage(pageId),
+                              fontFamily: 'ADLaMDisplay',
+                              fontSize: 13,
+                            ),
+                            border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            enabledBorder: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(12),
+                              borderSide: BorderSide(
+                                color: AppColors.getBorderForPage(pageId),
+                              ),
+                            ),
+                            contentPadding: EdgeInsets.symmetric(
+                              horizontal: 12,
+                              vertical: 12,
+                            ),
+                          ),
+                          items: selectedParentCategory == null
+                              ? [
+                                  DropdownMenuItem<String>(
+                                    value: null,
+                                    child: Text(
+                                      'Select Parent Category First',
+                                      style: TextStyle(
+                                        fontSize: 13,
+                                        color: Colors.grey,
+                                      ),
+                                    ),
+                                  ),
+                                ]
+                              : availableSubCategories.isEmpty
+                              ? [
+                                  DropdownMenuItem<String>(
+                                    value: null,
+                                    child: Text(
+                                      'No sub-categories in $selectedParentCategory',
+                                      style: TextStyle(
+                                        fontSize: 13,
+                                        color: Colors.grey,
+                                      ),
+                                    ),
+                                  ),
+                                ]
+                              : availableSubCategories
+                                    .map(
+                                      (cat) => DropdownMenuItem<String>(
+                                        value: cat['id'].toString(),
+                                        child: Text(
+                                          cat['title'],
+                                          style: TextStyle(fontSize: 13),
+                                        ),
+                                      ),
+                                    )
+                                    .toList(),
+                          onChanged: (value) {
+                            setDialogState(() {
+                              selectedSubCategoryId = value;
+                            });
+                          },
                         ),
                       ),
-                      contentPadding: EdgeInsets.symmetric(
-                        horizontal: 12,
-                        vertical: 12,
+                      IconButton(
+                        icon: Icon(
+                          Icons.add_circle,
+                          color: selectedParentCategory != null
+                              ? AppColors.getAccentForPage(pageId)
+                              : Colors.grey,
+                        ),
+                        tooltip: 'Add Sub-Category',
+                        onPressed: selectedParentCategory == null
+                            ? null
+                            : () => _showAddCategoryDialog(
+                                isParent: false,
+                                parentCategory: selectedParentCategory,
+                              ),
                       ),
-                    ),
-                    items: selectedParentCategory == null
-                        ? [
-                            DropdownMenuItem<String>(
-                              value: null,
-                              child: Text(
-                                'Select Parent Category First',
-                                style: TextStyle(
-                                  fontSize: 13,
-                                  color: Colors.grey,
-                                ),
-                              ),
-                            ),
-                          ]
-                        : availableSubCategories.isEmpty
-                        ? [
-                            DropdownMenuItem<String>(
-                              value: null,
-                              child: Text(
-                                'No sub-categories in $selectedParentCategory',
-                                style: TextStyle(
-                                  fontSize: 13,
-                                  color: Colors.grey,
-                                ),
-                              ),
-                            ),
-                          ]
-                        : availableSubCategories
-                              .map(
-                                (cat) => DropdownMenuItem<String>(
-                                  value: cat['id'].toString(),
-                                  child: Text(
-                                    cat['title'],
-                                    style: TextStyle(fontSize: 13),
-                                  ),
-                                ),
-                              )
-                              .toList(),
-                    onChanged: (value) {
-                      setDialogState(() {
-                        selectedSubCategoryId = value;
-                      });
-                    },
+                    ],
                   ),
                   SizedBox(height: 12),
                   TextField(
@@ -2313,7 +2419,7 @@ class _AdminPanelPageState extends State<AdminPanelPage>
                     return;
                   }
 
-                  final price = int.tryParse(priceController.text.trim());
+                  final price = double.tryParse(priceController.text.trim());
                   if (price == null || price <= 0) {
                     ScaffoldMessenger.of(context).showSnackBar(
                       SnackBar(
@@ -2332,6 +2438,15 @@ class _AdminPanelPageState extends State<AdminPanelPage>
                   bool success = false;
                   // Note: We use the 'gender' field to store the Parent Category Name
                   if (isEdit) {
+                    if (product['id'] == null) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(
+                          content: Text('Error: Product ID is missing'),
+                          backgroundColor: Colors.red,
+                        ),
+                      );
+                      return;
+                    }
                     success = await DatabaseService.instance.updateProduct(
                       productId: product['id'],
                       name: nameController.text.trim(),
@@ -2365,7 +2480,7 @@ class _AdminPanelPageState extends State<AdminPanelPage>
                         backgroundColor: AppColors.success,
                       ),
                     );
-                    _loadData();
+                    _loadData(showLoading: false);
                   } else {
                     ScaffoldMessenger.of(context).showSnackBar(
                       SnackBar(
@@ -2431,7 +2546,7 @@ class _AdminPanelPageState extends State<AdminPanelPage>
                 product['id'],
               );
               if (success) {
-                _loadData();
+                _loadData(showLoading: false);
               }
             },
             child: Text('Delete', style: TextStyle(color: Colors.white)),

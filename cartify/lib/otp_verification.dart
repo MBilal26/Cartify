@@ -1,5 +1,6 @@
-import 'package:http/http.dart' as http;
 import 'app_imports.dart';
+import 'utils/otp_utils.dart';
+import 'utils/email_service.dart';
 
 class OTPVerificationScreen extends StatefulWidget {
   final String email;
@@ -62,18 +63,17 @@ class _OTPVerificationScreenState extends State<OTPVerificationScreen> {
     });
   }
 
-  String _generateOTP() {
-    final random = Random();
-    return List.generate(6, (_) => random.nextInt(10)).join();
-  }
-
   Future<void> _sendOTP() async {
+    print('[OTP_SCREEN] Starting OTP send process...');
+
     setState(() {
       _isResending = true;
     });
 
     try {
-      final generatedOTP = _generateOTP();
+      print('[OTP_SCREEN] Generating OTP...');
+      final generatedOTP = OTPUtils.generateOTP();
+      print('[OTP_SCREEN] OTP generated successfully: ******');
 
       await FirebaseFirestore.instance
           .collection('otp_verifications')
@@ -88,7 +88,8 @@ class _OTPVerificationScreenState extends State<OTPVerificationScreen> {
             'verified': false,
           });
 
-      await _sendOTPEmail(generatedOTP);
+      // Use sendOTPEmail for account verification
+      await EmailService.sendOTPEmail(generatedOTP, widget.email);
 
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -99,11 +100,13 @@ class _OTPVerificationScreenState extends State<OTPVerificationScreen> {
         );
       }
     } catch (e) {
+      print('Error sending OTP: $e');
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: const Text('Failed to send OTP. Please try again.'),
+            content: Text('Failed to send OTP: ${e.toString()}'),
             backgroundColor: AppColors.error,
+            duration: const Duration(seconds: 4),
           ),
         );
       }
@@ -111,36 +114,6 @@ class _OTPVerificationScreenState extends State<OTPVerificationScreen> {
       setState(() {
         _isResending = false;
       });
-    }
-  }
-
-  Future<void> _sendOTPEmail(String otp) async {
-    if (widget.email.isEmpty || !widget.email.contains('@')) {
-      throw Exception("Recipient email address is missing.");
-    }
-
-    final url = Uri.parse('https://api.emailjs.com/api/v1.0/email/send');
-
-    try {
-      final response = await http.post(
-        url,
-        headers: {'Content-Type': 'application/json'},
-        body: json.encode({
-          'service_id': 'service_igjgdas',
-          'template_id': 'template_ay2511u',
-          'user_id': 'RJ-0Lqr3XZZjw4y1K',
-          'template_params': {
-            'user_email': widget.email.trim(),
-            'otp_code': otp,
-          },
-        }),
-      );
-
-      if (response.statusCode != 200) {
-        throw Exception(response.body);
-      }
-    } catch (e) {
-      rethrow;
     }
   }
 
@@ -221,7 +194,6 @@ class _OTPVerificationScreenState extends State<OTPVerificationScreen> {
 
   @override
   Widget build(BuildContext context) {
-    // PopScope prevents the user from using the back button to skip verification
     return PopScope(
       canPop: false,
       child: Scaffold(
@@ -229,7 +201,7 @@ class _OTPVerificationScreenState extends State<OTPVerificationScreen> {
         appBar: AppBar(
           backgroundColor: Colors.transparent,
           elevation: 0,
-          automaticallyImplyLeading: false, // Removes the back button from UI
+          automaticallyImplyLeading: false,
         ),
         body: SingleChildScrollView(
           child: Padding(

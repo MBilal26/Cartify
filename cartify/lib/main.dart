@@ -3,7 +3,7 @@ import 'app_imports.dart';
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
-  await dotenv.load(fileName: "assets/.env"); // Loads environment variables
+  await dotenv.load(fileName: "assets/.env");
   runApp(const MainApp());
 }
 
@@ -74,15 +74,13 @@ class MainApp extends StatelessWidget {
     );
   }
 
-  // --- THE SMOOTH FADE HELPER ---
-  // This keeps your logic exactly the same but changes the animation style
   Route _smoothFade(Widget page, RouteSettings settings) {
     return PageRouteBuilder(
       settings:
           settings, // Ensures arguments like product data are passed correctly
       pageBuilder: (context, animation, secondaryAnimation) => page,
       transitionDuration: const Duration(
-        milliseconds: 600,
+        milliseconds: 500,
       ), // Sweet spot for "Smooth"
       transitionsBuilder: (context, animation, secondaryAnimation, child) {
         return FadeTransition(
@@ -123,10 +121,16 @@ class _HomeScreenState extends State<HomeScreen> {
     _checkAdminStatus();
     _loadProducts();
     _loadCategories();
+    AppColors.colorNotifier.addListener(_updateTheme);
+  }
+
+  void _updateTheme() {
+    if (mounted) setState(() {});
   }
 
   @override
   void dispose() {
+    AppColors.colorNotifier.removeListener(_updateTheme);
     _searchController.dispose();
     super.dispose();
   }

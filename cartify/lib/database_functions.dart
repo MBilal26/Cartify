@@ -466,7 +466,7 @@ class DatabaseService {
   /// Add a new product
   Future<String?> addProduct({
     required String name,
-    required int price,
+    required double price,
     required String categoryId,
     String? gender,
     String? imageUrl,
@@ -493,13 +493,14 @@ class DatabaseService {
   Future<bool> updateProduct({
     required String productId,
     String? name,
-    int? price,
+    double? price,
     String? categoryId,
     String? gender,
     String? imageUrl,
     String? description,
   }) async {
     try {
+      print('Updating product: $productId');
       Map<String, dynamic> updates = {};
       if (name != null) updates['name'] = name;
       if (price != null) updates['price'] = price;
@@ -517,7 +518,7 @@ class DatabaseService {
       }
       return true;
     } catch (e) {
-      print('Error updating product: $e');
+      print('Error updating product (ID: $productId): $e');
       return false;
     }
   }
@@ -738,7 +739,7 @@ class DatabaseService {
       final snapshot = await _db
           .collection(_ordersCollection)
           .where('userId', isEqualTo: userId)
-          .orderBy('timestamp', descending: true)
+          .orderBy('createdAt', descending: true)
           .get();
       return snapshot.docs.map((doc) {
         final data = doc.data();

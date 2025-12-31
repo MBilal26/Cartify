@@ -10,14 +10,8 @@ class ChangeColorsPage extends StatefulWidget {
 }
 
 class _ChangeColorsPageState extends State<ChangeColorsPage> {
-  late PageColors pageColors;
-
-  @override
-  void initState() {
-    super.initState();
-    // Load current page colors
-    pageColors = AppColors.getPageColors(widget.pageName);
-  }
+  // Get the PageColors object directly from AppColors map (not a copy)
+  PageColors get pageColors => AppColors.getPageColors(widget.pageName);
 
   List<Map<String, dynamic>> _getColorOptions() {
     List<Map<String, dynamic>> options = [
@@ -325,7 +319,6 @@ class _ChangeColorsPageState extends State<ChangeColorsPage> {
               setState(() {
                 AppColors.resetPageColors(widget.pageName);
                 AppColors.notifyListeners();
-                pageColors = AppColors.getPageColors(widget.pageName);
               });
               Navigator.pop(context);
               _showSuccessSnackBar(

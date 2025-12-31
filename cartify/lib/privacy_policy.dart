@@ -41,7 +41,7 @@ class PrivacyPolicyPage extends StatelessWidget {
 
                 SizedBox(height: 30),
 
-                // 2. Policy Sections (Card Based)
+                // 2. Policy Sections
                 _policyCard(
                   context,
                   title: '1. Data Collection',
