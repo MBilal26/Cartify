@@ -1,7 +1,7 @@
 # 🛍️ Cartify - Modern E-Commerce Application
 
 <div align="center">
-  <img src="assets/images/glass-logo.png" alt="Cartify Logo" height="150"/>
+  <img src="cartify/assets/images/glass-logo.png" alt="Cartify Logo" height="150"/>
   <br/><br/>
   
   [![Flutter](https://img.shields.io/badge/Flutter-3.19.0-02569B?style=for-the-badge&logo=flutter&logoColor=white)](https://flutter.dev)
