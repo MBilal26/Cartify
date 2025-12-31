@@ -151,21 +151,6 @@ lib/
 └── admin_panel.dart     # Admin dashboard logic
 ```
 
----
-
-## 📸 Screenshots
-
-| Splash Screen | Login | Home | Product Detail |
-|:---:|:---:|:---:|:---:|
-| <img src="assets/screenshots/splash.png" width="200" alt="splash"/> | <img src="assets/screenshots/login.png" width="200" alt="login"/> | <img src="assets/screenshots/home.png" width="200" alt="home"/> | <img src="assets/screenshots/detail.png" width="200" alt="detail"/> |
-
-| Cart | Admin Panel | Customization | Chatbot |
-|:---:|:---:|:---:|:---:|
-| <img src="assets/screenshots/cart.png" width="200" alt="cart"/> | <img src="assets/screenshots/admin.png" width="200" alt="admin"/> | <img src="assets/screenshots/custom.png" width="200" alt="custom"/> | <img src="assets/screenshots/chat.png" width="200" alt="chat"/> |
-
-*(Note: Add screenshot images to `assets/screenshots/` folder to make them visible)*
-
----
 
 ## 🤝 Contributing
 
